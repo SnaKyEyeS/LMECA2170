@@ -33,6 +33,39 @@ Queue *LoadSortedEventQueue(double *points, int n)
   return Q;
 }
 
+void ProcessSite(Node *beachLine, Event *e)
+{
+  if (beachLine == NULL)
+  {
+    beachLine = malloc(sizeof(Node));
+    beachLine->Left = NULL;
+    beachLine->Right = NULL;
+    beachLine->bp[0] = e->coordinates[0];
+    beachLine->bp[1] = e->coordinates[1];
+  }
+  else
+  {
+    Node *var = beachLine;
+    // Get the arc (2)
+    while (var->Left != NULL || var->Right != NULL)
+    {
+      if (var->Left == NULL || var->Right == NULL)
+      {
+        // ERROR
+        return;
+      }
+      if (e->coordinates[0] > var->bp[0])
+      {
+        var = var->Right;
+      }
+      else
+      {
+        var = var->Left;
+      }
+    }
+  }
+}
+
 /*
  * Compare the double representation of a point (x,y)
  * 
@@ -128,10 +161,10 @@ void printQueue(Queue *Q)
   int i = 0;
   printf("QUEUE & FIRST & LAST\n");
   printf("%p %p\n", Q->First, Q->Last);
-  printf("EVENTS \n%*s X      Y      TYPE     &EVENT         &NEXT\n", 4, "id");
+  printf("EVENTS \n%*s X      Y      TYPE &EVENT         &NEXT\n", 4, "id");
   while (E != NULL)
   {
-    printf("%*d %+2.3f %+2.3f %d %p %p\n", 4, i, E->coordinates[0], E->coordinates[1], E->type, E, E->next);
+    printf("%*d %+2.3f %+2.3f %d    %p %p\n", 4, i, E->coordinates[0], E->coordinates[1], E->type, E, E->next);
     E = E->next;
     i++;
   }

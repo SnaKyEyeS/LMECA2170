@@ -1,6 +1,9 @@
 #include "BOV.h"
 #include <math.h>
 
+#ifndef HALFEDGE
+#define HALFEDGE
+
 typedef struct HalfEdge HalfEdge;
 typedef struct Vertex Vertex;
 typedef struct Face Face;
@@ -44,3 +47,5 @@ void printVertices(PolygonMesh *PM);
 void printHEdges(PolygonMesh *PM);
 void printFaces(PolygonMesh *PM);
 void printPolygonMesh(PolygonMesh *PM);
+
+#endif
