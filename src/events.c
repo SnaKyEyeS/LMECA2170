@@ -35,35 +35,69 @@ Queue *LoadSortedEventQueue(double *points, int n)
 
 void ProcessSite(Node *beachLine, Event *e)
 {
+
+  Node *newLeaf = malloc(sizeof(Node));
+  newLeaf->Left = NULL;
+  newLeaf->Right = NULL;
+  newLeaf->isLeaf = true;
+
+  newLeaf->ev = e; // useful ?
+  newLeaf->arcPoint[0] = e->coordinates[0];
+  newLeaf->arcPoint[1] = e->coordinates[1];
+
   if (beachLine == NULL)
   {
-    beachLine = malloc(sizeof(Node));
-    beachLine->Left = NULL;
-    beachLine->Right = NULL;
-    beachLine->bp[0] = e->coordinates[0];
-    beachLine->bp[1] = e->coordinates[1];
+    beachLine = newLeaf;
+    return;
+  }
+
+  Node *arc = getArc(beachLine, e->coordinates);
+
+  //      old
+  //       | -> size can be left or right
+  //     Inner2
+  //      /   \
+  //   Inner1  arc
+  //  /    \
+  //arc  newLeaf
+  //
+
+  Node *Inner1 = malloc(sizeof(Node));
+  Node *Inner2 = malloc(sizeof(Node));
+
+  //Update Root
+  if (arc->Root->Left == arc)
+  {
+    arc->Root->Left = Inner1;
   }
   else
   {
-    Node *var = beachLine;
-    // Get the arc (2)
-    while (var->Left != NULL || var->Right != NULL)
-    {
-      if (var->Left == NULL || var->Right == NULL)
-      {
-        // ERROR
-        return;
-      }
-      if (e->coordinates[0] > var->bp[0])
-      {
-        var = var->Right;
-      }
-      else
-      {
-        var = var->Left;
-      }
-    }
+    arc->Root->Right = Inner1;
   }
+  arc->Root = Inner2;
+  newLeaf->Root = Inner2;
+
+  // Update Left Right
+  Inner2->Left = arc;
+  Inner2->Right = newLeaf;
+  Inner2->Root = Inner2;
+  Inner1->Left = Inner2;
+  Inner1->Right = arc;
+
+  // Update site position
+  Inner2->leftSite[0] = arc->ev->coordinates[0];
+  Inner2->leftSite[1] = arc->ev->coordinates[1];
+  Inner2->rightSite[0] = e->coordinates[0];
+  Inner2->rightSite[1] = e->coordinates[1];
+  Inner1->rightSite[0] = arc->ev->coordinates[0];
+  Inner1->rightSite[1] = arc->ev->coordinates[1];
+  Inner1->leftSite[0] = e->coordinates[0];
+  Inner1->leftSite[1] = e->coordinates[1];
+
+  //TODO: rebalance
+
+  HalfEdge *he = malloc(sizeof(HalfEdge));
+  // TODO: construct voronoid diagram
 }
 
 /*
