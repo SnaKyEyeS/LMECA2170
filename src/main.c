@@ -7,19 +7,33 @@
 int main()
 {
 
-	double test_points[6] = {
+	double test_points[10] = {
 			0,
 			0,
-			2,
-			2,
 			1,
 			1,
+			-2,
+			2,
+			1.5,
+			3,
+			4,
+			2,
 	};
 
-	Queue *Q = LoadEventQueue(test_points, 3);
-	AddPoint(Q, 0.3, 0.3, SITE);
-	AddPoint(Q, 0.3, -0.3, SITE);
-	AddPoint(Q, 2.3, 2.3, SITE);
+	Queue *Q = LoadEventQueue(test_points, 5);
+	Node *BeachLine = NULL;
+	Event *e;
+
+	printQueue(Q);
+	printf("\n");
+	printAllTree(BeachLine);
+	printf("\n");
+	e = popQueue(Q);
+	printEvent(e);
+	ProcessSite(e);
+	printf("\n");
+	printAllTree(BeachLine);
+	printf("\n");
 	printQueue(Q);
 
 	// give a bit of entropy for the seed of rand()

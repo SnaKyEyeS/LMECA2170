@@ -33,7 +33,14 @@ Queue *LoadSortedEventQueue(double *points, int n)
   return Q;
 }
 
-void ProcessSite(Node *beachLine, Event *e)
+/*
+ * Process a site event
+ * 
+ * beachline: binaryTree representing the beachline
+ * e: event to process
+ * Q: queue of events
+ */
+void ProcessSite(Node *beachLine, Event *e, Queue *q)
 {
 
   Node *newLeaf = malloc(sizeof(Node));
@@ -47,6 +54,7 @@ void ProcessSite(Node *beachLine, Event *e)
 
   if (beachLine == NULL)
   {
+    newLeaf->Root = NULL;
     beachLine = newLeaf;
     return;
   }
@@ -66,14 +74,22 @@ void ProcessSite(Node *beachLine, Event *e)
   Node *Inner2 = malloc(sizeof(Node));
 
   //Update Root
-  if (arc->Root->Left == arc)
+  if (arc->Root != NULL)
   {
-    arc->Root->Left = Inner1;
+    if (arc->Root->Left == arc)
+    {
+      arc->Root->Left = Inner1;
+    }
+    else
+    {
+      arc->Root->Right = Inner1;
+    }
   }
   else
   {
-    arc->Root->Right = Inner1;
+    beachLine = Inner1;
   }
+  Inner1->Root = arc->Root;
   arc->Root = Inner2;
   newLeaf->Root = Inner2;
 
@@ -82,7 +98,8 @@ void ProcessSite(Node *beachLine, Event *e)
   Inner2->Right = newLeaf;
   Inner2->Root = Inner2;
   Inner1->Left = Inner2;
-  Inner1->Right = arc;
+  Inner1->Right = duplicateLeaf(arc);
+  Inner1->Right->Root = Inner1;
 
   // Update site position
   Inner2->leftSite[0] = arc->ev->coordinates[0];
@@ -98,6 +115,191 @@ void ProcessSite(Node *beachLine, Event *e)
 
   HalfEdge *he = malloc(sizeof(HalfEdge));
   // TODO: construct voronoid diagram
+
+  Circle *circle = createLeftCircle(newLeaf);
+  if (circle != NULL)
+  {
+    // TODO check if overwrite previous event
+    Inner2->Left->ev = AddPoint(q, circle->center[0], circle->center[1] - circle->radius, CIRCLE);
+    Inner2->Left->ev->node = Inner2->Left;
+  }
+
+  // todo free circle
+
+  circle = createRightCircle(newLeaf);
+  if (circle != NULL)
+  {
+    Inner1->Right->ev = AddPoint(q, circle->center[0], circle->center[1] - circle->radius, CIRCLE);
+    Inner2->Right->ev->node = Inner1->Right;
+  }
+
+  //todo free circle
+
+  //TODO free event
+}
+
+/*
+ * Process a circle event
+ * 
+ * beachline: binaryTree representing the beachline
+ * e: event to process
+ * q: List of event
+ */
+void ProcessCircle(Node *beachline, Event *e, Queue *q)
+{
+  // Check if ok
+  Node *MainRoot = e->node->Root->Root;
+  Node *replace = NULL;
+  Node *arc = NULL;
+  bool is_right = true;
+
+  double x, y;
+  if (e->node->Root->Left == e->node)
+  {
+    replace = e->node->Root->Right;
+    x = e->node->Root->rightSite[0];
+    y = e->node->Root->rightSite[1];
+    arc = getLeftArc(e->node->Root->Right);
+  }
+  else
+  {
+    replace = e->node->Root->Left;
+    x = e->node->Root->leftSite[0];
+    y = e->node->Root->leftSite[1];
+    is_right = false;
+    arc = getRightArc(e->node->Root->Left);
+  }
+  if (MainRoot->Left == e->node->Root)
+  {
+    MainRoot->Left = replace;
+    MainRoot->leftSite[0] = x;
+    MainRoot->leftSite[1] = y;
+  }
+  else
+  {
+    MainRoot->Right = replace;
+    MainRoot->rightSite[0] = x;
+    MainRoot->leftSite[1] = y;
+  }
+
+  // TODO voronoid
+
+  Circle *circle = createMiddleCircle(arc);
+
+  //TODO improve this
+  // should directly fetch the two arc
+
+  if (circle != NULL)
+  {
+    arc->ev = AddPoint(q, circle->center[0], circle->center[1] - circle->radius, CIRCLE);
+    arc->ev->node = arc;
+  }
+
+  if (is_right)
+  {
+    arc = getRightestArc(arc);
+    circle = createRightCircle(arc);
+  }
+  else
+  {
+    arc = getLeftestArc(arc);
+    circle = createLeftCircle(arc);
+  }
+
+  arc->ev = AddPoint(q, circle->center[0], circle->center[1] - circle->radius, CIRCLE);
+  arc->ev->node = arc;
+
+  freeNode(e->node->Root);
+  freeNode(e->node);
+  freeEvent(e);
+}
+
+/*
+ * Create the circle with the new arc at the left
+ * 
+ * Node: arc on the LEFT
+ */
+Circle *createLeftCircle(Node *leaf)
+{
+  Node *var = leaf;
+  int left_depl = 0;
+  while (var->Root != NULL)
+  {
+
+    if (var->Root->Left == var)
+    {
+      left_depl += 1;
+    }
+    if (left_depl == 2)
+    {
+      return createCircle(leaf->arcPoint, var->leftSite, var->rightSite);
+    }
+
+    var = var->Root;
+  }
+  // no 2 Left branch
+  return NULL;
+}
+
+/*
+ * Create the circle with the new arc at the right
+ * 
+ * Node: arc on the right
+ */
+Circle *createRightCircle(Node *leaf)
+{
+  Node *var = leaf;
+  int right_depl = 0;
+  while (var->Root != NULL)
+  {
+
+    if (var->Root->Right == var)
+    {
+      right_depl += 1;
+    }
+    if (right_depl == 2)
+    {
+      return createCircle(leaf->arcPoint, var->leftSite, var->rightSite);
+    }
+
+    var = var->Root;
+  }
+  // no 2 Right branch
+  return NULL;
+}
+
+/*
+ * Create the circle with the new arc at the middle
+ * 
+ * Node: arc on the middle
+ */
+Circle *createMiddleCircle(Node *leaf)
+{
+  Node *var = leaf;
+  Node *left = NULL;
+  Node *right = NULL;
+  while (var->Root != NULL)
+  {
+
+    if (var->Root->Right == var && right != NULL)
+    {
+      right = var->Root;
+    }
+
+    if (var->Root->Left == var && left != NULL)
+    {
+      left = var->Root;
+    }
+
+    if (left != NULL & right != NULL)
+    {
+      return createCircle(leaf->arcPoint, right->rightSite, left->leftSite);
+    }
+
+    var = var->Root;
+  }
+  // no 2 Right branch
+  return NULL;
 }
 
 /*
@@ -140,7 +342,7 @@ Queue *LoadEventQueue(double *points, int n)
  * y: y coordinate of the new point
  */
 
-void AddPoint(Queue *Q, double x, double y, enum TYPE_EVENT type)
+Event *AddPoint(Queue *Q, double x, double y, enum TYPE_EVENT type)
 {
   Event *E = malloc(sizeof(Event));
   E->coordinates[0] = x;
@@ -154,14 +356,14 @@ void AddPoint(Queue *Q, double x, double y, enum TYPE_EVENT type)
     Q->First = E;
     E->next = NULL;
     Q->Last = E;
-    return;
+    return E;
   }
 
   if (E->coordinates[1] < P->coordinates[1])
   {
     E->next = P;
     Q->First = E;
-    return;
+    return E;
   }
 
   while (P != NULL)
@@ -171,7 +373,7 @@ void AddPoint(Queue *Q, double x, double y, enum TYPE_EVENT type)
       P->next = E;
       E->next = NULL;
       Q->Last = E;
-      return;
+      return E;
     }
     else
     {
@@ -180,13 +382,72 @@ void AddPoint(Queue *Q, double x, double y, enum TYPE_EVENT type)
       {
         E->next = P->next;
         P->next = E;
-        return;
+        return E;
       }
       P = P->next;
     }
   }
   E->next = NULL;
   Q->Last = E;
+}
+
+/*
+ * Duplicate the leaf
+ */
+Node *duplicateLeaf(Node *leaf)
+{
+  if (leaf == NULL)
+  {
+    return NULL;
+  }
+  if (!leaf->isLeaf)
+  {
+    // TODO: assert ?
+    return NULL;
+  }
+  Node *n = malloc(sizeof(Node));
+  n->isLeaf = true;
+  n->arcPoint[0] = leaf->arcPoint[0];
+  n->arcPoint[1] = leaf->arcPoint[1];
+}
+
+/*
+ * Pop an element of the queue
+ * 
+ */
+Event *popQueue(Queue *Q)
+{
+  if (Q == NULL)
+  {
+    return NULL;
+  }
+
+  if (Q->First == NULL)
+  {
+    return NULL;
+  }
+
+  Event *e = Q->First;
+  Q->First = e->next;
+  return e;
+}
+
+/*
+ * Free an event
+ */
+void freeEvent(Event *e)
+{
+  free(e);
+}
+
+void printEvent(Event *e)
+{
+  if (e == NULL)
+  {
+    printf("Event is NULL\n");
+    return;
+  }
+  printf("Event %+2.3f %+2.3f %d    %p %p\n", e->coordinates[0], e->coordinates[1], e->type, e, e->next);
 }
 
 void printQueue(Queue *Q)

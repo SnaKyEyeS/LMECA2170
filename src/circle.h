@@ -1,8 +1,8 @@
 
 #include "BOV.h"
 
-#ifndef CIRCLE
-#define CIRCLE
+#ifndef CIRCLE_H
+#define CIRCLE_H
 
 // TODO use always the same and deport in a single .h
 #define EPSILON 0.0001

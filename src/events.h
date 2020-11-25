@@ -8,6 +8,7 @@ typedef struct Event Event;
 typedef struct Queue Queue;
 
 #include "binaryTree.h"
+#include "circle.h"
 
 enum TYPE_EVENT
 {
@@ -33,13 +34,19 @@ struct Queue
 Queue *LoadSortedEventQueue(double *points, int n);
 Queue *LoadEventQueue(double *points, int n);
 
-void ProcessSite(Node *beachLine, Event *e);
-void ProcessCircle(Node *beachLine, Event *e);
+void ProcessSite(Node *beachLine, Event *e, Queue *q);
+void ProcessCircle(Node *beachLine, Event *e, Queue *q);
 
-// Utils
-void AddPoint(Queue *Q, double x, double y, enum TYPE_EVENT type);
-Queue *PopQueue(Queue *Q);
+Circle *createLeftCircle(Node *leaf);
+Circle *createRightCircle(Node *leaf);
+Circle *createMiddleCircle(Node *leaf);
 
+Event *AddPoint(Queue *Q, double x, double y, enum TYPE_EVENT type);
+Event *popQueue(Queue *Q);
+
+void freeEvent(Event *e);
+
+void printEvent(Event *e);
 void printQueue(Queue *Q);
 
 #endif
