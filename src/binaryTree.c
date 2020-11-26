@@ -30,20 +30,23 @@ double getBpX(Node *node, double pointY)
   double C = node->leftSite[1] * node->leftSite[1] - node->rightSite[1] * node->rightSite[1];
 
   double Delta = B * B - 4 * A * C;
-  assert(Delta < 0);
+  if (Delta < EPSILON)
+    return 0; //TODO check what to do
 
   double sqrtDelta = sqrt(Delta);
   double x1 = (-B + sqrtDelta) / (2 * A);
   double x2 = (-B - sqrtDelta) / (2 * A);
 
+  printf("Points are %f %f \n", x1, x2);
+
   // intersection of parabola. The lower one will decide which point
-  if (node->leftSite[1] < node->rightSite[1])
+  if (node->leftSite[0] < x1 && x1 < node->rightSite[0])
   {
-    return fmax(x1, x2);
+    return x1;
   }
   else
   {
-    return fmin(x1, x2);
+    return x2;
   }
 }
 
@@ -55,13 +58,14 @@ double getBpX(Node *node, double pointY)
  */
 Node *getArc(Node *node, double point[2])
 {
-  assert(node == NULL);
+  assert(node != NULL);
   if (node->isLeaf)
   {
     return node;
   }
   else
   {
+    printf("Point from arc %p is %f\n", node, getBpX(node, point[1]));
     if (point[0] < getBpX(node, point[1]))
     {
       return getArc(node->Left, point);
@@ -142,11 +146,46 @@ Node *getRightestArc(Node *leaf)
 }
 
 /*
+ * Duplicate the leaf
+ */
+Node *duplicateLeaf(Node *leaf)
+{
+  if (leaf == NULL)
+  {
+    return NULL;
+  }
+  if (!leaf->isLeaf)
+  {
+    // TODO: assert ?
+    return NULL;
+  }
+  Node *n = malloc(sizeof(Node));
+  n->isLeaf = true;
+  n->arcPoint[0] = leaf->arcPoint[0];
+  n->arcPoint[1] = leaf->arcPoint[1];
+}
+
+/*
  * Free a node/leaf
  */
 void freeNode(Node *node)
 {
+  printf("Yo ? \n");
   free(node);
+  printf("No error :3\n");
+}
+
+/*
+ *
+ */
+void printNode(Node *node)
+{
+  if (node == NULL)
+    printf("Node is NULL\n");
+  else
+  {
+    printf("NODE - (%p) (Left: %p, Right: %p) (Root: %p) (IsLeaf %d) (leftSite %f, %f) (rightSite %f,%f) (arcPoint %f,%f) \n", node, node->Left, node->Right, node->Root, node->isLeaf, node->leftSite[0], node->leftSite[1], node->rightSite[0], node->rightSite[1], node->arcPoint[0], node->arcPoint[1]);
+  }
 }
 
 /*
@@ -156,12 +195,13 @@ void printAllTree(Node *root)
 {
   if (root == NULL)
   {
-    printf("Tree is empty");
+    printf("Tree is empty \n");
   }
   else
   {
+    printf("TREE\n");
     int nbElem = printTree(root, 0, 1);
-    printf("The tree has %d elements", nbElem);
+    printf("The tree has %d elements\n", nbElem);
   }
 }
 
@@ -170,6 +210,7 @@ void printAllTree(Node *root)
  */
 int printTree(Node *node, int depth, int id)
 {
+  // TODO print from depth to have the real tree but should check max depth first (quite slow)
   if (node == NULL)
   {
     return 0;
@@ -181,12 +222,12 @@ int printTree(Node *node, int depth, int id)
 
   if (node->isLeaf)
   {
-    printf("|- LEAVE (%f,%f)", node->arcPoint[0], node->arcPoint[1]);
+    printf("|- LEAVE (%f,%f) (%d) %p %p\n", node->arcPoint[0], node->arcPoint[1], id, node, node->Root);
   }
   else
   {
-    printf("|- BREAKPOINT (%f, %f), (%f, %f) (%d)", node->leftSite[0], node->leftSite[1], node->rightSite[0], node->rightSite[1], id);
+    printf("|- BREAKPOINT (%f, %f), (%f, %f) (%d) %p %p\n", node->leftSite[0], node->leftSite[1], node->rightSite[0], node->rightSite[1], id, node, node->Root);
   }
 
-  return 1 + printTree(node->Left, depth + 1, id << 1 + 1) + printTree(node->Right, depth + 1, id << 1);
+  return 1 + printTree(node->Left, depth + 1, id * 10) + printTree(node->Right, depth + 1, id * 10 + 1);
 }

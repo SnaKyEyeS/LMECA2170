@@ -11,6 +11,9 @@ add_executable(${EXEC}
                "${CMAKE_CURRENT_SOURCE_DIR}/src/events.c"
                "${CMAKE_CURRENT_SOURCE_DIR}/src/binaryTree.c"
                "${CMAKE_CURRENT_SOURCE_DIR}/src/circle.c"
+               "${CMAKE_CURRENT_SOURCE_DIR}/src/queue.c"
+               "${CMAKE_CURRENT_SOURCE_DIR}/src/utils.c"
+               "${CMAKE_CURRENT_SOURCE_DIR}/src/fortune.c"
                # you can add other source file here !
                )
 

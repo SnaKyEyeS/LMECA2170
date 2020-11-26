@@ -42,3 +42,12 @@ Circle *createCircle(double A[2], double B[2], double C[2])
   c->center[1] = -p3 / (2 * p1);
   return c;
 }
+
+/*
+ *
+ */
+void freeCircle(Circle *c)
+{
+  if (c != NULL)
+    free(c);
+}

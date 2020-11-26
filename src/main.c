@@ -2,7 +2,7 @@
 #include <time.h>
 #include "halfEdge.h"
 #include "data_halfEdge.h"
-#include "events.h"
+#include "fortune.h"
 
 int main()
 {
@@ -16,25 +16,26 @@ int main()
 			2,
 			1.5,
 			3,
-			4,
 			2,
-	};
+			4};
 
 	Queue *Q = LoadEventQueue(test_points, 5);
-	Node *BeachLine = NULL;
+	Node **beachLine = malloc(sizeof(Node *));
 	Event *e;
 
 	printQueue(Q);
 	printf("\n");
-	printAllTree(BeachLine);
+	printAllTree(*beachLine);
 	printf("\n");
-	e = popQueue(Q);
-	printEvent(e);
-	ProcessSite(e);
-	printf("\n");
-	printAllTree(BeachLine);
-	printf("\n");
-	printQueue(Q);
+	for (int i = 0; i < 1; i++)
+	{
+		ProcessEvent(beachLine, Q);
+		printf("\n");
+		printAllTree(*beachLine);
+		printf("\n");
+		printQueue(Q);
+		printf("\n");
+	}
 
 	// give a bit of entropy for the seed of rand()
 	// or it will always be the same sequence

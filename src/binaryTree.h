@@ -43,6 +43,7 @@ Node *duplicateLeaf(Node *leaf);
 
 void freeNode(Node *node);
 
+void printNode(Node *node);
 void printAllTree(Node *root);
 int printTree(Node *node, int depth, int id);
 

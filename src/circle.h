@@ -1,6 +1,6 @@
 
 #include "BOV.h"
-
+#include <math.h>
 #ifndef CIRCLE_H
 #define CIRCLE_H
 
@@ -17,5 +17,7 @@ struct Circle
 };
 
 Circle *createCircle(double A[2], double B[2], double C[2]);
+
+void freeCircle(Circle *c);
 
 #endif
