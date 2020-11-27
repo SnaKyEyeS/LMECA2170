@@ -174,6 +174,36 @@ Node *getRightBpNode(Node *node)
 }
 
 /*
+ * Fetch the Bp to the Left to this node
+ */
+Node *getLeftBpNode(Node *node)
+{
+  if (node == NULL)
+  {
+    return NULL;
+  }
+
+  if (node->Left != NULL && !node->Left->isLeaf)
+  {
+    Node *var = getRightestBpNode(node->Left);
+    if (var != NULL)
+    {
+      return var;
+    }
+  }
+
+  Node *var = node;
+  while (var->Root != NULL)
+  {
+    if (var->Root->Right == var)
+      return var->Root;
+
+    var = var->Root;
+  }
+  return NULL;
+}
+
+/*
  * Fetch the leftest bp Node included in node
  */
 Node *getLeftestBpNode(Node *node)
@@ -190,6 +220,27 @@ Node *getLeftestBpNode(Node *node)
   while (!var->Left->isLeaf)
   {
     var = var->Left;
+  }
+  return var;
+}
+
+/*
+ * Fetch the rightest bp Node included in node
+ */
+Node *getRightestBpNode(Node *node)
+{
+  if (node == NULL)
+    return NULL;
+  // It's a leave
+  if (node->Right == NULL)
+    return NULL;
+  if (node->Right->isLeaf)
+    return node;
+
+  Node *var = node->Right;
+  while (!var->Right->isLeaf)
+  {
+    var = var->Right;
   }
   return var;
 }
@@ -214,6 +265,7 @@ Node *duplicateLeaf(Node *leaf)
   n->arcPoint[1] = leaf->arcPoint[1];
   n->Left = NULL;
   n->Right = NULL;
+  n->ev = NULL;
   return n;
 }
 

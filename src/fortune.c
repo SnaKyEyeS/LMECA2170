@@ -33,6 +33,7 @@ void ProcessSite(Node **beachLine, Event *e, Queue *q)
   newLeaf->Left = NULL;
   newLeaf->Right = NULL;
   newLeaf->isLeaf = true;
+  newLeaf->ev = NULL;
 
   newLeaf->arcPoint[0] = e->coordinates[0];
   newLeaf->arcPoint[1] = e->coordinates[1];
@@ -106,9 +107,11 @@ void ProcessSite(Node **beachLine, Event *e, Queue *q)
   HalfEdge *he = malloc(sizeof(HalfEdge));
   // TODO: construct voronoid diagram
 
-  Circle *circle = createLeftCircle(newLeaf);
+  Circle *circle = createRightCircle(newLeaf);
+
   if (circle != NULL)
   {
+    printf("Hello add circle \n");
     // TODO check if overwrite previous event
     if (Inner2->Left->ev != NULL)
     {
@@ -125,10 +128,9 @@ void ProcessSite(Node **beachLine, Event *e, Queue *q)
       Inner2->Left->ev->node = Inner2->Left;
     }
   }
-
   free(circle);
 
-  circle = createRightCircle(newLeaf);
+  circle = createLeftCircle(newLeaf);
   if (circle != NULL)
   {
     if (Inner1->Right->ev != NULL)
@@ -138,13 +140,14 @@ void ProcessSite(Node **beachLine, Event *e, Queue *q)
       {
         deleteEvent(q, Inner1->Right->ev);
         Inner1->Right->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE);
-        Inner2->Right->ev->node = Inner1->Right;
+        Inner1->Right->ev->node = Inner1->Right;
       }
     }
     else
     {
       Inner1->Right->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE);
-      Inner2->Right->ev->node = Inner1->Right;
+      printEvent(Inner1->Right->ev);
+      Inner1->Right->ev->node = Inner1->Right;
     }
   }
   free(circle);
@@ -196,8 +199,6 @@ void ProcessCircle(Node **beachline, Event *e, Queue *q)
   }
 
   replace->Root = MainRoot;
-
-  printAllTree(*beachline);
 
   // TODO voronoid
 
@@ -266,24 +267,11 @@ void ProcessCircle(Node **beachline, Event *e, Queue *q)
  */
 Circle *createLeftCircle(Node *leaf)
 {
-  Node *var = leaf;
-  int left_depl = 0;
-  while (var->Root != NULL)
+  Node *rightrightBp = getRightBpNode(getRightBpNode(leaf));
+  if (rightrightBp != NULL)
   {
-
-    if (var->Root->Left == var)
-    {
-      left_depl += 1;
-    }
-    if (left_depl == 2)
-    {
-      return createCircle(leaf->arcPoint, var->leftSite, var->rightSite);
-    }
-
-    var = var->Root;
+    return createCircle(leaf->arcPoint, rightrightBp->leftSite, rightrightBp->rightSite);
   }
-  // no 2 Left branch
-  return NULL;
 }
 
 /*
@@ -293,24 +281,12 @@ Circle *createLeftCircle(Node *leaf)
  */
 Circle *createRightCircle(Node *leaf)
 {
-  Node *var = leaf;
-  int right_depl = 0;
-  while (var->Root != NULL)
+  // TODO fix not working great also the next one (it does not verify if we have right bp)
+  Node *leftleftBp = getLeftBpNode(getLeftBpNode(leaf));
+  if (leftleftBp != NULL)
   {
-
-    if (var->Root->Right == var)
-    {
-      right_depl += 1;
-    }
-    if (right_depl == 2)
-    {
-      return createCircle(leaf->arcPoint, var->leftSite, var->rightSite);
-    }
-
-    var = var->Root;
+    return createCircle(leaf->arcPoint, leftleftBp->leftSite, leftleftBp->rightSite);
   }
-  // no 2 Right branch
-  return NULL;
 }
 
 /*
