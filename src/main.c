@@ -9,6 +9,7 @@ int main()
 {
 
 	PolygonMesh *PM = InitEmptyPolygonMesh();
+	//TODO encapsulate everything for Fortune
 
 	float test_points[5][2] = {
 			{0, 0},
@@ -17,6 +18,8 @@ int main()
 			{1.5, 3},
 			{2, 4}};
 
+	initFaces(PM, test_points, 5);
+
 	int nPoints = 1000;
 
 	// Only for print
@@ -24,7 +27,7 @@ int main()
 	coord *pointsCircleEvent = malloc(sizeof(coord) * maxCircleEvent);
 	int nCircleEvent = 0;
 
-	float sweeplineHeight = 4;
+	float sweeplineHeight = 0;
 	float xmin = -20;
 	float xmax = 20;
 
@@ -33,7 +36,7 @@ int main()
 			{xmax, sweeplineHeight},
 	};
 
-	Queue *Q = LoadEventQueue(test_points, 5);
+	Queue *Q = LoadEventQueue(test_points, 5, PM->faces);
 	Node **beachLine = malloc(sizeof(Node *));
 	Event *e;
 

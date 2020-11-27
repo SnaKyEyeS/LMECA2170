@@ -6,13 +6,96 @@
 PolygonMesh *InitEmptyPolygonMesh()
 {
   PolygonMesh *pm = malloc(sizeof(PolygonMesh));
+
+  pm->nFaces = 0;
+  pm->faces = NULL;
+
+  pm->firstVertex = NULL;
+  pm->lastVertex = NULL;
+
+  pm->firstHedge = NULL;
+  pm->lastHedge = NULL;
   //todo complete
 }
 
 /*
+ * Add Vertex to the PM
+ */
+void addVertex(PolygonMesh *PM, Vertex *v)
+{
+  if (PM->firstVertex == NULL)
+  {
+    PM->firstVertex = v;
+    PM->lastVertex = v;
+    v->nextList = NULL;
+    return;
+  }
+  PM->lastVertex->nextList = v;
+  PM->lastVertex = v;
+  v->nextList = NULL;
+}
+
+/*
+ * Add Half-Edge to PM
+ */
+void addHE(PolygonMesh *PM, HalfEdge *he)
+{
+  if (PM->firstHedge == NULL)
+  {
+    PM->firstHedge = he;
+    PM->lastHedge = he;
+    he->nextList = NULL;
+    return;
+  }
+  PM->lastHedge->nextList = he;
+  PM->lastHedge = he;
+  he->nextList = NULL;
+}
+
+/*
+ * Faces are defined by points. Will ad in pm
+ */
+void initFaces(PolygonMesh *PM, coord *points, int n)
+{
+  PM->faces = malloc(sizeof(Face *) * n);
+  for (int i = 0; i < n; i++)
+  {
+    PM->faces[i] = malloc(sizeof(Face));
+    PM->faces[i]->point[0] = points[i][0];
+    PM->faces[i]->point[1] = points[i][0];
+    PM->faces[i]->he = NULL;
+  }
+}
+
+/*
+ *
+ */
+Vertex *createVertex(float point[2])
+{
+  Vertex *v = malloc(sizeof(Vertex));
+  v->coordinates[0] = point[0];
+  v->coordinates[1] = point[1];
+  return v;
+}
+
+HalfEdge *createHe()
+{
+  HalfEdge *he = malloc(sizeof(HalfEdge));
+  he->f = NULL;
+  he->f = NULL;
+  he->prev = NULL;
+  he->prev = NULL;
+  he->Opposite = NULL;
+  he->nextList = NULL;
+}
+
+// TO REFACTOR if needed
+/*
  * Vertices -> contain position of each Vertex
  * hEdges -> Vertex Face Eprev Enext Eopp
  */
+
+/*
 PolygonMesh *LoadPolygonMesh(float *Vertices, int nVertices, int *hEdges, int nEdges, int nFaces)
 {
   PolygonMesh *PM = malloc(sizeof(PolygonMesh));
@@ -70,8 +153,8 @@ PolygonMesh *LoadPolygonMesh(float *Vertices, int nVertices, int *hEdges, int nE
   }
 
   return PM;
-}
-
+}*/
+/*
 bov_points_t *getVerticesBOVPolygonMesh(PolygonMesh *PM)
 {
   GLfloat coord[PM->nVertices][2];
@@ -211,6 +294,6 @@ void FreePolygonMesh(PolygonMesh *PM)
   free(PM->hedges);
 
   free(PM);
-}
+}*/
 
 //TODO LOG/PRINT 4 debug

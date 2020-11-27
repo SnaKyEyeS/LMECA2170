@@ -104,8 +104,6 @@ void ProcessSite(Node **beachLine, Event *e, Queue *q, PolygonMesh *PM)
   Inner1->leftSite[1] = e->coordinates[1];
 
   //TODO: rebalance
-  HalfEdge *he = malloc(sizeof(HalfEdge));
-  // TODO: construct voronoid diagram
 
   Circle *circle = createRightCircle(newLeaf);
 
@@ -117,7 +115,7 @@ void ProcessSite(Node **beachLine, Event *e, Queue *q, PolygonMesh *PM)
       if (Inner2->Left->ev->coordinates[1] > circle->center[1] + circle->radius)
       {
         deleteEvent(q, Inner2->Left->ev);
-        Inner2->Left->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE);
+        Inner2->Left->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
         Inner2->Left->ev->node = Inner2->Left;
         freeCircle(Inner2->Left->ev->circle);
         Inner2->Left->ev->circle = circle;
@@ -125,7 +123,7 @@ void ProcessSite(Node **beachLine, Event *e, Queue *q, PolygonMesh *PM)
     }
     else
     {
-      Inner2->Left->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE);
+      Inner2->Left->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
       Inner2->Left->ev->node = Inner2->Left;
       Inner2->Left->ev->circle = circle;
     }
@@ -140,7 +138,7 @@ void ProcessSite(Node **beachLine, Event *e, Queue *q, PolygonMesh *PM)
       if (Inner1->Right->ev->coordinates[1] > circle->center[1] + circle->radius)
       {
         deleteEvent(q, Inner1->Right->ev);
-        Inner1->Right->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE);
+        Inner1->Right->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
         Inner1->Right->ev->node = Inner1->Right;
         freeCircle(Inner1->Right->ev->circle);
         Inner1->Right->ev->circle = circle;
@@ -148,11 +146,16 @@ void ProcessSite(Node **beachLine, Event *e, Queue *q, PolygonMesh *PM)
     }
     else
     {
-      Inner1->Right->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE);
+      Inner1->Right->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
       Inner1->Right->ev->node = Inner1->Right;
       Inner1->Right->ev->circle = circle;
     }
   }
+
+  Inner2->he = createHe();
+  Inner2->he->Opposite = createHe
+
+      addHE(PM, Inner2->he);
 }
 
 /*
@@ -229,7 +232,7 @@ void ProcessCircle(Node **beachline, Event *e, Queue *q, PolygonMesh *PM)
       if (!arc->ev->isValid || (arc->ev->coordinates[1] > circle->center[1] + circle->radius))
       {
         deleteEvent(q, arc->ev);
-        arc->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE);
+        arc->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
         arc->ev->node = arc;
         freeCircle(arc->ev->circle);
         arc->ev->circle = circle;
@@ -237,7 +240,7 @@ void ProcessCircle(Node **beachline, Event *e, Queue *q, PolygonMesh *PM)
     }
     else
     {
-      arc->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE);
+      arc->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
       arc->ev->node = arc;
       arc->ev->circle = circle;
     }
@@ -262,7 +265,7 @@ void ProcessCircle(Node **beachline, Event *e, Queue *q, PolygonMesh *PM)
         printQueue(q);
         printEvent(arc->ev);
         deleteEvent(q, arc->ev);
-        arc->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE);
+        arc->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
         arc->ev->node = arc;
         freeCircle(arc->ev->circle);
         arc->ev->circle = circle;
@@ -270,11 +273,14 @@ void ProcessCircle(Node **beachline, Event *e, Queue *q, PolygonMesh *PM)
     }
     else
     {
-      arc->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE);
+      arc->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
       arc->ev->node = arc;
       arc->ev->circle = circle;
     }
   }
+
+  Vertex *v = createVertex(e->circle->center);
+  addVertex(PM, v);
 
   freeNode(e->node->Root);
   freeNode(e->node);

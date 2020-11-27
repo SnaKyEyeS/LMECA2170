@@ -27,6 +27,7 @@ struct Event
 
   bool isValid;
   Circle *circle;
+  Face *f;
 };
 
 void freeEvent(Event *e);
