@@ -19,6 +19,7 @@ Queue *LoadSortedEventQueue(float (*points)[2], int n)
     E->coordinates[0] = points[i][0];
     E->coordinates[1] = points[i][1];
     E->type = SITE;
+    E->isValid = true;
 
     if (Q->First == NULL)
     {
@@ -64,6 +65,7 @@ Event *AddPoint(Queue *Q, float x, float y, enum TYPE_EVENT type)
   E->coordinates[0] = x;
   E->coordinates[1] = y;
   E->type = type;
+  E->isValid = true;
 
   Event *P = Q->First;
 
@@ -127,7 +129,10 @@ void deleteEvent(Queue *Q, Event *e)
     return;
   }
 
-  e->next->previous = e->previous;
+  if (e->next != NULL)
+  {
+    e->next->previous = e->previous;
+  }
   e->previous->next = e->next;
   freeEvent(e);
 }
@@ -157,16 +162,36 @@ Event *popQueue(Queue *Q)
   return e;
 }
 
+/*
+ * Get the elements of Q which are circle events into points and return the number of elemens
+ */
+int getCircleEvent(Queue *Q, coord *points)
+{
+  int nCircle = 0;
+  Event *var = Q->First;
+  while (var != NULL)
+  {
+    if (var->type == CIRCLE)
+    {
+      points[nCircle][0] = var->coordinates[0];
+      points[nCircle][1] = var->coordinates[1];
+      nCircle++;
+    }
+    var = var->next;
+  }
+  return nCircle;
+}
+
 void printQueue(Queue *Q)
 {
   Event *E = Q->First;
   int i = 0;
   printf("QUEUE &FIRST\n");
   printf("      %p \n", Q->First);
-  printf("EVENTS \n%*s X      Y      TYPE &EVENT         &NEXT          &PREVIOUS     &NODE\n", 4, "id");
+  printf("EVENTS \n%*s X      Y      TYPE ISVALID &EVENT         &NEXT          &PREVIOUS     &NODE\n", 4, "id");
   while (E != NULL)
   {
-    printf("%*d %+2.3f %+2.3f %d    %14p %14p %14p %p\n", 4, i, E->coordinates[0], E->coordinates[1], E->type, E, E->next, E->previous, E->node);
+    printf("%*d %+2.3f %+2.3f %d    %d      %14p %14p %14p %p\n", 4, i, E->coordinates[0], E->coordinates[1], E->type, E->isValid, E, E->next, E->previous, E->node);
     E = E->next;
     i++;
   }

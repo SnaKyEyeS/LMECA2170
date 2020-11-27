@@ -31,13 +31,17 @@ Circle *createCircle(float A[2], float B[2], float C[2])
 
   float Delta = p2 * p2 + p3 * p3 - 4 * p1 * p4;
 
+  if (fabs(p1) < EPSILON)
+  {
+    return NULL;
+  }
   if (Delta < EPSILON)
   {
     return NULL;
   }
 
   Circle *c = malloc(sizeof(Circle));
-  c->radius = sqrt(Delta / (4 * p1 * p1));
+  c->radius = sqrt(Delta) / (2 * p1);
   c->center[0] = -p2 / (2 * p1);
   c->center[1] = -p3 / (2 * p1);
   return c;
@@ -50,4 +54,17 @@ void freeCircle(Circle *c)
 {
   if (c != NULL)
     free(c);
+}
+
+/*
+ *
+ */
+void printCircle(Circle *c)
+{
+  if (c == NULL)
+  {
+    printf("Circle is NULL \n");
+    return;
+  }
+  printf("Circle cx: %f | cy: %f | radius: %f \n", c->center[0], c->center[1], c->radius);
 }

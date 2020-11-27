@@ -341,7 +341,6 @@ void drawBeachLine(float y, Node *root, coord *points, int n)
       var = NULL;
     }
   }
-  printf("Bpx is %f \n", bpX);
 
   for (int i = 0; i < n; i++)
   {
@@ -355,7 +354,6 @@ void drawBeachLine(float y, Node *root, coord *points, int n)
         if (var != NULL)
         {
           bpX = getBpX(var, y);
-          printf("Bpx is %f \n", bpX);
         }
       }
     }

@@ -162,6 +162,23 @@ void ProcessSite(Node **beachLine, Event *e, Queue *q)
 void ProcessCircle(Node **beachline, Event *e, Queue *q)
 {
   // Check if ok
+  if (!e->isValid)
+  {
+    printf("Invalid event \n");
+    return;
+  }
+
+  Node *var = getLeftestArc(e->node);
+  if (var->ev != NULL)
+  {
+    var->ev->isValid = false;
+  }
+  var = getRightestArc(e->node);
+  if (var->ev != NULL)
+  {
+    var->ev->isValid = false;
+  }
+
   Node *MainRoot = e->node->Root->Root;
   Node *replace = NULL;
   Node *arc = NULL;
@@ -170,8 +187,6 @@ void ProcessCircle(Node **beachline, Event *e, Queue *q)
   if (e->node->Root->Left == e->node)
   {
     Node *var = getLeftBpNode(e->node->Root);
-    printf("Left weird \n");
-    printNode(var);
     replace = e->node->Root->Right;
     var->rightSite[0] = e->node->Root->rightSite[0];
     var->rightSite[1] = e->node->Root->rightSite[1];
@@ -180,14 +195,11 @@ void ProcessCircle(Node **beachline, Event *e, Queue *q)
   else
   {
     Node *var = getRightBpNode(e->node->Root);
-    printf("Right weird \n");
-    printNode(var);
     replace = e->node->Root->Left;
     var->leftSite[0] = e->node->Root->leftSite[0];
     var->leftSite[1] = e->node->Root->leftSite[1];
     is_right = false;
     arc = getRightArc(e->node->Root->Left);
-    printNode(var);
   }
 
   if (MainRoot->Left == e->node->Root)
@@ -204,7 +216,6 @@ void ProcessCircle(Node **beachline, Event *e, Queue *q)
   // TODO voronoid
 
   Circle *circle = createMiddleCircle(arc);
-
   //TODO improve this
   // should directly fetch the two arc
 
@@ -212,7 +223,7 @@ void ProcessCircle(Node **beachline, Event *e, Queue *q)
   {
     if (arc->ev != NULL)
     {
-      if (arc->ev->coordinates[1] > circle->center[1] + circle->radius)
+      if (!arc->ev->isValid || (arc->ev->coordinates[1] > circle->center[1] + circle->radius))
       {
         deleteEvent(q, arc->ev);
         arc->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE);
@@ -225,7 +236,6 @@ void ProcessCircle(Node **beachline, Event *e, Queue *q)
       arc->ev->node = arc;
     }
   }
-
   if (circle != NULL)
   {
     freeCircle(circle);
@@ -241,13 +251,15 @@ void ProcessCircle(Node **beachline, Event *e, Queue *q)
     circle = createLeftCircle(arc);
     arc = getRightestArc(arc);
   }
-
+  printCircle(circle);
   if (circle != NULL && circle->center[1] + circle->radius > e->coordinates[1])
   {
     if (arc->ev != NULL)
     {
-      if (arc->ev->coordinates[1] > circle->center[1] + circle->radius)
+      if (!arc->ev->isValid || (arc->ev->coordinates[1] > circle->center[1] + circle->radius))
       {
+        printQueue(q);
+        printEvent(arc->ev);
         deleteEvent(q, arc->ev);
         arc->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE);
         arc->ev->node = arc;
@@ -293,7 +305,7 @@ Circle *createRightCircle(Node *leaf)
   Node *leftleftBp = getLeftBpNode(getLeftBpNode(leaf));
   if (leftleftBp != NULL)
   {
-    return createCircle(leaf->arcPoint, leftleftBp->leftSite, leftleftBp->rightSite);
+    return createCircle(leftleftBp->leftSite, leftleftBp->rightSite, leaf->arcPoint);
   }
 }
 
@@ -309,20 +321,22 @@ Circle *createMiddleCircle(Node *leaf)
   Node *right = NULL;
   while (var->Root != NULL)
   {
-
-    if (var->Root->Right == var && right != NULL)
+    if (var->Root->Right == var && right == NULL)
     {
       right = var->Root;
     }
 
-    if (var->Root->Left == var && left != NULL)
+    if (var->Root->Left == var && left == NULL)
     {
       left = var->Root;
     }
 
     if (left != NULL & right != NULL)
     {
-      return createCircle(leaf->arcPoint, right->rightSite, left->leftSite);
+      printNode(left);
+      printNode(leaf);
+      printNode(right);
+      return createCircle(right->leftSite, leaf->arcPoint, left->rightSite);
     }
 
     var = var->Root;

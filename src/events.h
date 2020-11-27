@@ -1,4 +1,5 @@
 #include "BOV.h"
+#include <stdbool.h>
 
 #ifndef EVENTS
 #define EVENTS
@@ -23,6 +24,8 @@ struct Event
   Event *previous;
   enum TYPE_EVENT type;
   Node *node;
+
+  bool isValid;
 };
 
 void freeEvent(Event *e);

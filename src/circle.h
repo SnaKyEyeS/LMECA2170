@@ -19,5 +19,6 @@ struct Circle
 Circle *createCircle(float A[2], float B[2], float C[2]);
 
 void freeCircle(Circle *c);
+void printCircle(Circle *c);
 
 #endif

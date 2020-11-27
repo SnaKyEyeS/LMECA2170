@@ -17,9 +17,14 @@ int main()
 
 	int nPoints = 1000;
 
-	float sweeplineHeight = 3;
-	float xmin = -10;
-	float xmax = 10;
+	// Only for print
+	int maxCircleEvent = 20;
+	coord *pointsCircleEvent = malloc(sizeof(coord) * maxCircleEvent);
+	int nCircleEvent = 0;
+
+	float sweeplineHeight = 4;
+	float xmin = -20;
+	float xmax = 20;
 
 	float pointsSweepLine[2][2] = {
 			{xmin, sweeplineHeight},
@@ -58,19 +63,22 @@ int main()
 	bov_points_t *ptsBeachline = bov_points_new(points, nPoints, GL_DYNAMIC_DRAW);
 	bov_points_t *ptsSweepline = bov_points_new(pointsSweepLine, 2, GL_DYNAMIC_DRAW);
 	bov_points_t *ptnextEvent = bov_points_new(nextEvent, 1, GL_DYNAMIC_DRAW);
+	bov_points_t *circleEvent = bov_points_new(pointsCircleEvent, nCircleEvent, GL_DYNAMIC_DRAW);
 
 	bov_points_draw(window, ptsHard, 0, 5);
 	bov_points_set_width(ptsHard, 0.1);
+	bov_points_set_width(circleEvent, 0.1);
 	bov_points_set_width(ptnextEvent, 0.05);
 	bov_points_set_color(ptnextEvent, (float[4]){0.1, 0.8, 0.1, 1});
 	bov_points_set_color(ptsHard, (float[4]){1, 0, 0, 1});
 	bov_points_set_color(ptsSweepline, (float[4]){0, 0, 1, 1});
+	bov_points_set_color(circleEvent, (float[4]){1, 0, 1, 1});
 
-	int aKey = 0, sKey = 0, eKey = 0, wKey = 0;
+	int aKey = 0, sKey = 0, dKey = 0, eKey = 0, wKey = 0;
+	float oldSweepLine = sweeplineHeight - 1;
 
 	while (!bov_window_should_close(window))
 	{
-		float oldSweepLine = sweeplineHeight;
 		aKey = impulse(aKey, glfwGetKey(window->self, GLFW_KEY_A));
 		if (aKey == 1)
 		{
@@ -83,6 +91,14 @@ int main()
 		if (sKey == 1)
 		{
 			sweeplineHeight += 0.05;
+			pointsSweepLine[0][1] = sweeplineHeight;
+			pointsSweepLine[1][1] = sweeplineHeight;
+			bov_points_update(ptsSweepline, pointsSweepLine, 2);
+		}
+		dKey = impulse(dKey, glfwGetKey(window->self, GLFW_KEY_D));
+		if (dKey == 1)
+		{
+			sweeplineHeight += 1;
 			pointsSweepLine[0][1] = sweeplineHeight;
 			pointsSweepLine[1][1] = sweeplineHeight;
 			bov_points_update(ptsSweepline, pointsSweepLine, 2);
@@ -100,30 +116,32 @@ int main()
 
 		if (sweeplineHeight > oldSweepLine)
 		{
-			while (Q != NULL && Q->First->coordinates[1] < sweeplineHeight)
+			while (Q != NULL && Q->First != NULL && Q->First->coordinates[1] < sweeplineHeight)
 			{
-				printf("Main loop \n");
 				ProcessEvent(beachLine, Q);
 				printAllTree(*beachLine);
 				printQueue(Q);
-				printf("\n SPACER \n ");
+				nCircleEvent = getCircleEvent(Q, pointsCircleEvent);
+				bov_points_update(circleEvent, pointsCircleEvent, nCircleEvent);
 				if (Q->First != NULL)
 				{
 					nextEvent[0][0] = Q->First->coordinates[0];
 					nextEvent[0][1] = Q->First->coordinates[1];
 					bov_points_update(ptnextEvent, nextEvent, 1);
 				}
-				printf("End of main loop \n \n");
 			}
 			drawBeachLine(sweeplineHeight, *beachLine, points, nPoints);
 			bov_points_update(ptsBeachline, points, nPoints);
 		}
 
+		bov_points_draw(window, circleEvent, 0, nCircleEvent);
 		bov_line_strip_draw(window, ptsSweepline, 0, 2);
 		bov_points_draw(window, ptsHard, 0, 5);
 		bov_points_draw(window, ptnextEvent, 0, 2);
 		bov_line_strip_draw(window, ptsBeachline, 0, nPoints);
 		bov_window_update(window);
+
+		oldSweepLine = sweeplineHeight;
 	}
 
 	bov_window_delete(window);

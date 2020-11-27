@@ -24,6 +24,8 @@ void deleteEvent(Queue *Q, Event *e);
 Event *AddPoint(Queue *Q, float x, float y, enum TYPE_EVENT type);
 Event *popQueue(Queue *Q);
 
+int getCircleEvent(Queue *Q, coord *points);
+
 void printQueue(Queue *Q);
 
 #endif
