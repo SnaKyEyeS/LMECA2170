@@ -8,12 +8,11 @@
  * 
  * We need to fetch the parabola left and right and compute the break point by intersecting the 2 parabolas
  */
-double getBpX(Node *node, double pointY)
+float getBpX(Node *node, float pointY)
 {
-
   // 2*(pjy-ly)
-  double al = 2 * (node->leftSite[1] - pointY);
-  double ar = 2 * (node->rightSite[1] - pointY);
+  float al = 2 * (node->leftSite[1] - pointY);
+  float ar = 2 * (node->rightSite[1] - pointY);
 
   if (al == 0)
   {
@@ -25,19 +24,19 @@ double getBpX(Node *node, double pointY)
     return node->rightSite[0];
   }
 
-  double A = 1 / al - 1 / ar;
-  double B = (node->leftSite[0] / al - node->rightSite[0] / ar) / 2;
-  double C = node->leftSite[1] * node->leftSite[1] - node->rightSite[1] * node->rightSite[1];
+  float A = 1.0 / al - 1.0 / ar;
+  float B = -2 * (node->leftSite[0] / al - node->rightSite[0] / ar);
+  float C = (node->leftSite[0] * node->leftSite[0] + node->leftSite[1] * node->leftSite[1] - pointY * pointY) / al - (node->rightSite[0] * node->rightSite[0] + node->rightSite[1] * node->rightSite[1] - pointY * pointY) / ar;
 
-  double Delta = B * B - 4 * A * C;
+  float Delta = B * B - 4 * A * C;
   if (Delta < EPSILON)
+  {
     return 0; //TODO check what to do
+  }
 
-  double sqrtDelta = sqrt(Delta);
-  double x1 = (-B + sqrtDelta) / (2 * A);
-  double x2 = (-B - sqrtDelta) / (2 * A);
-
-  printf("Points are %f %f \n", x1, x2);
+  float sqrtDelta = sqrt(Delta);
+  float x1 = (-B + sqrtDelta) / (2 * A);
+  float x2 = (-B - sqrtDelta) / (2 * A);
 
   // intersection of parabola. The lower one will decide which point
   if (node->leftSite[0] < x1 && x1 < node->rightSite[0])
@@ -56,7 +55,7 @@ double getBpX(Node *node, double pointY)
  * node: beachLine
  * point: point position
  */
-Node *getArc(Node *node, double point[2])
+Node *getArc(Node *node, float point[2])
 {
   assert(node != NULL);
   if (node->isLeaf)
@@ -65,7 +64,6 @@ Node *getArc(Node *node, double point[2])
   }
   else
   {
-    printf("Point from arc %p is %f\n", node, getBpX(node, point[1]));
     if (point[0] < getBpX(node, point[1]))
     {
       return getArc(node->Left, point);
@@ -146,6 +144,57 @@ Node *getRightestArc(Node *leaf)
 }
 
 /*
+ * Fetch the Bp to the right to this node
+ */
+Node *getRightBpNode(Node *node)
+{
+  if (node == NULL)
+  {
+    return NULL;
+  }
+
+  if (node->Right != NULL && !node->Right->isLeaf)
+  {
+    Node *var = getLeftestBpNode(node->Right);
+    if (var != NULL)
+    {
+      return var;
+    }
+  }
+
+  Node *var = node;
+  while (var->Root != NULL)
+  {
+    if (var->Root->Left == var)
+      return var->Root;
+
+    var = var->Root;
+  }
+  return NULL;
+}
+
+/*
+ * Fetch the leftest bp Node included in node
+ */
+Node *getLeftestBpNode(Node *node)
+{
+  if (node == NULL)
+    return NULL;
+  // It's a leave
+  if (node->Left == NULL)
+    return NULL;
+  if (node->Left->isLeaf)
+    return node;
+
+  Node *var = node->Left;
+  while (!var->Left->isLeaf)
+  {
+    var = var->Left;
+  }
+  return var;
+}
+
+/*
  * Duplicate the leaf
  */
 Node *duplicateLeaf(Node *leaf)
@@ -163,6 +212,9 @@ Node *duplicateLeaf(Node *leaf)
   n->isLeaf = true;
   n->arcPoint[0] = leaf->arcPoint[0];
   n->arcPoint[1] = leaf->arcPoint[1];
+  n->Left = NULL;
+  n->Right = NULL;
+  return n;
 }
 
 /*
@@ -170,9 +222,7 @@ Node *duplicateLeaf(Node *leaf)
  */
 void freeNode(Node *node)
 {
-  printf("Yo ? \n");
   free(node);
-  printf("No error :3\n");
 }
 
 /*
@@ -202,6 +252,62 @@ void printAllTree(Node *root)
     printf("TREE\n");
     int nbElem = printTree(root, 0, 1);
     printf("The tree has %d elements\n", nbElem);
+  }
+}
+
+/*
+ * Will fill points[i*2+1] with the value of the beachline at point
+ *  points[i*2] for i < n
+ * 
+ * Considering the sweep line at height y
+ */
+void drawBeachLine(float y, Node *root, coord *points, int n)
+{
+  if (root == NULL)
+  {
+    for (int i = 0; i < n; i++)
+    {
+      points[i][1] = 0;
+    }
+    return;
+  }
+
+  Node *var = getLeftArc(root);
+  float xArc = var->arcPoint[0];
+  float yArc = var->arcPoint[1];
+
+  float bpX = 0;
+  if (var != NULL)
+  {
+    if (var->Root != NULL)
+    {
+      bpX = getBpX(var->Root, y);
+      var = var->Root; // First BP can be nulla
+    }
+    else
+    {
+      var = NULL;
+    }
+  }
+  printf("Bpx is %f \n", bpX);
+
+  for (int i = 0; i < n; i++)
+  {
+    if (var != NULL)
+    {
+      if (points[i][0] > bpX)
+      {
+        xArc = var->rightSite[0];
+        yArc = var->rightSite[1];
+        var = getRightBpNode(var);
+        if (var != NULL)
+        {
+          bpX = getBpX(var, y);
+          printf("Bpx is %f \n", bpX);
+        }
+      }
+    }
+    points[i][1] = parabola(xArc, yArc, y, points[i][0]);
   }
 }
 

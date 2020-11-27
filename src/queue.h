@@ -17,11 +17,11 @@ struct Queue
 };
 
 // Create a Q
-Queue *LoadSortedEventQueue(double *points, int n);
-Queue *LoadEventQueue(double *points, int n);
+Queue *LoadSortedEventQueue(float (*points)[2], int n);
+Queue *LoadEventQueue(float (*points)[2], int n);
 
 void deleteEvent(Queue *Q, Event *e);
-Event *AddPoint(Queue *Q, double x, double y, enum TYPE_EVENT type);
+Event *AddPoint(Queue *Q, float x, float y, enum TYPE_EVENT type);
 Event *popQueue(Queue *Q);
 
 void printQueue(Queue *Q);

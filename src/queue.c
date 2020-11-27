@@ -6,7 +6,7 @@
  * points: list of all sorted points to load (x,y) - size min 2n
  * n: number of points to load
  */
-Queue *LoadSortedEventQueue(double *points, int n)
+Queue *LoadSortedEventQueue(float (*points)[2], int n)
 {
   Queue *Q = malloc(sizeof(Queue));
 
@@ -16,8 +16,8 @@ Queue *LoadSortedEventQueue(double *points, int n)
   for (int i = 0; i < n; i++)
   {
     Event *E = malloc(sizeof(Event));
-    E->coordinates[0] = points[i * 2];
-    E->coordinates[1] = points[i * 2 + 1];
+    E->coordinates[0] = points[i][0];
+    E->coordinates[1] = points[i][1];
     E->type = SITE;
 
     if (Q->First == NULL)
@@ -45,9 +45,9 @@ Queue *LoadSortedEventQueue(double *points, int n)
  * points: list of all points to load (x,y) - size min 2n
  * n: number of points to load
  */
-Queue *LoadEventQueue(double *points, int n)
+Queue *LoadEventQueue(float (*points)[2], int n)
 {
-  qsort(points, n, sizeof(double) * 2, compareDoubles);
+  qsort(points, n, sizeof(float) * 2, comparefloats);
   return LoadSortedEventQueue(points, n);
 }
 /*
@@ -58,7 +58,7 @@ Queue *LoadEventQueue(double *points, int n)
  * y: y coordinate of the new point
  */
 
-Event *AddPoint(Queue *Q, double x, double y, enum TYPE_EVENT type)
+Event *AddPoint(Queue *Q, float x, float y, enum TYPE_EVENT type)
 {
   Event *E = malloc(sizeof(Event));
   E->coordinates[0] = x;
@@ -150,7 +150,10 @@ Event *popQueue(Queue *Q)
 
   Event *e = Q->First;
   Q->First = e->next;
-  Q->First->previous = NULL;
+  if (Q->First != NULL)
+  {
+    Q->First->previous = NULL;
+  }
   return e;
 }
 
@@ -158,7 +161,7 @@ void printQueue(Queue *Q)
 {
   Event *E = Q->First;
   int i = 0;
-  printf("QUEUE &FIRST         &LAST\n\n");
+  printf("QUEUE &FIRST\n");
   printf("      %p \n", Q->First);
   printf("EVENTS \n%*s X      Y      TYPE &EVENT         &NEXT          &PREVIOUS     &NODE\n", 4, "id");
   while (E != NULL)

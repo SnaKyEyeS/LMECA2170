@@ -10,6 +10,7 @@ void ProcessEvent(Node **beachLine, Queue *Q)
   if (Q->First == NULL)
     return;
   Event *e = popQueue(Q);
+
   if (e == NULL)
     return; // TODO should assert
   if (e->type == SITE)
@@ -38,12 +39,12 @@ void ProcessSite(Node **beachLine, Event *e, Queue *q)
 
   if ((*beachLine) == NULL)
   {
+    newLeaf->Root = NULL;
     (*beachLine) = newLeaf;
     return;
   }
 
   Node *arc = getArc(*beachLine, e->coordinates);
-
   //      old
   //       | -> size can be left or right
   //     Inner2
@@ -56,10 +57,13 @@ void ProcessSite(Node **beachLine, Event *e, Queue *q)
   Node *Inner1 = malloc(sizeof(Node));
   Node *Inner2 = malloc(sizeof(Node));
 
+  Inner1->isLeaf = false;
+  Inner2->isLeaf = false;
+
   //Update Root
-  printf("Update root\n");
   if (arc->Root != NULL)
   {
+
     if (arc->Root->Left == arc)
     {
       arc->Root->Left = Inner1;
@@ -73,50 +77,46 @@ void ProcessSite(Node **beachLine, Event *e, Queue *q)
   {
     (*beachLine) = Inner1;
   }
+
   Inner1->Root = arc->Root;
   arc->Root = Inner2;
   newLeaf->Root = Inner2;
+  Inner2->Root = Inner1;
 
-  printf("Update Left Right\n");
   // Update Left Right
   Inner2->Left = arc;
   Inner2->Right = newLeaf;
-  Inner2->Root = Inner1;
   Inner1->Left = Inner2;
   Inner1->Right = duplicateLeaf(arc);
   Inner1->Right->Root = Inner1;
 
-  printf("Update site position \n");
   // Update site position
 
   // TODO not working
   Inner2->leftSite[0] = arc->arcPoint[0];
   Inner2->leftSite[1] = arc->arcPoint[1];
-  printf("Sub step 1 \n");
   Inner2->rightSite[0] = e->coordinates[0];
   Inner2->rightSite[1] = e->coordinates[1];
-  printf("Sub step 2 \n");
   Inner1->rightSite[0] = arc->arcPoint[0];
   Inner1->rightSite[1] = arc->arcPoint[1];
-  printf("Sub step 3 \n");
   Inner1->leftSite[0] = e->coordinates[0];
   Inner1->leftSite[1] = e->coordinates[1];
 
   //TODO: rebalance
-  printf("Half edge \n");
   HalfEdge *he = malloc(sizeof(HalfEdge));
   // TODO: construct voronoid diagram
 
-  printf("Circle LEFT \n");
   Circle *circle = createLeftCircle(newLeaf);
   if (circle != NULL)
   {
     // TODO check if overwrite previous event
     if (Inner2->Left->ev != NULL)
     {
-      // if we need to repalce the circle
       if (Inner2->Left->ev->coordinates[1] > circle->center[1] + circle->radius)
       {
+        deleteEvent(q, Inner2->Left->ev);
+        Inner2->Left->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE);
+        Inner2->Left->ev->node = Inner2->Left;
       }
     }
     else
@@ -128,19 +128,26 @@ void ProcessSite(Node **beachLine, Event *e, Queue *q)
 
   free(circle);
 
-  // todo free circle
-  printf("Circle right \n");
   circle = createRightCircle(newLeaf);
   if (circle != NULL)
   {
-    Inner1->Right->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE);
-    Inner2->Right->ev->node = Inner1->Right;
+    if (Inner1->Right->ev != NULL)
+    {
+      // if we need to replace the circle
+      if (Inner1->Right->ev->coordinates[1] > circle->center[1] + circle->radius)
+      {
+        deleteEvent(q, Inner1->Right->ev);
+        Inner1->Right->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE);
+        Inner2->Right->ev->node = Inner1->Right;
+      }
+    }
+    else
+    {
+      Inner1->Right->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE);
+      Inner2->Right->ev->node = Inner1->Right;
+    }
   }
   free(circle);
-
-  //todo free circle
-
-  //TODO free event
 }
 
 /*
@@ -158,9 +165,7 @@ void ProcessCircle(Node **beachline, Event *e, Queue *q)
   Node *arc = NULL;
   bool is_right = true;
 
-  double x, y;
-  printf("Fetch good replace arc and coord \n");
-  printAllTree(*beachline);
+  float x, y;
   if (e->node->Root->Left == e->node)
   {
     replace = e->node->Root->Right;
@@ -177,7 +182,6 @@ void ProcessCircle(Node **beachline, Event *e, Queue *q)
     arc = getRightArc(e->node->Root->Left);
   }
 
-  printf("Fetch good mainRoot \n");
   if (MainRoot->Left == e->node->Root)
   {
     MainRoot->Left = replace;
@@ -202,14 +206,24 @@ void ProcessCircle(Node **beachline, Event *e, Queue *q)
   //TODO improve this
   // should directly fetch the two arc
 
-  printf("First circle \n");
   if (circle != NULL)
   {
-    arc->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE);
-    arc->ev->node = arc;
+    if (arc->ev != NULL)
+    {
+      if (arc->ev->coordinates[1] > circle->center[1] + circle->radius)
+      {
+        deleteEvent(q, arc->ev);
+        arc->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE);
+        arc->ev->node = arc;
+      }
+    }
+    else
+    {
+      arc->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE);
+      arc->ev->node = arc;
+    }
   }
 
-  printf("Second circle choice \n");
   if (is_right)
   {
     arc = getRightestArc(arc);
@@ -221,23 +235,28 @@ void ProcessCircle(Node **beachline, Event *e, Queue *q)
     circle = createLeftCircle(arc);
   }
 
-  printf("Add second circle \n");
   if (circle != NULL)
   {
-    arc->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE);
-    arc->ev->node = arc;
+    if (arc->ev != NULL)
+    {
+      if (arc->ev->coordinates[1] > circle->center[1] + circle->radius)
+      {
+        deleteEvent(q, arc->ev);
+        arc->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE);
+        arc->ev->node = arc;
+      }
+    }
+    else
+    {
+      arc->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE);
+      arc->ev->node = arc;
+    }
   }
 
-  printf("FREE \n");
-  printf("Sup ?\n");
   printNode(e->node);
-  printf("Bruh \n ");
   printNode(e->node->Root);
   freeNode(e->node->Root);
-  printf("Second Free \n");
   freeNode(e->node);
-
-  printf("End process circle \n");
 }
 
 /*

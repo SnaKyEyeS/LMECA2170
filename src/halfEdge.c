@@ -4,7 +4,7 @@
  * Vertices -> contain position of each Vertex
  * hEdges -> Vertex Face Eprev Enext Eopp
  */
-PolygonMesh *LoadPolygonMesh(double *Vertices, int nVertices, int *hEdges, int nEdges, int nFaces)
+PolygonMesh *LoadPolygonMesh(float *Vertices, int nVertices, int *hEdges, int nEdges, int nFaces)
 {
   PolygonMesh *PM = malloc(sizeof(PolygonMesh));
 
@@ -74,14 +74,14 @@ bov_points_t *getVerticesBOVPolygonMesh(PolygonMesh *PM)
   return bov_points_new(coord, PM->nVertices, GL_STATIC_DRAW);
 }
 
-bov_points_t *getHalfEdgesBOVPolygonMesh(PolygonMesh *PM, double fact)
+bov_points_t *getHalfEdgesBOVPolygonMesh(PolygonMesh *PM, float fact)
 {
   GLfloat coord[PM->nHEdges * 2][2];
   int nPts = 0;
   for (int i = 0; i < PM->nFaces; i++)
   {
 
-    double center[2];
+    float center[2];
     center[0] = PM->faces[i]->he->v->coordinates[0];
     center[1] = PM->faces[i]->he->v->coordinates[1];
     int n = 1;

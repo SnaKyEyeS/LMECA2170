@@ -6,7 +6,7 @@
 // V 4
 // E 4
 // F 1
-double square_vertices[8] = {
+float square_vertices[8] = {
     0.5,
     0.5,
     0.5,
@@ -47,7 +47,7 @@ int square_hEdges[20] = {
 // V 4
 // E 4
 // F 1
-double two_square_vertices[12] = {
+float two_square_vertices[12] = {
     0.5,
     0.5,
     0.5,

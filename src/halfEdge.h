@@ -20,7 +20,7 @@ struct HalfEdge
 
 struct Vertex
 {
-  double coordinates[2];
+  float coordinates[2];
   HalfEdge *he;
 };
 
@@ -38,8 +38,8 @@ struct PolygonMesh
 };
 
 bov_points_t *getVerticesBOVPolygonMesh(PolygonMesh *PM);
-bov_points_t *getHalfEdgesBOVPolygonMesh(PolygonMesh *PM, double factor);
-PolygonMesh *LoadPolygonMesh(double *Vertices, int nVertices, int *hEdges, int nEdges, int nFaces);
+bov_points_t *getHalfEdgesBOVPolygonMesh(PolygonMesh *PM, float factor);
+PolygonMesh *LoadPolygonMesh(float *Vertices, int nVertices, int *hEdges, int nEdges, int nFaces);
 void FreePolygonMesh(PolygonMesh *PM);
 
 // For debug

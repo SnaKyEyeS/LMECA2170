@@ -5,18 +5,18 @@
 #define CIRCLE_H
 
 // TODO use always the same and deport in a single .h
-#define EPSILON 0.0001
+#define EPSILON 1e-9
 
 struct Circle;
 typedef struct Circle Circle;
 
 struct Circle
 {
-  double center[2];
-  double radius;
+  float center[2];
+  float radius;
 };
 
-Circle *createCircle(double A[2], double B[2], double C[2]);
+Circle *createCircle(float A[2], float B[2], float C[2]);
 
 void freeCircle(Circle *c);
 
