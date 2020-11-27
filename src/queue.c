@@ -20,6 +20,7 @@ Queue *LoadSortedEventQueue(float (*points)[2], int n)
     E->coordinates[1] = points[i][1];
     E->type = SITE;
     E->isValid = true;
+    E->circle = NULL;
 
     if (Q->First == NULL)
     {
@@ -66,6 +67,7 @@ Event *AddPoint(Queue *Q, float x, float y, enum TYPE_EVENT type)
   E->coordinates[1] = y;
   E->type = type;
   E->isValid = true;
+  E->circle = NULL;
 
   Event *P = Q->First;
 

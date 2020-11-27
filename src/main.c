@@ -8,6 +8,8 @@
 int main()
 {
 
+	PolygonMesh *PM = InitEmptyPolygonMesh();
+
 	float test_points[5][2] = {
 			{0, 0},
 			{1, 1},
@@ -35,17 +37,7 @@ int main()
 	Node **beachLine = malloc(sizeof(Node *));
 	Event *e;
 
-	for (int i = 0; i < 0; i++)
-	{
-		ProcessEvent(beachLine, Q);
-		printf("\n");
-		printAllTree(*beachLine);
-		printf("\n");
-		printQueue(Q);
-		printf("\n");
-	}
-
-	coord *points = linspace(-5, 5, nPoints);
+	coord *points = linspace(xmin, xmax, nPoints);
 	//ProcessEvent(beachLine, Q);
 	drawBeachLine(sweeplineHeight, *beachLine, points, nPoints);
 
@@ -118,7 +110,7 @@ int main()
 		{
 			while (Q != NULL && Q->First != NULL && Q->First->coordinates[1] < sweeplineHeight)
 			{
-				ProcessEvent(beachLine, Q);
+				ProcessEvent(beachLine, Q, PM);
 				printAllTree(*beachLine);
 				printQueue(Q);
 				nCircleEvent = getCircleEvent(Q, pointsCircleEvent);

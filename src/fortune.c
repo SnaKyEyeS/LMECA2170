@@ -3,7 +3,7 @@
 /*
  * Process the first event from the Queue
  */
-void ProcessEvent(Node **beachLine, Queue *Q)
+void ProcessEvent(Node **beachLine, Queue *Q, PolygonMesh *PM)
 {
   if (Q == NULL)
     return;
@@ -14,9 +14,9 @@ void ProcessEvent(Node **beachLine, Queue *Q)
   if (e == NULL)
     return; // TODO should assert
   if (e->type == SITE)
-    ProcessSite(beachLine, e, Q);
+    ProcessSite(beachLine, e, Q, PM);
   else
-    ProcessCircle(beachLine, e, Q);
+    ProcessCircle(beachLine, e, Q, PM);
   freeEvent(e);
 }
 
@@ -27,7 +27,7 @@ void ProcessEvent(Node **beachLine, Queue *Q)
  * e: event to process
  * Q: queue of events
  */
-void ProcessSite(Node **beachLine, Event *e, Queue *q)
+void ProcessSite(Node **beachLine, Event *e, Queue *q, PolygonMesh *PM)
 {
   Node *newLeaf = malloc(sizeof(Node));
   newLeaf->Left = NULL;
@@ -119,15 +119,17 @@ void ProcessSite(Node **beachLine, Event *e, Queue *q)
         deleteEvent(q, Inner2->Left->ev);
         Inner2->Left->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE);
         Inner2->Left->ev->node = Inner2->Left;
+        freeCircle(Inner2->Left->ev->circle);
+        Inner2->Left->ev->circle = circle;
       }
     }
     else
     {
       Inner2->Left->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE);
       Inner2->Left->ev->node = Inner2->Left;
+      Inner2->Left->ev->circle = circle;
     }
   }
-  free(circle);
 
   circle = createLeftCircle(newLeaf);
   if (circle != NULL && circle->center[1] + circle->radius > e->coordinates[1])
@@ -140,16 +142,17 @@ void ProcessSite(Node **beachLine, Event *e, Queue *q)
         deleteEvent(q, Inner1->Right->ev);
         Inner1->Right->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE);
         Inner1->Right->ev->node = Inner1->Right;
+        freeCircle(Inner1->Right->ev->circle);
+        Inner1->Right->ev->circle = circle;
       }
     }
     else
     {
       Inner1->Right->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE);
-      printEvent(Inner1->Right->ev);
       Inner1->Right->ev->node = Inner1->Right;
+      Inner1->Right->ev->circle = circle;
     }
   }
-  free(circle);
 }
 
 /*
@@ -159,7 +162,7 @@ void ProcessSite(Node **beachLine, Event *e, Queue *q)
  * e: event to process
  * q: List of event
  */
-void ProcessCircle(Node **beachline, Event *e, Queue *q)
+void ProcessCircle(Node **beachline, Event *e, Queue *q, PolygonMesh *PM)
 {
   // Check if ok
   if (!e->isValid)
@@ -228,17 +231,16 @@ void ProcessCircle(Node **beachline, Event *e, Queue *q)
         deleteEvent(q, arc->ev);
         arc->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE);
         arc->ev->node = arc;
+        freeCircle(arc->ev->circle);
+        arc->ev->circle = circle;
       }
     }
     else
     {
       arc->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE);
       arc->ev->node = arc;
+      arc->ev->circle = circle;
     }
-  }
-  if (circle != NULL)
-  {
-    freeCircle(circle);
   }
 
   if (is_right)
@@ -251,7 +253,6 @@ void ProcessCircle(Node **beachline, Event *e, Queue *q)
     circle = createLeftCircle(arc);
     arc = getRightestArc(arc);
   }
-  printCircle(circle);
   if (circle != NULL && circle->center[1] + circle->radius > e->coordinates[1])
   {
     if (arc->ev != NULL)
@@ -263,19 +264,18 @@ void ProcessCircle(Node **beachline, Event *e, Queue *q)
         deleteEvent(q, arc->ev);
         arc->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE);
         arc->ev->node = arc;
+        freeCircle(arc->ev->circle);
+        arc->ev->circle = circle;
       }
     }
     else
     {
       arc->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE);
       arc->ev->node = arc;
+      arc->ev->circle = circle;
     }
   }
 
-  if (circle != NULL)
-  {
-    freeCircle(circle);
-  }
   freeNode(e->node->Root);
   freeNode(e->node);
 }

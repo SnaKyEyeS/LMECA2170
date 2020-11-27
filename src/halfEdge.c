@@ -1,6 +1,15 @@
 #include "halfEdge.h"
 
 /*
+ * Create an empty Polygon mesh
+ */
+PolygonMesh *InitEmptyPolygonMesh()
+{
+  PolygonMesh *pm = malloc(sizeof(PolygonMesh));
+  //todo complete
+}
+
+/*
  * Vertices -> contain position of each Vertex
  * hEdges -> Vertex Face Eprev Enext Eopp
  */

@@ -5,6 +5,7 @@
  */
 void freeEvent(Event *e)
 {
+  freeCircle(e->circle);
   free(e);
 }
 

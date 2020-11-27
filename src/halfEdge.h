@@ -37,6 +37,8 @@ struct PolygonMesh
   Face **faces;
 };
 
+PolygonMesh *InitEmptyPolygonMesh();
+
 bov_points_t *getVerticesBOVPolygonMesh(PolygonMesh *PM);
 bov_points_t *getHalfEdgesBOVPolygonMesh(PolygonMesh *PM, float factor);
 PolygonMesh *LoadPolygonMesh(float *Vertices, int nVertices, int *hEdges, int nEdges, int nFaces);
