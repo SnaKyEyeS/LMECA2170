@@ -153,9 +153,9 @@ void ProcessSite(Node **beachLine, Event *e, Queue *q, PolygonMesh *PM)
   }
 
   Inner2->he = createHe();
-  Inner2->he->Opposite = createHe
-
-      addHE(PM, Inner2->he);
+  Inner2->he->Opposite = createHe();
+  addHE(PM, Inner2->he);
+  addHE(PM, Inner2->he->Opposite);
 }
 
 /*

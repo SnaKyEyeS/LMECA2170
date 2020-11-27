@@ -23,6 +23,7 @@ PolygonMesh *InitEmptyPolygonMesh()
  */
 void addVertex(PolygonMesh *PM, Vertex *v)
 {
+  PM->nVertices++;
   if (PM->firstVertex == NULL)
   {
     PM->firstVertex = v;
@@ -40,6 +41,7 @@ void addVertex(PolygonMesh *PM, Vertex *v)
  */
 void addHE(PolygonMesh *PM, HalfEdge *he)
 {
+  PM->nHE++;
   if (PM->firstHedge == NULL)
   {
     PM->firstHedge = he;

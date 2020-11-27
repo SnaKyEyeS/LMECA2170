@@ -44,6 +44,8 @@ struct PolygonMesh
   Face **faces;
 
   int nFaces;
+  int nHE;
+  int nVertices;
 };
 
 PolygonMesh *InitEmptyPolygonMesh();
