@@ -15,11 +15,11 @@ int main()
 			{1.5, 3},
 			{2, 4}};
 
-	int nPoints = 400;
+	int nPoints = 1000;
 
-	float sweeplineHeight = 1;
-	float xmin = -5;
-	float xmax = 5;
+	float sweeplineHeight = 3;
+	float xmin = -10;
+	float xmax = 10;
 
 	float pointsSweepLine[2][2] = {
 			{xmin, sweeplineHeight},

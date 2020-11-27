@@ -109,9 +109,8 @@ void ProcessSite(Node **beachLine, Event *e, Queue *q)
 
   Circle *circle = createRightCircle(newLeaf);
 
-  if (circle != NULL)
+  if (circle != NULL && circle->center[1] + circle->radius > e->coordinates[1])
   {
-    printf("Hello add circle \n");
     // TODO check if overwrite previous event
     if (Inner2->Left->ev != NULL)
     {
@@ -131,7 +130,7 @@ void ProcessSite(Node **beachLine, Event *e, Queue *q)
   free(circle);
 
   circle = createLeftCircle(newLeaf);
-  if (circle != NULL)
+  if (circle != NULL && circle->center[1] + circle->radius > e->coordinates[1])
   {
     if (Inner1->Right->ev != NULL)
     {
@@ -168,34 +167,36 @@ void ProcessCircle(Node **beachline, Event *e, Queue *q)
   Node *arc = NULL;
   bool is_right = true;
 
-  float x, y;
   if (e->node->Root->Left == e->node)
   {
+    Node *var = getLeftBpNode(e->node->Root);
+    printf("Left weird \n");
+    printNode(var);
     replace = e->node->Root->Right;
-    x = e->node->Root->rightSite[0];
-    y = e->node->Root->rightSite[1];
+    var->rightSite[0] = e->node->Root->rightSite[0];
+    var->rightSite[1] = e->node->Root->rightSite[1];
     arc = getLeftArc(e->node->Root->Right);
   }
   else
   {
+    Node *var = getRightBpNode(e->node->Root);
+    printf("Right weird \n");
+    printNode(var);
     replace = e->node->Root->Left;
-    x = e->node->Root->leftSite[0];
-    y = e->node->Root->leftSite[1];
+    var->leftSite[0] = e->node->Root->leftSite[0];
+    var->leftSite[1] = e->node->Root->leftSite[1];
     is_right = false;
     arc = getRightArc(e->node->Root->Left);
+    printNode(var);
   }
 
   if (MainRoot->Left == e->node->Root)
   {
     MainRoot->Left = replace;
-    MainRoot->leftSite[0] = x;
-    MainRoot->leftSite[1] = y;
   }
   else
   {
     MainRoot->Right = replace;
-    MainRoot->rightSite[0] = x;
-    MainRoot->leftSite[1] = y;
   }
 
   replace->Root = MainRoot;
@@ -207,7 +208,7 @@ void ProcessCircle(Node **beachline, Event *e, Queue *q)
   //TODO improve this
   // should directly fetch the two arc
 
-  if (circle != NULL)
+  if (circle != NULL && circle->center[1] + circle->radius > e->coordinates[1])
   {
     if (arc->ev != NULL)
     {
@@ -223,20 +224,25 @@ void ProcessCircle(Node **beachline, Event *e, Queue *q)
       arc->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE);
       arc->ev->node = arc;
     }
+  }
+
+  if (circle != NULL)
+  {
+    freeCircle(circle);
   }
 
   if (is_right)
   {
-    arc = getRightestArc(arc);
     circle = createRightCircle(arc);
+    arc = getLeftestArc(arc);
   }
   else
   {
-    arc = getLeftestArc(arc);
     circle = createLeftCircle(arc);
+    arc = getRightestArc(arc);
   }
 
-  if (circle != NULL)
+  if (circle != NULL && circle->center[1] + circle->radius > e->coordinates[1])
   {
     if (arc->ev != NULL)
     {
@@ -254,8 +260,10 @@ void ProcessCircle(Node **beachline, Event *e, Queue *q)
     }
   }
 
-  printNode(e->node);
-  printNode(e->node->Root);
+  if (circle != NULL)
+  {
+    freeCircle(circle);
+  }
   freeNode(e->node->Root);
   freeNode(e->node);
 }
