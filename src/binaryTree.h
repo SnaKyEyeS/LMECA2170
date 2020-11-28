@@ -8,7 +8,6 @@
 
 struct Node;
 typedef struct Node Node;
-typedef struct Parabola Parabola;
 
 #include "events.h"
 #include "circle.h"

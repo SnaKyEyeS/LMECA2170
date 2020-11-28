@@ -7,16 +7,14 @@
 
 int main()
 {
-
-	PolygonMesh *PM = InitEmptyPolygonMesh();
-	//TODO encapsulate everything for Fortune
-
 	float test_points[5][2] = {
 			{0, 0},
 			{1, 1},
 			{-2, 2},
 			{1.5, 3},
 			{2, 4}};
+
+	FortuneStruct *data = initFortune(test_points, 5);
 
 	/*
 	float test_points[11][2] = {
@@ -34,8 +32,6 @@ int main()
 
 */
 
-	initFaces(PM, test_points, 5);
-	printPolygonMesh(PM);
 	int nPoints = 1000;
 
 	// Only for print
@@ -56,13 +52,9 @@ int main()
 			{xmax, sweeplineHeight},
 	};
 
-	Queue *Q = LoadEventQueue(test_points, 5, PM->faces);
-	Node **beachLine = malloc(sizeof(Node *));
-	Event *e;
-
 	coord *points = linspace(xmin, xmax, nPoints);
 	//ProcessEvent(beachLine, Q);
-	drawBeachLine(sweeplineHeight, *beachLine, points, nPoints);
+	drawBeachLine(sweeplineHeight, data->beachLine, points, nPoints);
 
 	// give a bit of entropy for the seed of rand()
 	// or it will always be the same sequence
@@ -123,46 +115,39 @@ int main()
 		eKey = impulse(eKey, glfwGetKey(window->self, GLFW_KEY_E));
 		if (eKey == 1)
 		{
-			printAllTree(*beachLine);
+			printAllTree(data->beachLine);
 		}
 		wKey = impulse(wKey, glfwGetKey(window->self, GLFW_KEY_W));
 		if (wKey == 1)
 		{
-			printQueue(Q);
+			printQueue(data->Q);
 		}
 		qKey = impulse(qKey, glfwGetKey(window->self, GLFW_KEY_Q));
 		if (qKey == 1)
 		{
 			printf("\n");
-			printPolygonMesh(PM);
+			printPolygonMesh(data->Voronoid);
 			printf("\n");
 		}
 
 		if (sweeplineHeight > oldSweepLine)
 		{
-			while (Q != NULL && Q->First != NULL && Q->First->coordinates[1] < sweeplineHeight)
+			fortuneAlgo(data, sweeplineHeight);
+			nCircleEvent = getCircleEvent(data->Q, pointsCircleEvent);
+			bov_points_update(circleEvent, pointsCircleEvent, nCircleEvent);
+			if (data->Q->First != NULL)
 			{
-				ProcessEvent(beachLine, Q, PM);
-				printPolygonMesh(PM);
-				printAllTree(*beachLine);
-				printQueue(Q);
-				nCircleEvent = getCircleEvent(Q, pointsCircleEvent);
-				bov_points_update(circleEvent, pointsCircleEvent, nCircleEvent);
-				if (Q->First != NULL)
-				{
-					nextEvent[0][0] = Q->First->coordinates[0];
-					nextEvent[0][1] = Q->First->coordinates[1];
-					bov_points_update(ptnextEvent, nextEvent, 1);
-				}
-				else
-				{
-					boundingBoxBp(*beachLine);
-				}
-
-				nHe = getHePoints(PM, pointsHe);
-				bov_points_update(ptsHe, pointsHe, nHe);
+				nextEvent[0][0] = data->Q->First->coordinates[0];
+				nextEvent[0][1] = data->Q->First->coordinates[1];
+				bov_points_update(ptnextEvent, nextEvent, 1);
 			}
-			drawBeachLine(sweeplineHeight, *beachLine, points, nPoints);
+			else
+			{
+				boundingBoxBp(data->beachLine);
+			}
+			nHe = getHePoints(data->Voronoid, pointsHe);
+			bov_points_update(ptsHe, pointsHe, nHe);
+			drawBeachLine(sweeplineHeight, data->beachLine, points, nPoints);
 			bov_points_update(ptsBeachline, points, nPoints);
 		}
 

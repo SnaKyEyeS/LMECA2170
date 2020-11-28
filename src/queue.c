@@ -34,7 +34,6 @@ Queue *LoadSortedEventQueue(float (*points)[2], int n, Face **f)
     {
       last->next = E;
       E->previous = last;
-      printEvent(last);
       E->next = NULL;
     }
     last = E;

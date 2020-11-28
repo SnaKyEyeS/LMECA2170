@@ -1,22 +1,49 @@
 #include "fortune.h"
 
 /*
+ * Initialise the datastructure for the Fortune algorithm
+ */
+FortuneStruct *initFortune(coord *points, int n)
+{
+  FortuneStruct *data = malloc(sizeof(FortuneStruct));
+  data->Voronoid = InitEmptyPolygonMesh();
+  initFaces(data->Voronoid, points, n);
+
+  data->Q = LoadEventQueue(points, n, data->Voronoid->faces);
+
+  data->beachLine = NULL;
+
+  return data;
+}
+
+/*
+ * Apply the fortune algorithm to the datastructure up to a yLine
+ */
+void fortuneAlgo(FortuneStruct *data, float yLine)
+{
+  while (data->Q->First != NULL && data->Q->First->coordinates[1] < yLine)
+  {
+    ProcessEvent(data);
+  }
+}
+
+/*
  * Process the first event from the Queue
  */
-void ProcessEvent(Node **beachLine, Queue *Q, PolygonMesh *PM)
+void ProcessEvent(FortuneStruct *data)
 {
-  if (Q == NULL)
+  if (data->Q == NULL)
     return;
-  if (Q->First == NULL)
+  if (data->Q->First == NULL)
     return;
-  Event *e = popQueue(Q);
+  Event *e = popQueue(data->Q);
 
   if (e == NULL)
     return; // TODO should assert
   if (e->type == SITE)
-    ProcessSite(beachLine, e, Q, PM);
+    ProcessSite(data, e);
   else
-    ProcessCircle(beachLine, e, Q, PM);
+    ProcessCircle(data, e);
   freeEvent(e);
 }
 
@@ -27,7 +54,7 @@ void ProcessEvent(Node **beachLine, Queue *Q, PolygonMesh *PM)
  * e: event to process
  * Q: queue of events
  */
-void ProcessSite(Node **beachLine, Event *e, Queue *q, PolygonMesh *PM)
+void ProcessSite(FortuneStruct *data, Event *e)
 {
   Node *newLeaf = malloc(sizeof(Node));
   newLeaf->Left = NULL;
@@ -38,14 +65,14 @@ void ProcessSite(Node **beachLine, Event *e, Queue *q, PolygonMesh *PM)
   newLeaf->arcPoint[0] = e->coordinates[0];
   newLeaf->arcPoint[1] = e->coordinates[1];
 
-  if ((*beachLine) == NULL)
+  if (data->beachLine == NULL)
   {
     newLeaf->Root = NULL;
-    (*beachLine) = newLeaf;
+    data->beachLine = newLeaf;
     return;
   }
 
-  Node *arc = getArc(*beachLine, e->coordinates);
+  Node *arc = getArc(data->beachLine, e->coordinates);
   //      old
   //       | -> size can be left or right
   //     Inner2
@@ -76,7 +103,7 @@ void ProcessSite(Node **beachLine, Event *e, Queue *q, PolygonMesh *PM)
   }
   else
   {
-    (*beachLine) = Inner1;
+    data->beachLine = Inner1;
   }
 
   Inner1->Root = arc->Root;
@@ -114,8 +141,8 @@ void ProcessSite(Node **beachLine, Event *e, Queue *q, PolygonMesh *PM)
     {
       if (Inner2->Left->ev->coordinates[1] > circle->center[1] + circle->radius)
       {
-        deleteEvent(q, Inner2->Left->ev);
-        Inner2->Left->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
+        deleteEvent(data->Q, Inner2->Left->ev);
+        Inner2->Left->ev = AddPoint(data->Q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
         Inner2->Left->ev->node = Inner2->Left;
         freeCircle(Inner2->Left->ev->circle);
         Inner2->Left->ev->circle = circle;
@@ -123,7 +150,7 @@ void ProcessSite(Node **beachLine, Event *e, Queue *q, PolygonMesh *PM)
     }
     else
     {
-      Inner2->Left->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
+      Inner2->Left->ev = AddPoint(data->Q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
       Inner2->Left->ev->node = Inner2->Left;
       Inner2->Left->ev->circle = circle;
     }
@@ -137,8 +164,8 @@ void ProcessSite(Node **beachLine, Event *e, Queue *q, PolygonMesh *PM)
       // if we need to replace the circle
       if (Inner1->Right->ev->coordinates[1] > circle->center[1] + circle->radius)
       {
-        deleteEvent(q, Inner1->Right->ev);
-        Inner1->Right->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
+        deleteEvent(data->Q, Inner1->Right->ev);
+        Inner1->Right->ev = AddPoint(data->Q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
         Inner1->Right->ev->node = Inner1->Right;
         freeCircle(Inner1->Right->ev->circle);
         Inner1->Right->ev->circle = circle;
@@ -146,7 +173,7 @@ void ProcessSite(Node **beachLine, Event *e, Queue *q, PolygonMesh *PM)
     }
     else
     {
-      Inner1->Right->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
+      Inner1->Right->ev = AddPoint(data->Q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
       Inner1->Right->ev->node = Inner1->Right;
       Inner1->Right->ev->circle = circle;
     }
@@ -155,11 +182,11 @@ void ProcessSite(Node **beachLine, Event *e, Queue *q, PolygonMesh *PM)
   Inner2->he = createHe();
   Inner1->he = createHe();
   oppositeHe(Inner2->he, Inner1->he);
-  addHE(PM, Inner2->he);
-  addHE(PM, Inner2->he->Opposite);
+  addHE(data->Voronoid, Inner2->he);
+  addHE(data->Voronoid, Inner2->he->Opposite);
   Inner1->he->f = e->f;
   Inner1->he->f->he = Inner1->he;
-  Inner2->he->f = getFace(PM, arc->arcPoint);
+  Inner2->he->f = getFace(data->Voronoid, arc->arcPoint);
   if (Inner2->he->f->he == NULL)
   {
     Inner2->he->f->he = Inner2->he;
@@ -173,7 +200,7 @@ void ProcessSite(Node **beachLine, Event *e, Queue *q, PolygonMesh *PM)
  * e: event to process
  * q: List of event
  */
-void ProcessCircle(Node **beachline, Event *e, Queue *q, PolygonMesh *PM)
+void ProcessCircle(FortuneStruct *data, Event *e)
 {
   // Check if ok
   if (!e->isValid)
@@ -242,8 +269,8 @@ void ProcessCircle(Node **beachline, Event *e, Queue *q, PolygonMesh *PM)
     {
       if (!arc->ev->isValid || (arc->ev->coordinates[1] > circle->center[1] + circle->radius))
       {
-        deleteEvent(q, arc->ev);
-        arc->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
+        deleteEvent(data->Q, arc->ev);
+        arc->ev = AddPoint(data->Q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
         arc->ev->node = arc;
         freeCircle(arc->ev->circle);
         arc->ev->circle = circle;
@@ -251,7 +278,7 @@ void ProcessCircle(Node **beachline, Event *e, Queue *q, PolygonMesh *PM)
     }
     else
     {
-      arc->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
+      arc->ev = AddPoint(data->Q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
       arc->ev->node = arc;
       arc->ev->circle = circle;
     }
@@ -273,10 +300,8 @@ void ProcessCircle(Node **beachline, Event *e, Queue *q, PolygonMesh *PM)
     {
       if (!arc->ev->isValid || (arc->ev->coordinates[1] > circle->center[1] + circle->radius))
       {
-        printQueue(q);
-        printEvent(arc->ev);
-        deleteEvent(q, arc->ev);
-        arc->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
+        deleteEvent(data->Q, arc->ev);
+        arc->ev = AddPoint(data->Q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
         arc->ev->node = arc;
         freeCircle(arc->ev->circle);
         arc->ev->circle = circle;
@@ -284,7 +309,7 @@ void ProcessCircle(Node **beachline, Event *e, Queue *q, PolygonMesh *PM)
     }
     else
     {
-      arc->ev = AddPoint(q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
+      arc->ev = AddPoint(data->Q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
       arc->ev->node = arc;
       arc->ev->circle = circle;
     }
@@ -299,7 +324,7 @@ void ProcessCircle(Node **beachline, Event *e, Queue *q, PolygonMesh *PM)
   // Vertex to b1, c1 and a2
   //
   Vertex *v = createVertex(e->circle->center);
-  addVertex(PM, v);
+  addVertex(data->Voronoid, v);
 
   HalfEdge *hea2 = hea1->Opposite;
   HalfEdge *heb2 = heb1->Opposite;
@@ -321,26 +346,19 @@ void ProcessCircle(Node **beachline, Event *e, Queue *q, PolygonMesh *PM)
   HalfEdge *hec2 = createHe();
   oppositeHe(hec1, hec2);
   bpArc2->he = hec2;
-  addHE(PM, hec1);
-  addHE(PM, hec2);
+  addHE(data->Voronoid, hec1);
+  addHE(data->Voronoid, hec2);
 
   linkHe(hea1, heb1);
   linkHe(heb2, hec1);
   hec1->f = heb2->f;
   linkHe(hec2, hea2);
-  hec2->f = hea2;
+  hec2->f = hea2->f;
 
   hea2->v = v;
   heb1->v = v;
   hec1->v = v;
   v->he = hea2;
-
-  printHEdge(hea1);
-  printHEdge(hea2);
-  printHEdge(heb1);
-  printHEdge(heb2);
-  printHEdge(hec1);
-  printHEdge(hec2);
 
   freeNode(e->node->Root);
   freeNode(e->node);
@@ -399,9 +417,6 @@ Circle *createMiddleCircle(Node *leaf)
 
     if (left != NULL & right != NULL)
     {
-      printNode(left);
-      printNode(leaf);
-      printNode(right);
       return createCircle(right->leftSite, leaf->arcPoint, left->rightSite);
     }
 

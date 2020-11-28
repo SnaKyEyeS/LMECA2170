@@ -9,9 +9,22 @@
 #include "events.h"
 #include "halfEdge.h"
 
-void ProcessEvent(Node **beachLine, Queue *Q, PolygonMesh *PM);
-void ProcessSite(Node **beachLine, Event *e, Queue *q, PolygonMesh *PM);
-void ProcessCircle(Node **beachLine, Event *e, Queue *q, PolygonMesh *PM);
+struct FortuneStruct;
+typedef struct FortuneStruct FortuneStruct;
+
+struct FortuneStruct
+{
+  PolygonMesh *Voronoid;
+  Node *beachLine;
+  Queue *Q;
+};
+
+FortuneStruct *initFortune(coord *points, int n);
+void fortuneAlgo(FortuneStruct *data, float yLine);
+
+void ProcessEvent(FortuneStruct *data);
+void ProcessSite(FortuneStruct *data, Event *e);
+void ProcessCircle(FortuneStruct *data, Event *e);
 
 Circle *createLeftCircle(Node *leaf);
 Circle *createRightCircle(Node *leaf);
