@@ -25,7 +25,7 @@ float getBpX(Node *node, float pointY)
   }
 
   float A = 1.0 / al - 1.0 / ar;
-  float B = -2 * (node->leftSite[0] / al - node->rightSite[0] / ar);
+  float B = 2 * (-node->leftSite[0] / al + node->rightSite[0] / ar);
   float C = (node->leftSite[0] * node->leftSite[0] + node->leftSite[1] * node->leftSite[1] - pointY * pointY) / al - (node->rightSite[0] * node->rightSite[0] + node->rightSite[1] * node->rightSite[1] - pointY * pointY) / ar;
 
   float Delta = B * B - 4 * A * C;
@@ -278,7 +278,7 @@ void freeNode(Node *node)
 }
 
 /*
- *
+ * Print a Node
  */
 void printNode(Node *node)
 {
@@ -361,6 +361,39 @@ void drawBeachLine(float y, Node *root, coord *points, int n)
   }
 }
 
+void boundingBoxBp(Node *root)
+{
+  if (root == NULL)
+    return;
+  if (root->isLeaf)
+    return;
+
+  // TODO improve
+  int yLine = 1000;
+  float point[2];
+  point[0] = getBpX(root, yLine);
+  point[1] = parabola(root->leftSite[0], root->leftSite[1], yLine, point[0]);
+  if (root->he != NULL)
+  {
+    Vertex *v = createVertex(point);
+    if (root->he->v == NULL)
+    {
+      root->he->v = v;
+    }
+    else if (root->he->Opposite->v == NULL)
+    {
+      root->he->Opposite->v = v;
+    }
+    else
+    {
+      printf("Error: a semi-infinite edge has a vertex ? \n");
+    }
+  }
+
+  boundingBoxBp(root->Left);
+  boundingBoxBp(root->Right);
+}
+
 /*
  * Print a tree from a depth
  */
@@ -378,11 +411,11 @@ int printTree(Node *node, int depth, int id)
 
   if (node->isLeaf)
   {
-    printf("|- LEAVE (%f,%f) (%d) %p %p\n", node->arcPoint[0], node->arcPoint[1], id, node, node->Root);
+    printf("|- LEAVE (%.3f,%.3f) (%d) %p %p\n", node->arcPoint[0], node->arcPoint[1], id, node, node->Root);
   }
   else
   {
-    printf("|- BREAKPOINT (%f, %f), (%f, %f) (%d) %p %p\n", node->leftSite[0], node->leftSite[1], node->rightSite[0], node->rightSite[1], id, node, node->Root);
+    printf("|- BREAKPOINT (%.3f, %.3f), (%.3f, %.3f) (%d) (Node: %p, Root: %p) (Left: %p, Right: %p) %p\n", node->leftSite[0], node->leftSite[1], node->rightSite[0], node->rightSite[1], id, node, node->Root, node->Left, node->Right, node->he);
   }
 
   return 1 + printTree(node->Left, depth + 1, id * 10) + printTree(node->Right, depth + 1, id * 10 + 1);

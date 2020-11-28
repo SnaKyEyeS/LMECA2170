@@ -153,9 +153,17 @@ void ProcessSite(Node **beachLine, Event *e, Queue *q, PolygonMesh *PM)
   }
 
   Inner2->he = createHe();
-  Inner2->he->Opposite = createHe();
+  Inner1->he = createHe();
+  oppositeHe(Inner2->he, Inner1->he);
   addHE(PM, Inner2->he);
   addHE(PM, Inner2->he->Opposite);
+  Inner1->he->f = e->f;
+  Inner1->he->f->he = Inner1->he;
+  Inner2->he->f = getFace(PM, arc->arcPoint);
+  if (Inner2->he->f->he == NULL)
+  {
+    Inner2->he->f->he = Inner2->he;
+  }
 }
 
 /*
@@ -184,26 +192,29 @@ void ProcessCircle(Node **beachline, Event *e, Queue *q, PolygonMesh *PM)
   {
     var->ev->isValid = false;
   }
-
+  // Must do this before
+  HalfEdge *hea1 = getLeftBpNode(e->node)->he;
+  HalfEdge *heb1 = getRightBpNode(e->node)->he;
   Node *MainRoot = e->node->Root->Root;
   Node *replace = NULL;
   Node *arc = NULL;
   bool is_right = true;
 
+  Node *bpArc2; //the break point which is not replaced
   if (e->node->Root->Left == e->node)
   {
-    Node *var = getLeftBpNode(e->node->Root);
+    bpArc2 = getLeftBpNode(e->node->Root);
     replace = e->node->Root->Right;
-    var->rightSite[0] = e->node->Root->rightSite[0];
-    var->rightSite[1] = e->node->Root->rightSite[1];
+    bpArc2->rightSite[0] = e->node->Root->rightSite[0];
+    bpArc2->rightSite[1] = e->node->Root->rightSite[1];
     arc = getLeftArc(e->node->Root->Right);
   }
   else
   {
-    Node *var = getRightBpNode(e->node->Root);
+    bpArc2 = getRightBpNode(e->node->Root);
     replace = e->node->Root->Left;
-    var->leftSite[0] = e->node->Root->leftSite[0];
-    var->leftSite[1] = e->node->Root->leftSite[1];
+    bpArc2->leftSite[0] = e->node->Root->leftSite[0];
+    bpArc2->leftSite[1] = e->node->Root->leftSite[1];
     is_right = false;
     arc = getRightArc(e->node->Root->Left);
   }
@@ -279,8 +290,57 @@ void ProcessCircle(Node **beachline, Event *e, Queue *q, PolygonMesh *PM)
     }
   }
 
+  // a: left edge of the closing arc
+  // b: right edge of the closing arc
+  // c: new edge
+  // a1 -> b1 connection
+  // b2 -> c1 connection
+  // c2 -> a2 connection
+  // Vertex to b1, c1 and a2
+  //
   Vertex *v = createVertex(e->circle->center);
   addVertex(PM, v);
+
+  HalfEdge *hea2 = hea1->Opposite;
+  HalfEdge *heb2 = heb1->Opposite;
+  if (hea2->f == heb1->f || hea2->f == heb2->f)
+  {
+    HalfEdge *swap = hea1;
+    hea1 = hea2;
+    hea2 = swap;
+  }
+
+  if (hea1->f == heb2->f)
+  {
+    HalfEdge *swap = heb1;
+    heb1 = heb2;
+    heb2 = swap;
+  }
+
+  HalfEdge *hec1 = createHe();
+  HalfEdge *hec2 = createHe();
+  oppositeHe(hec1, hec2);
+  bpArc2->he = hec2;
+  addHE(PM, hec1);
+  addHE(PM, hec2);
+
+  linkHe(hea1, heb1);
+  linkHe(heb2, hec1);
+  hec1->f = heb2->f;
+  linkHe(hec2, hea2);
+  hec2->f = hea2;
+
+  hea2->v = v;
+  heb1->v = v;
+  hec1->v = v;
+  v->he = hea2;
+
+  printHEdge(hea1);
+  printHEdge(hea2);
+  printHEdge(heb1);
+  printHEdge(heb2);
+  printHEdge(hec1);
+  printHEdge(hec2);
 
   freeNode(e->node->Root);
   freeNode(e->node);

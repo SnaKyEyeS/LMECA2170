@@ -18,14 +18,34 @@ int main()
 			{1.5, 3},
 			{2, 4}};
 
-	initFaces(PM, test_points, 5);
+	/*
+	float test_points[11][2] = {
+			{0.1, -0.6},
+			{-0.11, -0.55},
+			{0.5, -0.5},
+			{-0.2, -0.4},
+			{0.5, 0},
+			{0.3, 0.001},
+			{-0.5, 0.002},
+			{-0.4, 0.2},
+			{0.55, 0.375},
+			{0.55, 0.425},
+			{0, 0.6}};
 
+*/
+
+	initFaces(PM, test_points, 5);
+	printPolygonMesh(PM);
 	int nPoints = 1000;
 
 	// Only for print
 	int maxCircleEvent = 20;
 	coord *pointsCircleEvent = malloc(sizeof(coord) * maxCircleEvent);
 	int nCircleEvent = 0;
+
+	int maxHE = 1000 * 2;
+	coord *pointsHe = malloc(sizeof(coord) * maxHE);
+	int nHe = 0;
 
 	float sweeplineHeight = 0;
 	float xmin = -20;
@@ -59,6 +79,7 @@ int main()
 	bov_points_t *ptsSweepline = bov_points_new(pointsSweepLine, 2, GL_DYNAMIC_DRAW);
 	bov_points_t *ptnextEvent = bov_points_new(nextEvent, 1, GL_DYNAMIC_DRAW);
 	bov_points_t *circleEvent = bov_points_new(pointsCircleEvent, nCircleEvent, GL_DYNAMIC_DRAW);
+	bov_points_t *ptsHe = bov_points_new(pointsHe, nHe, GL_STATIC_DRAW);
 
 	bov_points_draw(window, ptsHard, 0, 5);
 	bov_points_set_width(ptsHard, 0.1);
@@ -68,8 +89,9 @@ int main()
 	bov_points_set_color(ptsHard, (float[4]){1, 0, 0, 1});
 	bov_points_set_color(ptsSweepline, (float[4]){0, 0, 1, 1});
 	bov_points_set_color(circleEvent, (float[4]){1, 0, 1, 1});
+	bov_points_set_color(ptsHe, (float[4]){1, 1, 0, 1});
 
-	int aKey = 0, sKey = 0, dKey = 0, eKey = 0, wKey = 0;
+	int aKey = 0, sKey = 0, dKey = 0, eKey = 0, wKey = 0, qKey = 0;
 	float oldSweepLine = sweeplineHeight - 1;
 
 	while (!bov_window_should_close(window))
@@ -108,12 +130,20 @@ int main()
 		{
 			printQueue(Q);
 		}
+		qKey = impulse(qKey, glfwGetKey(window->self, GLFW_KEY_Q));
+		if (qKey == 1)
+		{
+			printf("\n");
+			printPolygonMesh(PM);
+			printf("\n");
+		}
 
 		if (sweeplineHeight > oldSweepLine)
 		{
 			while (Q != NULL && Q->First != NULL && Q->First->coordinates[1] < sweeplineHeight)
 			{
 				ProcessEvent(beachLine, Q, PM);
+				printPolygonMesh(PM);
 				printAllTree(*beachLine);
 				printQueue(Q);
 				nCircleEvent = getCircleEvent(Q, pointsCircleEvent);
@@ -124,6 +154,13 @@ int main()
 					nextEvent[0][1] = Q->First->coordinates[1];
 					bov_points_update(ptnextEvent, nextEvent, 1);
 				}
+				else
+				{
+					boundingBoxBp(*beachLine);
+				}
+
+				nHe = getHePoints(PM, pointsHe);
+				bov_points_update(ptsHe, pointsHe, nHe);
 			}
 			drawBeachLine(sweeplineHeight, *beachLine, points, nPoints);
 			bov_points_update(ptsBeachline, points, nPoints);
@@ -134,6 +171,7 @@ int main()
 		bov_points_draw(window, ptsHard, 0, 5);
 		bov_points_draw(window, ptnextEvent, 0, 2);
 		bov_line_strip_draw(window, ptsBeachline, 0, nPoints);
+		bov_lines_draw(window, ptsHe, 0, nHe);
 		bov_window_update(window);
 
 		oldSweepLine = sweeplineHeight;

@@ -47,6 +47,8 @@ Node *getLeftestBpNode(Node *node);
 
 Node *duplicateLeaf(Node *leaf);
 
+void boundingBoxBp(Node *root);
+
 void freeNode(Node *node);
 
 // Print

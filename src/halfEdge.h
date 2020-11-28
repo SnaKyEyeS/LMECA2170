@@ -53,19 +53,26 @@ void initFaces(PolygonMesh *PM, coord *points, int n);
 void addVertex(PolygonMesh *PM, Vertex *v);
 void addHE(PolygonMesh *PM, HalfEdge *he);
 
+Face *getFace(PolygonMesh *PM, float point[2]);
 HalfEdge *createHe();
 Vertex *createVertex(float point[2]);
+
+// Half-edge operation
+void linkHe(HalfEdge *a, HalfEdge *b);
+void oppositeHe(HalfEdge *a, HalfEdge *b);
 
 /* To refactor
 bov_points_t *getVerticesBOVPolygonMesh(PolygonMesh *PM);
 bov_points_t *getHalfEdgesBOVPolygonMesh(PolygonMesh *PM, float factor);
 PolygonMesh *LoadPolygonMesh(float *Vertices, int nVertices, int *hEdges, int nEdges, int nFaces);
 void FreePolygonMesh(PolygonMesh *PM);
-
+*/
 // For debug
+int getHePoints(PolygonMesh *PM, coord *points);
 void printVertices(PolygonMesh *PM);
 void printHEdges(PolygonMesh *PM);
+void printHEdge(HalfEdge *he);
 void printFaces(PolygonMesh *PM);
 void printPolygonMesh(PolygonMesh *PM);
-*/
+
 #endif

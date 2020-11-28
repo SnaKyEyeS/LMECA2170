@@ -59,18 +59,19 @@ void addHE(PolygonMesh *PM, HalfEdge *he)
  */
 void initFaces(PolygonMesh *PM, coord *points, int n)
 {
+  PM->nFaces = n;
   PM->faces = malloc(sizeof(Face *) * n);
   for (int i = 0; i < n; i++)
   {
     PM->faces[i] = malloc(sizeof(Face));
     PM->faces[i]->point[0] = points[i][0];
-    PM->faces[i]->point[1] = points[i][0];
+    PM->faces[i]->point[1] = points[i][1];
     PM->faces[i]->he = NULL;
   }
 }
 
 /*
- *
+ * Create a vertex from a point
  */
 Vertex *createVertex(float point[2])
 {
@@ -80,15 +81,119 @@ Vertex *createVertex(float point[2])
   return v;
 }
 
+/*
+ * Create an empty Half-edge
+ */
 HalfEdge *createHe()
 {
   HalfEdge *he = malloc(sizeof(HalfEdge));
   he->f = NULL;
-  he->f = NULL;
-  he->prev = NULL;
+  he->v = NULL;
+  he->next = NULL;
   he->prev = NULL;
   he->Opposite = NULL;
   he->nextList = NULL;
+}
+
+/*
+ * return the face corresponding to a point
+ */
+Face *getFace(PolygonMesh *PM, float point[2])
+{
+  int a = 0;
+  int b = PM->nFaces - 1;
+  if (b < 0)
+  {
+    return NULL;
+  }
+
+  while (a <= b)
+  {
+    int n = floor((a + b) / 2);
+    int comp = comparefloats(PM->faces[n]->point, point);
+    if (comp == 0)
+    {
+      return PM->faces[n];
+    }
+    else if (comp > 0)
+    {
+      b = n - 1;
+    }
+    else
+    {
+      a = n + 1;
+    }
+  }
+  return NULL;
+}
+
+/*
+ * Will create the connection a -> b
+ */
+void linkHe(HalfEdge *a, HalfEdge *b)
+{
+  if (a == NULL)
+  {
+    printf("Error a is NULL\n");
+    return;
+  }
+
+  if (b == NULL)
+  {
+    printf("Error b is NULL \n");
+    return;
+  }
+  a->next = b;
+  b->prev = a;
+}
+
+/*
+ * Will create the opposite link between a and b
+ */
+void oppositeHe(HalfEdge *a, HalfEdge *b)
+{
+  // TODO remove to go faster ?
+  if (a == NULL)
+  {
+    printf("Error a is NULL\n");
+    return;
+  }
+
+  if (b == NULL)
+  {
+    printf("Error b is NULL \n");
+    return;
+  }
+  a->Opposite = b;
+  b->Opposite = a;
+}
+
+/*
+ * Return the number of point to draw
+ * points should be 2*Pm->nHe
+ */
+int getHePoints(PolygonMesh *PM, coord *points)
+{
+  if (PM == NULL)
+  {
+    return 0;
+  }
+
+  int n = 0;
+  HalfEdge *var = PM->firstHedge;
+  while (var != NULL)
+  {
+    if (var->v != NULL && var->next != NULL && var->next->v != NULL)
+    {
+      points[n][0] = var->v->coordinates[0];
+      points[n][1] = var->v->coordinates[1];
+      points[n + 1][0] = var->next->v->coordinates[0];
+      points[n + 1][1] = var->next->v->coordinates[1];
+      n += 2;
+    }
+    var = var->nextList;
+  }
+  return n;
 }
 
 // TO REFACTOR if needed
@@ -215,7 +320,7 @@ bov_points_t *getHalfEdgesBOVPolygonMesh(PolygonMesh *PM, float fact)
   }
 
   return bov_points_new(coord, PM->nHEdges * 2, GL_STATIC_DRAW);
-}
+}*/
 
 void printPolygonMesh(PolygonMesh *PM)
 {
@@ -227,17 +332,22 @@ void printPolygonMesh(PolygonMesh *PM)
 void printVertices(PolygonMesh *PM)
 {
 
-  int val = 2;
-  int tmp = PM->nVertices;
-  while (tmp > 99)
+  int val = 4;
+  int i = 0;
+  if (PM == NULL)
   {
-    val++;
-    tmp /= 10;
+    printf("Polygonmesh is NULL \n");
+    return;
   }
+  Vertex *var = PM->firstVertex;
+
   printf("VERTICES\n%*s X      Y       &vert         &half-edge\n", val, "id");
-  for (int i = 0; i < PM->nVertices; i++)
+  while (var != NULL)
   {
-    printf("%*d %+2.3f %+2.3f %p %p\n", val, i, PM->vertices[i]->coordinates[0], PM->vertices[i]->coordinates[1], PM->vertices[i], PM->vertices[i]->he);
+    printf("%*d %+2.3f %+2.3f %p %p\n", val, i, var->coordinates[0], var->coordinates[1], var, var->he);
+
+    var = var->nextList;
+    i++;
   }
 }
 
@@ -259,22 +369,39 @@ void printFaces(PolygonMesh *PM)
 
 void printHEdges(PolygonMesh *PM)
 {
-  int val = 2;
-  int tmp = PM->nHEdges;
-  while (tmp > 99)
+  int val = 4;
+  int i = 0;
+  if (PM != NULL)
   {
-    val++;
-    tmp /= 10;
+    HalfEdge *var = PM->firstHedge;
+    printf("HALF-EDGES\n%*s &half-edge     &previous      &next          &opposite      &vertex        &face\n", val, "id");
+
+    while (var != NULL)
+    {
+      printf("%*d %14p %14p %14p %14p %14p %14p\n", val, i, var, var->prev, var->next, var->Opposite, var->v, var->f);
+      var = var->nextList;
+      i++;
+    }
   }
-
-  printf("HALF-EDGES\n%*s &half-edge     &previous      &next          &opposite      &vertex        &face\n", val, "id");
-
-  for (int i = 0; i < PM->nHEdges; i++)
+  else
   {
-    printf("%*d %14p %14p %14p %14p %14p %14p\n", val, i, PM->hedges[i], PM->hedges[i]->prev, PM->hedges[i]->next, PM->hedges[i]->Opposite, PM->hedges[i]->v, PM->hedges[i]->f);
+    printf("PolygonMesh is NULL \n");
   }
 }
 
+/*
+ * Print One HE
+ */
+void printHEdge(HalfEdge *he)
+{
+  if (he == NULL)
+  {
+    printf("HalfEdge is NULL \n");
+  }
+  HalfEdge *var = he;
+  printf("HalfEdge %14p %14p %14p %14p %14p %14p\n", var, var->prev, var->next, var->Opposite, var->v, var->f);
+}
+/*
 void FreePolygonMesh(PolygonMesh *PM)
 {
   for (int i = 0; i < PM->nFaces; i++)
