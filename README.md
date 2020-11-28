@@ -6,6 +6,8 @@
 * [x] Have a basic plot
 * [ ] Free everything correctly
 * [ ] Benchmark the V0
+* [ ] Should be select random input of n points
+* [ ] Take an gif of the working algorithm to see the evolution and add it to the git
 
 ### V1
 * [ ] Clean the code
@@ -17,10 +19,12 @@
   * [ ] Improve processCircle
   * [ ] Improve circle creation
   * [ ] Benchmark after the upgrade 
+  * [ ] Tool to check function call and function duration (min, max, average, total) ?
+  * [ ] Rebalance tree (maybe variable with depth ?) and benchmark -> Would be very nice to do :3
 * [ ] Add a verbose environnement
   * [ ] Add general option for verbose
   * [ ] Add relevant print
-* [ ] Check if memory is clean
+* [ ] Check if memory is clean (valgrind)
 * [ ] Add nice tool for visual
   * [ ] Each element shoulde be toggable
   * [ ] Help should with shortcut
@@ -44,6 +48,7 @@
   * [ ] Benchmark this 
   * [ ] Test othe flags and benchmark them
 * [ ] Add a realtime ploting execution time / data-size
+  * [ ] Should be able to plot with different color different option and choose which one to plot. (Data should be the same).
 * [ ] Add tool to save anim to gif/save pictures
 * [ ] Should be able to go back in time during animation
 * [ ] Should be able to add point (and auto update)

@@ -7,14 +7,18 @@
 
 int main()
 {
-	float test_points[5][2] = {
+	int p = 8;
+	float test_points[8][2] = {
 			{0, 0},
+			{0.2, 0.4},
+			{-0.3, 0.6},
+			{-0.8, 0.75},
 			{1, 1},
 			{-2, 2},
 			{1.5, 3},
 			{2, 4}};
 
-	FortuneStruct *data = initFortune(test_points, 5);
+	FortuneStruct *data = initFortune(test_points, p);
 
 	/*
 	float test_points[11][2] = {
@@ -66,14 +70,14 @@ int main()
 	float nextEvent[1][2] = {
 			{0, 0}};
 
-	bov_points_t *ptsHard = bov_points_new(test_points, 5, GL_STATIC_DRAW);
+	bov_points_t *ptsHard = bov_points_new(test_points, p, GL_STATIC_DRAW);
 	bov_points_t *ptsBeachline = bov_points_new(points, nPoints, GL_DYNAMIC_DRAW);
 	bov_points_t *ptsSweepline = bov_points_new(pointsSweepLine, 2, GL_DYNAMIC_DRAW);
 	bov_points_t *ptnextEvent = bov_points_new(nextEvent, 1, GL_DYNAMIC_DRAW);
 	bov_points_t *circleEvent = bov_points_new(pointsCircleEvent, nCircleEvent, GL_DYNAMIC_DRAW);
 	bov_points_t *ptsHe = bov_points_new(pointsHe, nHe, GL_STATIC_DRAW);
 
-	bov_points_draw(window, ptsHard, 0, 5);
+	bov_points_draw(window, ptsHard, 0, p);
 	bov_points_set_width(ptsHard, 0.1);
 	bov_points_set_width(circleEvent, 0.1);
 	bov_points_set_width(ptnextEvent, 0.05);
@@ -153,7 +157,7 @@ int main()
 
 		bov_points_draw(window, circleEvent, 0, nCircleEvent);
 		bov_line_strip_draw(window, ptsSweepline, 0, 2);
-		bov_points_draw(window, ptsHard, 0, 5);
+		bov_points_draw(window, ptsHard, 0, p);
 		bov_points_draw(window, ptnextEvent, 0, 2);
 		bov_line_strip_draw(window, ptsBeachline, 0, nPoints);
 		bov_lines_draw(window, ptsHe, 0, nHe);
