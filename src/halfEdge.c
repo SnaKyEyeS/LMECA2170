@@ -401,28 +401,46 @@ void printHEdge(HalfEdge *he)
   HalfEdge *var = he;
   printf("HalfEdge %14p %14p %14p %14p %14p %14p\n", var, var->prev, var->next, var->Opposite, var->v, var->f);
 }
-/*
-void FreePolygonMesh(PolygonMesh *PM)
+
+void freePolygonMesh(PolygonMesh *PM)
 {
+  if (PM == NULL)
+    return;
+  freeVertices(PM->firstVertex);
+  freeHe(PM->firstHedge);
   for (int i = 0; i < PM->nFaces; i++)
   {
-    free(PM->faces[i]);
+    freeFace(PM->faces[i]);
   }
   free(PM->faces);
-
-  for (int i = 0; i < PM->nVertices; i++)
-  {
-    free(PM->vertices[i]);
-  }
-  free(PM->vertices);
-
-  for (int i = 0; i < PM->nHEdges; i++)
-  {
-    free(PM->hedges[i]);
-  }
-  free(PM->hedges);
-
   free(PM);
-}*/
+}
 
-//TODO LOG/PRINT 4 debug
+void freeVertices(Vertex *v)
+{
+  if (v == NULL)
+  {
+    return;
+  }
+
+  Vertex *tmp = v->nextList;
+  free(v);
+  freeVertices(tmp);
+}
+
+void freeFace(Face *f)
+{
+  if (f != NULL)
+    free(f);
+}
+
+void freeHe(HalfEdge *he)
+{
+  if (he == NULL)
+  {
+    return;
+  }
+  HalfEdge *tmp = he->nextList;
+  free(he);
+  freeHe(tmp);
+}

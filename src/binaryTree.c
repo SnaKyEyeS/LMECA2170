@@ -278,6 +278,25 @@ void freeNode(Node *node)
 }
 
 /*
+ * Free a recursively a Node and all its sub-node/leaf
+ */
+void freeTree(Node *node)
+{
+  if (node == NULL)
+  {
+    return;
+  }
+
+  if (!node->isLeaf)
+  {
+    freeTree(node->Left);
+    freeTree(node->Right);
+  }
+
+  freeNode(node);
+}
+
+/*
  * Print a Node
  */
 void printNode(Node *node)

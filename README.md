@@ -4,7 +4,7 @@
 ### V0
 * [x] Have a working Algo -> I think it's ok
 * [x] Have a basic plot
-* [ ] Free everything correctly
+* [x] Free everything correctly
 * [ ] Benchmark the V0
 * [ ] Should be select random input of n points
 * [ ] Take an gif of the working algorithm to see the evolution and add it to the git

@@ -144,8 +144,11 @@ void ProcessSite(FortuneStruct *data, Event *e)
         deleteEvent(data->Q, Inner2->Left->ev);
         Inner2->Left->ev = AddPoint(data->Q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
         Inner2->Left->ev->node = Inner2->Left;
-        freeCircle(Inner2->Left->ev->circle);
         Inner2->Left->ev->circle = circle;
+      }
+      else
+      {
+        freeCircle(circle);
       }
     }
     else
@@ -154,6 +157,10 @@ void ProcessSite(FortuneStruct *data, Event *e)
       Inner2->Left->ev->node = Inner2->Left;
       Inner2->Left->ev->circle = circle;
     }
+  }
+  else
+  {
+    freeCircle(circle);
   }
 
   circle = createLeftCircle(newLeaf);
@@ -167,8 +174,11 @@ void ProcessSite(FortuneStruct *data, Event *e)
         deleteEvent(data->Q, Inner1->Right->ev);
         Inner1->Right->ev = AddPoint(data->Q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
         Inner1->Right->ev->node = Inner1->Right;
-        freeCircle(Inner1->Right->ev->circle);
         Inner1->Right->ev->circle = circle;
+      }
+      else
+      {
+        freeCircle(circle);
       }
     }
     else
@@ -177,6 +187,10 @@ void ProcessSite(FortuneStruct *data, Event *e)
       Inner1->Right->ev->node = Inner1->Right;
       Inner1->Right->ev->circle = circle;
     }
+  }
+  else
+  {
+    freeCircle(circle);
   }
 
   Inner2->he = createHe();
@@ -272,8 +286,11 @@ void ProcessCircle(FortuneStruct *data, Event *e)
         deleteEvent(data->Q, arc->ev);
         arc->ev = AddPoint(data->Q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
         arc->ev->node = arc;
-        freeCircle(arc->ev->circle);
         arc->ev->circle = circle;
+      }
+      else
+      {
+        freeCircle(circle);
       }
     }
     else
@@ -282,6 +299,10 @@ void ProcessCircle(FortuneStruct *data, Event *e)
       arc->ev->node = arc;
       arc->ev->circle = circle;
     }
+  }
+  else
+  {
+    freeCircle(circle);
   }
 
   if (is_right)
@@ -303,8 +324,11 @@ void ProcessCircle(FortuneStruct *data, Event *e)
         deleteEvent(data->Q, arc->ev);
         arc->ev = AddPoint(data->Q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
         arc->ev->node = arc;
-        freeCircle(arc->ev->circle);
         arc->ev->circle = circle;
+      }
+      else
+      {
+        freeCircle(circle);
       }
     }
     else
@@ -313,6 +337,10 @@ void ProcessCircle(FortuneStruct *data, Event *e)
       arc->ev->node = arc;
       arc->ev->circle = circle;
     }
+  }
+  else
+  {
+    freeCircle(circle);
   }
 
   // a: left edge of the closing arc
@@ -424,4 +452,13 @@ Circle *createMiddleCircle(Node *leaf)
   }
   // no 2 Right branch
   return NULL;
+}
+
+void freeFortuneStruct(FortuneStruct *data)
+{
+  freeTree(data->beachLine);
+  freePolygonMesh(data->Voronoid);
+  freeQueue(data->Q);
+
+  free(data);
 }

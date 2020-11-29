@@ -30,4 +30,6 @@ Circle *createLeftCircle(Node *leaf);
 Circle *createRightCircle(Node *leaf);
 Circle *createMiddleCircle(Node *leaf);
 
+void freeFortuneStruct(FortuneStruct *data);
+
 #endif

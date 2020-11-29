@@ -184,6 +184,32 @@ int getCircleEvent(Queue *Q, coord *points)
   return nCircle;
 }
 
+/*
+ * Free everything inside the Queue and then the queue itself
+ */
+void freeQueue(Queue *Q)
+{
+  if (Q == NULL)
+  {
+    return;
+  }
+
+  if (Q->First != NULL)
+  {
+    Event *e = Q->First;
+    while (e != NULL)
+    {
+      Event *tmp = e->next;
+      freeEvent(e);
+      e = tmp;
+    }
+  }
+  free(Q);
+}
+
+/*
+ * Print the Queue
+ */
 void printQueue(Queue *Q)
 {
   Event *E = Q->First;

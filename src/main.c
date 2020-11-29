@@ -19,7 +19,9 @@ int main()
 			{2, 4}};
 
 	FortuneStruct *data = initFortune(test_points, p);
-
+	fortuneAlgo(data, 100);
+	freeFortuneStruct(data);
+	return EXIT_SUCCESS;
 	/*
 	float test_points[11][2] = {
 			{0.1, -0.6},
@@ -167,6 +169,19 @@ int main()
 	}
 
 	bov_window_delete(window);
+
+	bov_points_delete(ptsHard);
+	bov_points_delete(ptsBeachline);
+	bov_points_delete(ptsSweepline);
+	bov_points_delete(ptnextEvent);
+	bov_points_delete(circleEvent);
+	bov_points_delete(ptsHe);
+
+	freeFortuneStruct(data);
+
+	free(pointsCircleEvent);
+	free(pointsHe);
+	free(points);
 
 	return EXIT_SUCCESS;
 }

@@ -65,14 +65,21 @@ void oppositeHe(HalfEdge *a, HalfEdge *b);
 bov_points_t *getVerticesBOVPolygonMesh(PolygonMesh *PM);
 bov_points_t *getHalfEdgesBOVPolygonMesh(PolygonMesh *PM, float factor);
 PolygonMesh *LoadPolygonMesh(float *Vertices, int nVertices, int *hEdges, int nEdges, int nFaces);
-void FreePolygonMesh(PolygonMesh *PM);
 */
-// For debug
+
+// For draw
 int getHePoints(PolygonMesh *PM, coord *points);
+
+// For print in terminal
 void printVertices(PolygonMesh *PM);
 void printHEdges(PolygonMesh *PM);
 void printHEdge(HalfEdge *he);
 void printFaces(PolygonMesh *PM);
 void printPolygonMesh(PolygonMesh *PM);
+
+void freePolygonMesh(PolygonMesh *PM);
+void freeVertices(Vertex *v);
+void freeFace(Face *f);
+void freeHe(HalfEdge *he);
 
 #endif
