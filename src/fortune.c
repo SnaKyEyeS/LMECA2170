@@ -7,9 +7,11 @@ FortuneStruct *initFortune(coord *points, int n)
 {
   FortuneStruct *data = malloc(sizeof(FortuneStruct));
   data->Voronoid = InitEmptyPolygonMesh();
-  initFaces(data->Voronoid, points, n);
 
-  data->Q = LoadEventQueue(points, n, data->Voronoid->faces);
+  // Sort
+  qsort(points, n, sizeof(float) * 2, comparefloats);
+  initFaces(data->Voronoid, points, n);
+  data->Q = LoadSortedEventQueue(points, n, data->Voronoid->faces);
 
   data->beachLine = NULL;
 
@@ -23,6 +25,8 @@ void fortuneAlgo(FortuneStruct *data, float yLine)
 {
   while (data->Q->First != NULL && data->Q->First->coordinates[1] < yLine)
   {
+    //printf("New process \n");
+    //printQueue(data->Q);
     ProcessEvent(data);
   }
 }
@@ -144,8 +148,11 @@ void ProcessSite(FortuneStruct *data, Event *e)
         deleteEvent(data->Q, Inner2->Left->ev);
         Inner2->Left->ev = AddPoint(data->Q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
         Inner2->Left->ev->node = Inner2->Left;
-        freeCircle(Inner2->Left->ev->circle);
         Inner2->Left->ev->circle = circle;
+      }
+      else
+      {
+        freeCircle(circle);
       }
     }
     else
@@ -154,6 +161,10 @@ void ProcessSite(FortuneStruct *data, Event *e)
       Inner2->Left->ev->node = Inner2->Left;
       Inner2->Left->ev->circle = circle;
     }
+  }
+  else
+  {
+    freeCircle(circle);
   }
 
   circle = createLeftCircle(newLeaf);
@@ -167,8 +178,11 @@ void ProcessSite(FortuneStruct *data, Event *e)
         deleteEvent(data->Q, Inner1->Right->ev);
         Inner1->Right->ev = AddPoint(data->Q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
         Inner1->Right->ev->node = Inner1->Right;
-        freeCircle(Inner1->Right->ev->circle);
         Inner1->Right->ev->circle = circle;
+      }
+      else
+      {
+        freeCircle(circle);
       }
     }
     else
@@ -178,12 +192,16 @@ void ProcessSite(FortuneStruct *data, Event *e)
       Inner1->Right->ev->circle = circle;
     }
   }
+  else
+  {
+    freeCircle(circle);
+  }
 
   Inner2->he = createHe();
   Inner1->he = createHe();
   oppositeHe(Inner2->he, Inner1->he);
   addHE(data->Voronoid, Inner2->he);
-  addHE(data->Voronoid, Inner2->he->Opposite);
+  addHE(data->Voronoid, Inner1->he);
   Inner1->he->f = e->f;
   Inner1->he->f->he = Inner1->he;
   Inner2->he->f = getFace(data->Voronoid, arc->arcPoint);
@@ -205,19 +223,22 @@ void ProcessCircle(FortuneStruct *data, Event *e)
   // Check if ok
   if (!e->isValid)
   {
-    printf("Invalid event \n");
+    //printf("Invalid event \n");
     return;
   }
 
   Node *var = getLeftestArc(e->node);
   if (var->ev != NULL)
   {
+    //printEvent(var->ev);
     var->ev->isValid = false;
+    var->ev = NULL;
   }
   var = getRightestArc(e->node);
   if (var->ev != NULL)
   {
     var->ev->isValid = false;
+    var->ev = NULL;
   }
   // Must do this before
   HalfEdge *hea1 = getLeftBpNode(e->node)->he;
@@ -245,7 +266,6 @@ void ProcessCircle(FortuneStruct *data, Event *e)
     is_right = false;
     arc = getRightArc(e->node->Root->Left);
   }
-
   if (MainRoot->Left == e->node->Root)
   {
     MainRoot->Left = replace;
@@ -256,8 +276,6 @@ void ProcessCircle(FortuneStruct *data, Event *e)
   }
 
   replace->Root = MainRoot;
-
-  // TODO voronoid
 
   Circle *circle = createMiddleCircle(arc);
   //TODO improve this
@@ -272,8 +290,11 @@ void ProcessCircle(FortuneStruct *data, Event *e)
         deleteEvent(data->Q, arc->ev);
         arc->ev = AddPoint(data->Q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
         arc->ev->node = arc;
-        freeCircle(arc->ev->circle);
         arc->ev->circle = circle;
+      }
+      else
+      {
+        freeCircle(circle);
       }
     }
     else
@@ -282,6 +303,10 @@ void ProcessCircle(FortuneStruct *data, Event *e)
       arc->ev->node = arc;
       arc->ev->circle = circle;
     }
+  }
+  else
+  {
+    freeCircle(circle);
   }
 
   if (is_right)
@@ -303,8 +328,11 @@ void ProcessCircle(FortuneStruct *data, Event *e)
         deleteEvent(data->Q, arc->ev);
         arc->ev = AddPoint(data->Q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
         arc->ev->node = arc;
-        freeCircle(arc->ev->circle);
         arc->ev->circle = circle;
+      }
+      else
+      {
+        freeCircle(circle);
       }
     }
     else
@@ -313,6 +341,10 @@ void ProcessCircle(FortuneStruct *data, Event *e)
       arc->ev->node = arc;
       arc->ev->circle = circle;
     }
+  }
+  else
+  {
+    freeCircle(circle);
   }
 
   // a: left edge of the closing arc
@@ -424,4 +456,12 @@ Circle *createMiddleCircle(Node *leaf)
   }
   // no 2 Right branch
   return NULL;
+}
+
+void freeFortuneStruct(FortuneStruct *data)
+{
+  freeTree(data->beachLine);
+  freePolygonMesh(data->Voronoid);
+  freeQueue(data->Q);
+  free(data);
 }

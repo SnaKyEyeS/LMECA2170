@@ -16,5 +16,5 @@ void printEvent(Event *e)
     printf("Event is NULL\n");
     return;
   }
-  printf("Event %+2.3f %+2.3f %d    %p %p\n", e->coordinates[0], e->coordinates[1], e->type, e, e->next);
+  printf("Event %+2.3f %+2.3f %d    %p %p %p circle: %p face: %p\n", e->coordinates[0], e->coordinates[1], e->type, e, e->next, e->previous, e->circle, e->f);
 }

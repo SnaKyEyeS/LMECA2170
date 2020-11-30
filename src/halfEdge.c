@@ -363,7 +363,7 @@ void printFaces(PolygonMesh *PM)
   printf("FACES\n%*s &face          &half-edge\n", val, "id");
   for (int i = 0; i < PM->nFaces; i++)
   {
-    printf("%*d %p %p\n", val, i, PM->faces[i], PM->faces[i]->he);
+    printf("%*d (%f,%f) %p %p\n", val, i, PM->faces[i]->point[0], PM->faces[i]->point[1], PM->faces[i], PM->faces[i]->he);
   }
 }
 
@@ -399,30 +399,60 @@ void printHEdge(HalfEdge *he)
     printf("HalfEdge is NULL \n");
   }
   HalfEdge *var = he;
-  printf("HalfEdge %14p %14p %14p %14p %14p %14p\n", var, var->prev, var->next, var->Opposite, var->v, var->f);
+  printf("HalfEdge %14p %14p %14p %14p %14p %14p %14p\n", var, var->prev, var->next, var->Opposite, var->v, var->f, var->nextList);
 }
-/*
-void FreePolygonMesh(PolygonMesh *PM)
+
+void freePolygonMesh(PolygonMesh *PM)
 {
+  if (PM == NULL)
+    return;
+  freeVertices(PM->firstVertex);
+
   for (int i = 0; i < PM->nFaces; i++)
   {
-    free(PM->faces[i]);
+    freeFace(PM->faces[i]);
   }
+
   free(PM->faces);
-
-  for (int i = 0; i < PM->nVertices; i++)
-  {
-    free(PM->vertices[i]);
-  }
-  free(PM->vertices);
-
-  for (int i = 0; i < PM->nHEdges; i++)
-  {
-    free(PM->hedges[i]);
-  }
-  free(PM->hedges);
-
+  freeHe(PM->firstHedge);
   free(PM);
-}*/
+}
 
-//TODO LOG/PRINT 4 debug
+void freeVertices(Vertex *v)
+{
+  if (v == NULL)
+  {
+    return;
+  }
+
+  Vertex *tmp = v->nextList;
+  free(v);
+  while (tmp != NULL)
+  {
+    Vertex *tmp2 = tmp->nextList;
+    free(tmp);
+    tmp = tmp2;
+  }
+}
+
+void freeFace(Face *f)
+{
+  if (f != NULL)
+    free(f);
+}
+
+void freeHe(HalfEdge *he)
+{
+  if (he == NULL)
+  {
+    return;
+  }
+  HalfEdge *tmp = he->nextList;
+  free(he);
+  while (tmp != NULL)
+  {
+    HalfEdge *tmp2 = tmp->nextList;
+    free(tmp);
+    tmp = tmp2;
+  }
+}

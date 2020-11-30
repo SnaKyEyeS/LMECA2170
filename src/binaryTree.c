@@ -10,42 +10,47 @@
  */
 float getBpX(Node *node, float pointY)
 {
+  double doublepointY = (double)pointY;
+  double doubleLx = (double)node->leftSite[0];
+  double doubleLy = (double)node->leftSite[1];
+  double doubleRx = (double)node->rightSite[0];
+  double doubleRy = (double)node->rightSite[1];
   // 2*(pjy-ly)
-  float al = 2 * (node->leftSite[1] - pointY);
-  float ar = 2 * (node->rightSite[1] - pointY);
+  double al = 2 * (doubleLy - doublepointY);
+  double ar = 2 * (doubleRy - doublepointY);
 
-  if (al == 0)
+  if (fabs(al) < EPSILON)
   {
     return node->leftSite[0];
   }
 
-  if (ar == 0)
+  if (fabs(ar) < EPSILON)
   {
     return node->rightSite[0];
   }
 
-  float A = 1.0 / al - 1.0 / ar;
-  float B = 2 * (-node->leftSite[0] / al + node->rightSite[0] / ar);
-  float C = (node->leftSite[0] * node->leftSite[0] + node->leftSite[1] * node->leftSite[1] - pointY * pointY) / al - (node->rightSite[0] * node->rightSite[0] + node->rightSite[1] * node->rightSite[1] - pointY * pointY) / ar;
+  double A = 1.0 / al - 1.0 / ar;
+  double B = 2 * (doubleRx / ar - doubleLx / al);
+  double C = (doubleLx * doubleLx + doubleLy * doubleLy - doublepointY * doublepointY) / al - (doubleRx * doubleRx + doubleRy * doubleRy - doublepointY * doublepointY) / ar;
 
-  float Delta = B * B - 4 * A * C;
+  double Delta = B * B - 4 * A * C;
   if (Delta < EPSILON)
   {
     return 0; //TODO check what to do
   }
 
-  float sqrtDelta = sqrt(Delta);
-  float x1 = (-B + sqrtDelta) / (2 * A);
-  float x2 = (-B - sqrtDelta) / (2 * A);
+  double sqrtDelta = sqrt(Delta);
+  double x1 = (-B + sqrtDelta) / (2 * A);
+  double x2 = (-B - sqrtDelta) / (2 * A);
 
   // intersection of parabola. The lower one will decide which point
   if (node->leftSite[0] < x1 && x1 < node->rightSite[0])
   {
-    return x1;
+    return (float)x1;
   }
   else
   {
-    return x2;
+    return (float)x2;
   }
 }
 
@@ -113,6 +118,10 @@ Node *getLeftestArc(Node *leaf)
   Node *var = leaf;
   while (var != NULL)
   {
+    if (var->Root == NULL)
+    {
+      return NULL;
+    }
     if (var->Root->Right == var)
     {
       return getRightArc(var->Root->Left);
@@ -278,6 +287,25 @@ void freeNode(Node *node)
 }
 
 /*
+ * Free a recursively a Node and all its sub-node/leaf
+ */
+void freeTree(Node *node)
+{
+  if (node == NULL)
+  {
+    return;
+  }
+
+  if (!node->isLeaf)
+  {
+    freeTree(node->Left);
+    freeTree(node->Right);
+  }
+
+  freeNode(node);
+}
+
+/*
  * Print a Node
  */
 void printNode(Node *node)
@@ -369,7 +397,7 @@ void boundingBoxBp(Node *root)
     return;
 
   // TODO improve
-  int yLine = 1000;
+  int yLine = 100000;
   float point[2];
   point[0] = getBpX(root, yLine);
   point[1] = parabola(root->leftSite[0], root->leftSite[1], yLine, point[0]);

@@ -22,6 +22,7 @@ Queue *LoadSortedEventQueue(float (*points)[2], int n, Face **f)
     E->isValid = true;
     E->circle = NULL;
     E->f = f[i];
+    E->node = NULL;
 
     if (Q->First == NULL)
     {
@@ -68,6 +69,8 @@ Event *AddPoint(Queue *Q, float x, float y, enum TYPE_EVENT type, Face *f)
   E->type = type;
   E->isValid = true;
   E->circle = NULL;
+  E->node = NULL;
+  E->f = NULL;
 
   Event *P = Q->First;
 
@@ -82,6 +85,7 @@ Event *AddPoint(Queue *Q, float x, float y, enum TYPE_EVENT type, Face *f)
   if (E->coordinates[1] < P->coordinates[1])
   {
     E->next = P;
+    E->previous = NULL;
     E->next->previous = E;
     Q->First = E;
     return E;
@@ -110,7 +114,9 @@ Event *AddPoint(Queue *Q, float x, float y, enum TYPE_EVENT type, Face *f)
       P = P->next;
     }
   }
-  E->next = NULL;
+  freeEvent(E);
+  printf("Error with inserting elem in the Queue \n");
+  return NULL;
 }
 
 /*
@@ -118,15 +124,21 @@ Event *AddPoint(Queue *Q, float x, float y, enum TYPE_EVENT type, Face *f)
  */
 void deleteEvent(Queue *Q, Event *e)
 {
-  if (Q == NULL)
-    return;
   if (e == NULL)
     return;
+  if (Q == NULL)
+  {
+    freeEvent(e);
+    return;
+  }
 
   if (Q->First == e)
   {
     Q->First = e->next;
-    Q->First->previous = NULL;
+    if (Q->First != NULL)
+    {
+      Q->First->previous = NULL;
+    }
     freeEvent(e);
     return;
   }
@@ -135,6 +147,7 @@ void deleteEvent(Queue *Q, Event *e)
   {
     e->next->previous = e->previous;
   }
+
   e->previous->next = e->next;
   freeEvent(e);
 }
@@ -184,6 +197,32 @@ int getCircleEvent(Queue *Q, coord *points)
   return nCircle;
 }
 
+/*
+ * Free everything inside the Queue and then the queue itself
+ */
+void freeQueue(Queue *Q)
+{
+  if (Q == NULL)
+  {
+    return;
+  }
+
+  if (Q->First != NULL)
+  {
+    Event *e = Q->First;
+    while (e != NULL)
+    {
+      Event *tmp = e->next;
+      freeEvent(e);
+      e = tmp;
+    }
+  }
+  free(Q);
+}
+
+/*
+ * Print the Queue
+ */
 void printQueue(Queue *Q)
 {
   Event *E = Q->First;

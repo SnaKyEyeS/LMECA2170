@@ -1,13 +1,17 @@
 # LMECA2170
 
+## V0
+
+![V0 gif](Vid/V0.avi)
+
 ## Todo
-### V0
+### V0 - It's done
 * [x] Have a working Algo -> I think it's ok
 * [x] Have a basic plot
-* [ ] Free everything correctly
-* [ ] Benchmark the V0
-* [ ] Should be select random input of n points
-* [ ] Take an gif of the working algorithm to see the evolution and add it to the git
+* [x] Free everything correctly
+* [x] Benchmark the V0
+* [x] Should be able to select random input of n points
+* [x] Take an gif of the working algorithm to see the evolution and add it to the git
 
 ### V1
 * [ ] Clean the code

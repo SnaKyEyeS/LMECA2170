@@ -26,6 +26,8 @@ Event *popQueue(Queue *Q);
 
 int getCircleEvent(Queue *Q, coord *points);
 
+void freeQueue(Queue *Q);
+
 void printQueue(Queue *Q);
 
 #endif

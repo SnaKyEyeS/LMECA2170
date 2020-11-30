@@ -5,7 +5,7 @@
 #define CIRCLE_H
 
 // TODO use always the same and deport in a single .h
-#define EPSILON 1e-9
+#define EPSILON 1e-12
 
 struct Circle;
 typedef struct Circle Circle;

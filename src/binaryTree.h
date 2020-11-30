@@ -49,6 +49,7 @@ Node *duplicateLeaf(Node *leaf);
 void boundingBoxBp(Node *root);
 
 void freeNode(Node *node);
+void freeTree(Node *node);
 
 // Print
 
