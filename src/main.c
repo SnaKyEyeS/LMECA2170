@@ -154,10 +154,11 @@ int main(int argc, char *argv[])
 			pointsSweepLine[0][1] = sweeplineHeight;
 			pointsSweepLine[1][1] = sweeplineHeight;
 			bov_points_update(ptsSweepline, pointsSweepLine, 2);
+			/*
 			char str[80];
 			sprintf(str, "vid/V0-image-%8d.ppm", k);
 			puts(str);
-			bov_window_screenshot(window, str);
+			bov_window_screenshot(window, str);*/
 		}
 		aKey = impulse(aKey, glfwGetKey(window->self, GLFW_KEY_A));
 		if (aKey == 1)
