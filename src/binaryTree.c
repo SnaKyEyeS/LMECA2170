@@ -8,11 +8,11 @@
  * 
  * We need to fetch the parabola left and right and compute the break point by intersecting the 2 parabolas
  */
-float getBpX(Node *node, float pointY)
+double getBpX(Node *node, double pointY)
 {
   // 2*(pjy-ly)
-  float al = 2 * (node->leftSite[1] - pointY);
-  float ar = 2 * (node->rightSite[1] - pointY);
+  double al = 2 * (node->leftSite[1] - pointY);
+  double ar = 2 * (node->rightSite[1] - pointY);
 
   if (al == 0)
   {
@@ -24,19 +24,19 @@ float getBpX(Node *node, float pointY)
     return node->rightSite[0];
   }
 
-  float A = 1.0 / al - 1.0 / ar;
-  float B = 2 * (-node->leftSite[0] / al + node->rightSite[0] / ar);
-  float C = (node->leftSite[0] * node->leftSite[0] + node->leftSite[1] * node->leftSite[1] - pointY * pointY) / al - (node->rightSite[0] * node->rightSite[0] + node->rightSite[1] * node->rightSite[1] - pointY * pointY) / ar;
+  double A = 1.0 / al - 1.0 / ar;
+  double B = 2 * (-node->leftSite[0] / al + node->rightSite[0] / ar);
+  double C = (node->leftSite[0] * node->leftSite[0] + node->leftSite[1] * node->leftSite[1] - pointY * pointY) / al - (node->rightSite[0] * node->rightSite[0] + node->rightSite[1] * node->rightSite[1] - pointY * pointY) / ar;
 
-  float Delta = B * B - 4 * A * C;
+  double Delta = B * B - 4 * A * C;
   if (Delta < EPSILON)
   {
     return 0; //TODO check what to do
   }
 
-  float sqrtDelta = sqrt(Delta);
-  float x1 = (-B + sqrtDelta) / (2 * A);
-  float x2 = (-B - sqrtDelta) / (2 * A);
+  double sqrtDelta = sqrt(Delta);
+  double x1 = (-B + sqrtDelta) / (2 * A);
+  double x2 = (-B - sqrtDelta) / (2 * A);
 
   // intersection of parabola. The lower one will decide which point
   if (node->leftSite[0] < x1 && x1 < node->rightSite[0])
@@ -55,7 +55,7 @@ float getBpX(Node *node, float pointY)
  * node: beachLine
  * point: point position
  */
-Node *getArc(Node *node, float point[2])
+Node *getArc(Node *node, double point[2])
 {
   assert(node != NULL);
   if (node->isLeaf)
@@ -336,7 +336,7 @@ void printAllTree(Node *root)
  * 
  * Considering the sweep line at height y
  */
-void drawBeachLine(float y, Node *root, coord *points, int n)
+void drawBeachLine(double y, Node *root, coord *points, int n)
 {
   if (root == NULL)
   {
@@ -348,10 +348,10 @@ void drawBeachLine(float y, Node *root, coord *points, int n)
   }
 
   Node *var = getLeftArc(root);
-  float xArc = var->arcPoint[0];
-  float yArc = var->arcPoint[1];
+  double xArc = var->arcPoint[0];
+  double yArc = var->arcPoint[1];
 
-  float bpX = 0;
+  double bpX = 0;
   if (var != NULL)
   {
     if (var->Root != NULL)
@@ -393,7 +393,7 @@ void boundingBoxBp(Node *root)
 
   // TODO improve
   int yLine = 100000;
-  float point[2];
+  double point[2];
   point[0] = getBpX(root, yLine);
   point[1] = parabola(root->leftSite[0], root->leftSite[1], yLine, point[0]);
   if (root->he != NULL)

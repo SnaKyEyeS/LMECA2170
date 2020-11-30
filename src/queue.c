@@ -6,7 +6,7 @@
  * points: list of all sorted points to load (x,y) - size min 2n
  * n: number of points to load
  */
-Queue *LoadSortedEventQueue(float (*points)[2], int n, Face **f)
+Queue *LoadSortedEventQueue(double (*points)[2], int n, Face **f)
 {
   Queue *Q = malloc(sizeof(Queue));
 
@@ -47,9 +47,9 @@ Queue *LoadSortedEventQueue(float (*points)[2], int n, Face **f)
  * points: list of all points to load (x,y) - size min 2n
  * n: number of points to load
  */
-Queue *LoadEventQueue(float (*points)[2], int n, Face **f)
+Queue *LoadEventQueue(double (*points)[2], int n, Face **f)
 {
-  qsort(points, n, sizeof(float) * 2, comparefloats);
+  qsort(points, n, sizeof(double) * 2, comparedoubles);
   return LoadSortedEventQueue(points, n, f);
 }
 /*
@@ -60,7 +60,7 @@ Queue *LoadEventQueue(float (*points)[2], int n, Face **f)
  * y: y coordinate of the new point
  */
 
-Event *AddPoint(Queue *Q, float x, float y, enum TYPE_EVENT type, Face *f)
+Event *AddPoint(Queue *Q, double x, double y, enum TYPE_EVENT type, Face *f)
 {
   Event *E = malloc(sizeof(Event));
   E->coordinates[0] = x;

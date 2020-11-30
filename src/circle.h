@@ -12,11 +12,11 @@ typedef struct Circle Circle;
 
 struct Circle
 {
-  float center[2];
-  float radius;
+  double center[2];
+  double radius;
 };
 
-Circle *createCircle(float A[2], float B[2], float C[2]);
+Circle *createCircle(double A[2], double B[2], double C[2]);
 
 void freeCircle(Circle *c);
 void printCircle(Circle *c);

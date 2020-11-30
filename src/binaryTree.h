@@ -21,18 +21,18 @@ struct Node
   Node *Left;
   Node *Right;
   Node *Root;
-  float arcPoint[2];
+  double arcPoint[2];
 
-  float leftSite[2];
-  float rightSite[2];
+  double leftSite[2];
+  double rightSite[2];
   Event *ev;
   HalfEdge *he;
 
   bool isLeaf;
 };
 
-float getBpX(Node *node, float pointY);
-Node *getArc(Node *node, float point[2]);
+double getBpX(Node *node, double pointY);
+Node *getArc(Node *node, double point[2]);
 Node *getLeftArc(Node *node);
 Node *getRightArc(Node *node);
 
@@ -59,6 +59,6 @@ int printTree(Node *node, int depth, int id);
 
 // Draw
 
-void drawBeachLine(float y, Node *root, coord *points, int n);
+void drawBeachLine(double y, Node *root, coord *points, int n);
 
 #endif

@@ -19,7 +19,7 @@ enum TYPE_EVENT
 
 struct Event
 {
-  float coordinates[2];
+  double coordinates[2];
   Event *next;
   Event *previous;
   enum TYPE_EVENT type;

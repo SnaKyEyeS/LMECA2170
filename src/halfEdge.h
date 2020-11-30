@@ -22,7 +22,7 @@ struct HalfEdge
 
 struct Vertex
 {
-  float coordinates[2];
+  double coordinates[2];
   HalfEdge *he;
 
   Vertex *nextList;
@@ -31,7 +31,7 @@ struct Vertex
 struct Face
 {
   HalfEdge *he;
-  float point[2];
+  double point[2];
 };
 
 struct PolygonMesh
@@ -53,9 +53,9 @@ void initFaces(PolygonMesh *PM, coord *points, int n);
 void addVertex(PolygonMesh *PM, Vertex *v);
 void addHE(PolygonMesh *PM, HalfEdge *he);
 
-Face *getFace(PolygonMesh *PM, float point[2]);
+Face *getFace(PolygonMesh *PM, double point[2]);
 HalfEdge *createHe();
-Vertex *createVertex(float point[2]);
+Vertex *createVertex(double point[2]);
 
 // Half-edge operation
 void linkHe(HalfEdge *a, HalfEdge *b);
@@ -63,8 +63,8 @@ void oppositeHe(HalfEdge *a, HalfEdge *b);
 
 /* To refactor
 bov_points_t *getVerticesBOVPolygonMesh(PolygonMesh *PM);
-bov_points_t *getHalfEdgesBOVPolygonMesh(PolygonMesh *PM, float factor);
-PolygonMesh *LoadPolygonMesh(float *Vertices, int nVertices, int *hEdges, int nEdges, int nFaces);
+bov_points_t *getHalfEdgesBOVPolygonMesh(PolygonMesh *PM, double factor);
+PolygonMesh *LoadPolygonMesh(double *Vertices, int nVertices, int *hEdges, int nEdges, int nFaces);
 */
 
 // For draw

@@ -1,15 +1,15 @@
 #include "utils.h"
 
 /*
- * Compare the float representation of a point (x,y)
+ * Compare the double representation of a point (x,y)
  * 
  * A: first point
  * B: second point
  */
-int comparefloats(const void *A, const void *B)
+int comparedoubles(const void *A, const void *B)
 {
-  float *a = (float *)A;
-  float *b = (float *)B;
+  double *a = (double *)A;
+  double *b = (double *)B;
   if (a[1] > b[1])
   {
     return 1;
@@ -25,7 +25,7 @@ int comparefloats(const void *A, const void *B)
  * get the y value of the parabola
  * 
  */
-float parabola(float xArc, float yArc, float yLine, float x)
+double parabola(double xArc, double yArc, double yLine, double x)
 {
   if (fabs(yArc - yLine) < EPSILON_PARABOLA)
   {
@@ -42,11 +42,11 @@ float parabola(float xArc, float yArc, float yLine, float x)
  * the x elements will be linpsace between xmin and x_max
  * 
  */
-coord *linspace(float xmin, float xmax, int n)
+coord *linspace(double xmin, double xmax, int n)
 {
   coord *points = malloc(sizeof(coord) * n);
 
-  float step = (xmax - xmin) / (n - 1);
+  double step = (xmax - xmin) / (n - 1);
   for (int i = 0; i < n; i++)
   {
     points[i][0] = xmin + i * step;
@@ -73,4 +73,31 @@ int impulse(int old, int ne)
     return 1;
   }
   return 0;
+}
+
+/*
+ * Convert an array of float to double
+ */
+void convertFloat2Double(coordFloat *pointsFloat, coord *pointsDouble, int n)
+{
+  for (int i = 0; i < n; i++)
+  {
+    char buf[42];
+    sprintf(buf, "%.7g", pointsFloat[i][0]); // round to 7 decimal digits
+    pointsDouble[i][0] = atof(buf);
+    sprintf(buf, "%.7g", pointsFloat[i][1]); // round to 7 decimal digits
+    pointsDouble[i][1] = atof(buf);
+  }
+}
+
+/*
+ * Convert an arry of double to float (7digit)
+ */
+void convertDouble2Float(coord *pointsDouble, coordFloat *pointsFloat, int n)
+{
+  for (int i = 0; i < n; i++)
+  {
+    pointsFloat[i][0] = (float)pointsDouble[i][0];
+    pointsFloat[i][1] = (float)pointsDouble[i][1];
+  }
 }

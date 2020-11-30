@@ -5,13 +5,17 @@
 #ifndef UTILS
 #define UTILS
 
-typedef float coord[2];
+typedef double coord[2];
+typedef float coordFloat[2];
 
-int comparefloats(const void *A, const void *B);
-float parabola(float xArc, float yArc, float yLine, float x);
+int comparedoubles(const void *A, const void *B);
+double parabola(double xArc, double yArc, double yLine, double x);
 
-coord *linspace(float xmin, float xmax, int n);
+coord *linspace(double xmin, double xmax, int n);
 
 int impulse(int old, int ne);
+
+void convertFloat2Double(coordFloat *pointsFloat, coord *pointsDouble, int n);
+void convertDouble2Float(coord *pointsDouble, coordFloat *pointsFloat, int n);
 
 #endif

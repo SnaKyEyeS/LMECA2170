@@ -20,7 +20,7 @@ struct FortuneStruct
 };
 
 FortuneStruct *initFortune(coord *points, int n);
-void fortuneAlgo(FortuneStruct *data, float yLine);
+void fortuneAlgo(FortuneStruct *data, double yLine);
 
 void ProcessEvent(FortuneStruct *data);
 void ProcessSite(FortuneStruct *data, Event *e);

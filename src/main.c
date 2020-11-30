@@ -43,10 +43,13 @@ int main(int argc, char *argv[])
 
 	if (benchmark)
 	{
-		coord *points = malloc(sizeof(coord) * nPoints);
+		coordFloat *pointsFloat = malloc(sizeof(coordFloat) * nPoints);
+		coord *points = malloc(sizeof(double) * nPoints);
+
 		GLfloat min[2] = {-1, -1};
 		GLfloat max[2] = {1, 1};
-		random_uniform_points(points, nPoints, min, max);
+		random_uniform_points(pointsFloat, nPoints, min, max);
+		convertFloat2Double(pointsFloat, points, nPoints);
 		struct timeval stop, start;
 
 		gettimeofday(&start, NULL);
@@ -57,13 +60,16 @@ int main(int argc, char *argv[])
 		printf("%lu\n", (stop.tv_sec - start.tv_sec) * 1000000 + stop.tv_usec - start.tv_usec);
 
 		freeFortuneStruct(data);
+
 		free(points);
+		free(pointsFloat);
 		return EXIT_SUCCESS;
 	}
 
-	int p = 280;
+	//int p = 280;
+	int p = 1000;
 	/*
-	float test_points[8][2] = {
+	double test_points[8][2] = {
 			{0, 0},
 			{0.2, 0.4},
 			{-0.3, 0.6},
@@ -73,7 +79,7 @@ int main(int argc, char *argv[])
 			{1.5, 3},
 			{2, 4}};*/
 	/*
-	float test_points[11][2] = {
+	double test_points[11][2] = {
 			{0.1, -0.6},
 			{-0.11, -0.55},
 			{0.5, -0.5},
@@ -86,35 +92,42 @@ int main(int argc, char *argv[])
 			{0.55, 0.425},
 			{0, 0.6}};
 */
+	coordFloat *test_points_floats = malloc(sizeof(coordFloat) * p);
 	coord *test_points = malloc(sizeof(coord) * p);
+
 	GLfloat min[2] = {-10, -10};
 	GLfloat max[2] = {10, 10};
-	random_uniform_points(test_points, p, min, max);
+	random_uniform_points(test_points_floats, p, min, max);
+	convertFloat2Double(test_points_floats, test_points, p);
 	FortuneStruct *data = initFortune(test_points, p);
 
 	int resPoints = 1000000;
 
 	// Only for print
 	int maxCircleEvent = 10000;
+	coordFloat *pointsCircleEventFloat = malloc(sizeof(coordFloat) * maxCircleEvent);
 	coord *pointsCircleEvent = malloc(sizeof(coord) * maxCircleEvent);
 	int nCircleEvent = 0;
 
 	int maxHE = 1000000 * 2;
+	coordFloat *pointsHeFloat = malloc(sizeof(coordFloat) * maxHE);
 	coord *pointsHe = malloc(sizeof(coord) * maxHE);
 	int nHe = 0;
 
-	float sweeplineHeight = -0.981649;
-	float xmin = -20;
-	float xmax = 20;
+	double sweeplineHeight = -0.981649;
+	double xmin = -20;
+	double xmax = 20;
 
 	float pointsSweepLine[2][2] = {
 			{xmin, sweeplineHeight},
 			{xmax, sweeplineHeight},
 	};
 
+	coordFloat *pointsFloat = malloc(sizeof(coordFloat) * resPoints);
 	coord *points = linspace(xmin, xmax, resPoints);
 	//ProcessEvent(beachLine, Q);
 	drawBeachLine(sweeplineHeight, data->beachLine, points, resPoints);
+	convertDouble2Float(points, pointsFloat, resPoints);
 
 	// give a bit of entropy for the seed of rand()
 	// or it will always be the same sequence
@@ -125,12 +138,12 @@ int main(int argc, char *argv[])
 	float nextEvent[1][2] = {
 			{0, 0}};
 
-	bov_points_t *ptsHard = bov_points_new(test_points, p, GL_STATIC_DRAW);
-	bov_points_t *ptsBeachline = bov_points_new(points, resPoints, GL_DYNAMIC_DRAW);
+	bov_points_t *ptsHard = bov_points_new(test_points_floats, p, GL_STATIC_DRAW);
+	bov_points_t *ptsBeachline = bov_points_new(pointsFloat, resPoints, GL_DYNAMIC_DRAW);
 	bov_points_t *ptsSweepline = bov_points_new(pointsSweepLine, 2, GL_DYNAMIC_DRAW);
 	bov_points_t *ptnextEvent = bov_points_new(nextEvent, 1, GL_DYNAMIC_DRAW);
-	bov_points_t *circleEvent = bov_points_new(pointsCircleEvent, nCircleEvent, GL_DYNAMIC_DRAW);
-	bov_points_t *ptsHe = bov_points_new(pointsHe, nHe, GL_STATIC_DRAW);
+	bov_points_t *circleEvent = bov_points_new(pointsCircleEventFloat, nCircleEvent, GL_DYNAMIC_DRAW);
+	bov_points_t *ptsHe = bov_points_new(pointsHeFloat, nHe, GL_STATIC_DRAW);
 
 	bov_points_draw(window, ptsHard, 0, p);
 	bov_points_set_width(ptsHard, 0.1);
@@ -144,7 +157,7 @@ int main(int argc, char *argv[])
 	bov_points_set_color(ptsHe, (float[4]){1, 1, 0, 1});
 
 	int aKey = 0, sKey = 0, dKey = 0, fKey = 0, eKey = 0, wKey = 0, qKey = 0;
-	float oldSweepLine = sweeplineHeight - 1;
+	double oldSweepLine = sweeplineHeight - 1;
 
 	while (!bov_window_should_close(window))
 	{
@@ -202,11 +215,12 @@ int main(int argc, char *argv[])
 		{
 			fortuneAlgo(data, sweeplineHeight);
 			nCircleEvent = getCircleEvent(data->Q, pointsCircleEvent);
-			bov_points_update(circleEvent, pointsCircleEvent, nCircleEvent);
+			convertDouble2Float(pointsCircleEvent, pointsCircleEventFloat, nCircleEvent);
+			bov_points_update(circleEvent, pointsCircleEventFloat, nCircleEvent);
 			if (data->Q->First != NULL)
 			{
-				nextEvent[0][0] = data->Q->First->coordinates[0];
-				nextEvent[0][1] = data->Q->First->coordinates[1];
+				nextEvent[0][0] = (float)data->Q->First->coordinates[0];
+				nextEvent[0][1] = (float)data->Q->First->coordinates[1];
 				bov_points_update(ptnextEvent, nextEvent, 1);
 			}
 			else
@@ -214,9 +228,12 @@ int main(int argc, char *argv[])
 				boundingBoxBp(data->beachLine);
 			}
 			nHe = getHePoints(data->Voronoid, pointsHe);
-			bov_points_update(ptsHe, pointsHe, nHe);
+			convertDouble2Float(pointsHe, pointsHeFloat, nHe);
+			for (int i = 0; i < nHe; i++)
+				bov_points_update(ptsHe, pointsHeFloat, nHe);
 			drawBeachLine(sweeplineHeight, data->beachLine, points, resPoints);
-			bov_points_update(ptsBeachline, points, resPoints);
+			convertDouble2Float(points, pointsFloat, resPoints);
+			bov_points_update(ptsBeachline, pointsFloat, resPoints);
 		}
 
 		bov_points_draw(window, circleEvent, 0, nCircleEvent);
@@ -244,6 +261,9 @@ int main(int argc, char *argv[])
 	free(pointsCircleEvent);
 	free(pointsHe);
 	free(points);
+	free(pointsCircleEventFloat);
+	free(pointsHeFloat);
+	free(pointsFloat);
 
 	return EXIT_SUCCESS;
 }

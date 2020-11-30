@@ -9,7 +9,7 @@ FortuneStruct *initFortune(coord *points, int n)
   data->Voronoid = InitEmptyPolygonMesh();
 
   // Sort
-  qsort(points, n, sizeof(float) * 2, comparefloats);
+  qsort(points, n, sizeof(double) * 2, comparedoubles);
   initFaces(data->Voronoid, points, n);
   data->Q = LoadSortedEventQueue(points, n, data->Voronoid->faces);
 
@@ -21,7 +21,7 @@ FortuneStruct *initFortune(coord *points, int n)
 /*
  * Apply the fortune algorithm to the datastructure up to a yLine
  */
-void fortuneAlgo(FortuneStruct *data, float yLine)
+void fortuneAlgo(FortuneStruct *data, double yLine)
 {
   while (data->Q->First != NULL && data->Q->First->coordinates[1] < yLine)
   {
@@ -77,12 +77,6 @@ void ProcessSite(FortuneStruct *data, Event *e)
   }
 
   Node *arc = getArc(data->beachLine, e->coordinates);
-  printf("\n\n\n\n\n\n");
-  printf("%f Yline %f \n", e->coordinates[0], e->coordinates[1]);
-  printNode(arc);
-  printNode(getLeftestArc(arc));
-  printNode(getRightestArc(arc));
-  printEvent(e);
   //      old
   //       | -> size can be left or right
   //     Inner2
@@ -128,12 +122,6 @@ void ProcessSite(FortuneStruct *data, Event *e)
   Inner1->Right = duplicateLeaf(arc);
   Inner1->Right->Root = Inner1;
 
-  // TODO check
-  printAllTree(Inner1->Root);
-  if (Inner1->Root != NULL)
-  {
-    printAllTree(Inner1->Root->Root);
-  }
   // Update site position
 
   // TODO not working
@@ -145,8 +133,6 @@ void ProcessSite(FortuneStruct *data, Event *e)
   Inner1->rightSite[1] = arc->arcPoint[1];
   Inner1->leftSite[0] = e->coordinates[0];
   Inner1->leftSite[1] = e->coordinates[1];
-
-  printAllTree(Inner1);
 
   //TODO: rebalance
 

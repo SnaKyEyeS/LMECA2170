@@ -73,7 +73,7 @@ void initFaces(PolygonMesh *PM, coord *points, int n)
 /*
  * Create a vertex from a point
  */
-Vertex *createVertex(float point[2])
+Vertex *createVertex(double point[2])
 {
   Vertex *v = malloc(sizeof(Vertex));
   v->coordinates[0] = point[0];
@@ -98,7 +98,7 @@ HalfEdge *createHe()
 /*
  * return the face corresponding to a point
  */
-Face *getFace(PolygonMesh *PM, float point[2])
+Face *getFace(PolygonMesh *PM, double point[2])
 {
   int a = 0;
   int b = PM->nFaces - 1;
@@ -110,7 +110,7 @@ Face *getFace(PolygonMesh *PM, float point[2])
   while (a <= b)
   {
     int n = floor((a + b) / 2);
-    int comp = comparefloats(PM->faces[n]->point, point);
+    int comp = comparedoubles(PM->faces[n]->point, point);
     if (comp == 0)
     {
       return PM->faces[n];
@@ -203,7 +203,7 @@ int getHePoints(PolygonMesh *PM, coord *points)
  */
 
 /*
-PolygonMesh *LoadPolygonMesh(float *Vertices, int nVertices, int *hEdges, int nEdges, int nFaces)
+PolygonMesh *LoadPolygonMesh(double *Vertices, int nVertices, int *hEdges, int nEdges, int nFaces)
 {
   PolygonMesh *PM = malloc(sizeof(PolygonMesh));
 
@@ -273,14 +273,14 @@ bov_points_t *getVerticesBOVPolygonMesh(PolygonMesh *PM)
   return bov_points_new(coord, PM->nVertices, GL_STATIC_DRAW);
 }
 
-bov_points_t *getHalfEdgesBOVPolygonMesh(PolygonMesh *PM, float fact)
+bov_points_t *getHalfEdgesBOVPolygonMesh(PolygonMesh *PM, double fact)
 {
   GLfloat coord[PM->nHEdges * 2][2];
   int nPts = 0;
   for (int i = 0; i < PM->nFaces; i++)
   {
 
-    float center[2];
+    double center[2];
     center[0] = PM->faces[i]->he->v->coordinates[0];
     center[1] = PM->faces[i]->he->v->coordinates[1];
     int n = 1;
