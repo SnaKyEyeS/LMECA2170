@@ -2,7 +2,7 @@
 
 ## V0
 
-![V0 gif](Vid/V0.avi)
+![V0 gif](Vid/V0.gif)
 
 ## Todo
 ### V0 - It's done
