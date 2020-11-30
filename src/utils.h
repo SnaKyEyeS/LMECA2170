@@ -1,8 +1,6 @@
 #include "BOV.h"
 #include <math.h>
-#define EPSILON_PARABOLA 1e-5
-#define STEP1 0.1
-#define step2 0.05
+#define EPSILON_PARABOLA 1e-10
 
 #ifndef UTILS
 #define UTILS

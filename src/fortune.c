@@ -7,9 +7,11 @@ FortuneStruct *initFortune(coord *points, int n)
 {
   FortuneStruct *data = malloc(sizeof(FortuneStruct));
   data->Voronoid = InitEmptyPolygonMesh();
-  initFaces(data->Voronoid, points, n);
 
-  data->Q = LoadEventQueue(points, n, data->Voronoid->faces);
+  // Sort
+  qsort(points, n, sizeof(float) * 2, comparefloats);
+  initFaces(data->Voronoid, points, n);
+  data->Q = LoadSortedEventQueue(points, n, data->Voronoid->faces);
 
   data->beachLine = NULL;
 
@@ -23,6 +25,8 @@ void fortuneAlgo(FortuneStruct *data, float yLine)
 {
   while (data->Q->First != NULL && data->Q->First->coordinates[1] < yLine)
   {
+    //printf("New process \n");
+    //printQueue(data->Q);
     ProcessEvent(data);
   }
 }
@@ -73,6 +77,12 @@ void ProcessSite(FortuneStruct *data, Event *e)
   }
 
   Node *arc = getArc(data->beachLine, e->coordinates);
+  printf("\n\n\n\n\n\n");
+  printf("%f Yline %f \n", e->coordinates[0], e->coordinates[1]);
+  printNode(arc);
+  printNode(getLeftestArc(arc));
+  printNode(getRightestArc(arc));
+  printEvent(e);
   //      old
   //       | -> size can be left or right
   //     Inner2
@@ -118,6 +128,12 @@ void ProcessSite(FortuneStruct *data, Event *e)
   Inner1->Right = duplicateLeaf(arc);
   Inner1->Right->Root = Inner1;
 
+  // TODO check
+  printAllTree(Inner1->Root);
+  if (Inner1->Root != NULL)
+  {
+    printAllTree(Inner1->Root->Root);
+  }
   // Update site position
 
   // TODO not working
@@ -129,6 +145,8 @@ void ProcessSite(FortuneStruct *data, Event *e)
   Inner1->rightSite[1] = arc->arcPoint[1];
   Inner1->leftSite[0] = e->coordinates[0];
   Inner1->leftSite[1] = e->coordinates[1];
+
+  printAllTree(Inner1);
 
   //TODO: rebalance
 
@@ -219,19 +237,22 @@ void ProcessCircle(FortuneStruct *data, Event *e)
   // Check if ok
   if (!e->isValid)
   {
-    printf("Invalid event \n");
+    //printf("Invalid event \n");
     return;
   }
 
   Node *var = getLeftestArc(e->node);
   if (var->ev != NULL)
   {
+    //printEvent(var->ev);
     var->ev->isValid = false;
+    var->ev = NULL;
   }
   var = getRightestArc(e->node);
   if (var->ev != NULL)
   {
     var->ev->isValid = false;
+    var->ev = NULL;
   }
   // Must do this before
   HalfEdge *hea1 = getLeftBpNode(e->node)->he;
@@ -259,7 +280,6 @@ void ProcessCircle(FortuneStruct *data, Event *e)
     is_right = false;
     arc = getRightArc(e->node->Root->Left);
   }
-
   if (MainRoot->Left == e->node->Root)
   {
     MainRoot->Left = replace;
@@ -270,8 +290,6 @@ void ProcessCircle(FortuneStruct *data, Event *e)
   }
 
   replace->Root = MainRoot;
-
-  // TODO voronoid
 
   Circle *circle = createMiddleCircle(arc);
   //TODO improve this
@@ -459,6 +477,5 @@ void freeFortuneStruct(FortuneStruct *data)
   freeTree(data->beachLine);
   freePolygonMesh(data->Voronoid);
   freeQueue(data->Q);
-
   free(data);
 }

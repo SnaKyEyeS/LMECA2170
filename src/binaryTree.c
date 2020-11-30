@@ -113,6 +113,10 @@ Node *getLeftestArc(Node *leaf)
   Node *var = leaf;
   while (var != NULL)
   {
+    if (var->Root == NULL)
+    {
+      return NULL;
+    }
     if (var->Root->Right == var)
     {
       return getRightArc(var->Root->Left);
@@ -388,7 +392,7 @@ void boundingBoxBp(Node *root)
     return;
 
   // TODO improve
-  int yLine = 1000;
+  int yLine = 100000;
   float point[2];
   point[0] = getBpX(root, yLine);
   point[1] = parabola(root->leftSite[0], root->leftSite[1], yLine, point[0]);

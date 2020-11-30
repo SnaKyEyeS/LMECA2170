@@ -363,7 +363,7 @@ void printFaces(PolygonMesh *PM)
   printf("FACES\n%*s &face          &half-edge\n", val, "id");
   for (int i = 0; i < PM->nFaces; i++)
   {
-    printf("%*d %p %p\n", val, i, PM->faces[i], PM->faces[i]->he);
+    printf("%*d (%f,%f) %p %p\n", val, i, PM->faces[i]->point[0], PM->faces[i]->point[1], PM->faces[i], PM->faces[i]->he);
   }
 }
 
@@ -399,7 +399,7 @@ void printHEdge(HalfEdge *he)
     printf("HalfEdge is NULL \n");
   }
   HalfEdge *var = he;
-  printf("HalfEdge %14p %14p %14p %14p %14p %14p\n", var, var->prev, var->next, var->Opposite, var->v, var->f);
+  printf("HalfEdge %14p %14p %14p %14p %14p %14p %14p\n", var, var->prev, var->next, var->Opposite, var->v, var->f, var->nextList);
 }
 
 void freePolygonMesh(PolygonMesh *PM)
@@ -412,6 +412,7 @@ void freePolygonMesh(PolygonMesh *PM)
   {
     freeFace(PM->faces[i]);
   }
+
   free(PM->faces);
   free(PM);
 }
