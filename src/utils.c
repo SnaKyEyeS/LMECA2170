@@ -33,7 +33,12 @@ float parabola(float xArc, float yArc, float yLine, float x)
   }
   else
   {
-    return (x * x - 2 * xArc * x + xArc * xArc + yArc * yArc - yLine * yLine) / (2 * (yArc - yLine));
+    double doublexArc = (double)xArc;
+    double doubleyArc = (double)yArc;
+    double doubleyLine = (double)yLine;
+    double doublex = (double)x;
+    double res = (doublex * doublex - 2 * doublexArc * doublex + doublexArc * doublexArc + doubleyArc * doubleyArc - doubleyLine * doubleyLine) / (2 * (doubleyArc - doubleyLine));
+    return (float)res;
   }
 }
 

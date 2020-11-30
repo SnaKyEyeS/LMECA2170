@@ -22,6 +22,7 @@ Queue *LoadSortedEventQueue(float (*points)[2], int n, Face **f)
     E->isValid = true;
     E->circle = NULL;
     E->f = f[i];
+    E->node = NULL;
 
     if (Q->First == NULL)
     {

@@ -407,13 +407,14 @@ void freePolygonMesh(PolygonMesh *PM)
   if (PM == NULL)
     return;
   freeVertices(PM->firstVertex);
-  freeHe(PM->firstHedge);
+
   for (int i = 0; i < PM->nFaces; i++)
   {
     freeFace(PM->faces[i]);
   }
 
   free(PM->faces);
+  freeHe(PM->firstHedge);
   free(PM);
 }
 
@@ -426,7 +427,12 @@ void freeVertices(Vertex *v)
 
   Vertex *tmp = v->nextList;
   free(v);
-  freeVertices(tmp);
+  while (tmp != NULL)
+  {
+    Vertex *tmp2 = tmp->nextList;
+    free(tmp);
+    tmp = tmp2;
+  }
 }
 
 void freeFace(Face *f)
@@ -443,5 +449,10 @@ void freeHe(HalfEdge *he)
   }
   HalfEdge *tmp = he->nextList;
   free(he);
-  freeHe(tmp);
+  while (tmp != NULL)
+  {
+    HalfEdge *tmp2 = tmp->nextList;
+    free(tmp);
+    tmp = tmp2;
+  }
 }

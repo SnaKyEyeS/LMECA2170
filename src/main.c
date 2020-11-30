@@ -37,10 +37,6 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	/*
-	int seed = (int)time(NULL);
-	srand(seed);*/
-
 	if (benchmark)
 	{
 		coord *points = malloc(sizeof(coord) * nPoints);
