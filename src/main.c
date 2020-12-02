@@ -7,6 +7,7 @@
 #include "data_halfEdge.h"
 #include "fortune.h"
 #include "utils.h"
+#include "color.h"
 
 int main(int argc, char *argv[])
 {
@@ -117,7 +118,7 @@ int main(int argc, char *argv[])
 	// or it will always be the same sequence
 
 	bov_window_t *window = bov_window_new(800, 800, "Fortune's Algorithm - Devillez & Poncelet");
-	bov_window_set_color(window, (GLfloat[]){0.9f, 0.85f, 0.8f, 1.0f});
+	bov_window_set_color(window, (GLfloat[])nord0);
 
 	float nextEvent[1][2] = {
 			{0, 0}};
@@ -136,11 +137,12 @@ int main(int argc, char *argv[])
 	bov_points_set_width(ptsBeachline, 0.001);
 	bov_points_set_width(ptsHe, 0.008);
 	bov_points_set_width(ptsSweepline, 0.008);
-	bov_points_set_color(ptnextEvent, (float[4]){0.1, 0.8, 0.1, 1});
-	bov_points_set_color(ptsHard, (float[4]){1, 0, 0, 1});
-	bov_points_set_color(ptsSweepline, (float[4]){0, 0, 1, 1});
-	bov_points_set_color(circleEvent, (float[4]){1, 0, 1, 1});
-	bov_points_set_color(ptsHe, (float[4]){1, 1, 0, 1});
+
+	bov_points_set_color(ptnextEvent, (float[4])nord9);
+	bov_points_set_color(ptsHard, (float[4])nord14);
+	bov_points_set_color(ptsSweepline, (float[4])nord10);
+	bov_points_set_color(circleEvent, (float[4])nord5);
+	bov_points_set_color(ptsHe, (float[4])nord11);
 
 	int aKey = 0, sKey = 0, dKey = 0, fKey = 0, eKey = 0, wKey = 0, qKey = 0;
 	float oldSweepLine = sweeplineHeight - 1;
