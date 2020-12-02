@@ -11,7 +11,7 @@ FortuneStruct *initFortune(coord *points, int n)
   // Sort
   qsort(points, n, sizeof(float) * 2, comparefloats);
   initFaces(data->Voronoid, points, n);
-  data->Q = LoadSortedEventQueue(points, 0, n, data->Voronoid->faces, NULL);
+  data->Q = LoadSortedEventQueue(points, n, data->Voronoid->faces);
   data->beachLine = NULL;
 
   return data;
@@ -22,10 +22,9 @@ FortuneStruct *initFortune(coord *points, int n)
  */
 void fortuneAlgo(FortuneStruct *data, float yLine)
 {
-  while (data->Q->e != NULL && data->Q->e->coordinates[1] < yLine)
+  while (data->Q->size > 0 && data->Q->es[0]->coordinates[1] < yLine)
   {
     //printf("New process \n");
-    //printQueue(data->Q);
     ProcessEvent(data);
   }
 }
@@ -37,15 +36,20 @@ void ProcessEvent(FortuneStruct *data)
 {
   if (data->Q == NULL)
     return;
-  if (data->Q == NULL) // TODO update
+  if (data->Q->size == 0) // TODO update
     return;
+
   Event *e = popQueue(data->Q);
+
   if (e == NULL)
     return; // TODO should assert
-  if (e->type == SITE)
-    ProcessSite(data, e);
-  else
-    ProcessCircle(data, e);
+  if (e->isValid)
+  {
+    if (e->type == SITE)
+      ProcessSite(data, e);
+    else
+      ProcessCircle(data, e);
+  }
   freeEvent(e);
 }
 

@@ -8,13 +8,14 @@
  */
 int comparefloats(const void *A, const void *B)
 {
-  float *a = (float *)A;
-  float *b = (float *)B;
-  if (a[1] > b[1])
+  float a = ((float *)A)[1];
+  float b = ((float *)B)[1];
+
+  if (a > b)
   {
     return 1;
   }
-  else if (b[1] > a[1])
+  else if (b > a)
   {
     return -1;
   }
