@@ -46,6 +46,8 @@
   * [ ] Finite vertex
   * [ ] Vertex in construction 
   * [ ] semi-finite vertex
+* [ ] Clean the data
+  * [ ] verify if we add points
 
 ### V2
 * [ ] Add -O3 to make

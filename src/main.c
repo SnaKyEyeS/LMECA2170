@@ -37,6 +37,10 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	/*
+	int seed = (int)time(NULL);
+	srand(seed);*/
+
 	if (benchmark)
 	{
 		coord *points = malloc(sizeof(coord) * nPoints);
@@ -57,13 +61,10 @@ int main(int argc, char *argv[])
 		return EXIT_SUCCESS;
 	}
 
-	int p = 30;
-	/*
-	float test_points[8][2] = {
+	int p = 5;
+
+	/*float test_points[5][2] = {
 			{0, 0},
-			{0.2, 0.4},
-			{-0.3, 0.6},
-			{-0.8, 0.75},
 			{1, 1},
 			{-2, 2},
 			{1.5, 3},
@@ -213,12 +214,12 @@ int main(int argc, char *argv[])
 		if (sweeplineHeight > oldSweepLine)
 		{
 			fortuneAlgo(data, sweeplineHeight);
-			nCircleEvent = getCircleEvent(data->Q, pointsCircleEvent);
+			nCircleEvent = getCircleEvent(data->Q, pointsCircleEvent, 0);
 			bov_points_update(circleEvent, pointsCircleEvent, nCircleEvent);
-			if (data->Q->First != NULL)
+			if (data->Q->e != NULL)
 			{
-				nextEvent[0][0] = data->Q->First->coordinates[0];
-				nextEvent[0][1] = data->Q->First->coordinates[1];
+				nextEvent[0][0] = data->Q->e->coordinates[0];
+				nextEvent[0][1] = data->Q->e->coordinates[1];
 				bov_points_update(ptnextEvent, nextEvent, 1);
 			}
 			else

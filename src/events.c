@@ -1,6 +1,20 @@
 #include "events.h"
 
 /*
+ * Return an empty event
+ */
+Event *initEmptyEvent()
+{
+  Event *e = malloc(sizeof(Event));
+  e->type = SITE;
+  e->node = NULL;
+
+  e->isValid = true;
+  e->circle = NULL;
+  e->f = NULL;
+}
+
+/*
  * Free an event
  */
 void freeEvent(Event *e)
@@ -16,5 +30,5 @@ void printEvent(Event *e)
     printf("Event is NULL\n");
     return;
   }
-  printf("Event %+2.3f %+2.3f %d    %p %p %p circle: %p face: %p\n", e->coordinates[0], e->coordinates[1], e->type, e, e->next, e->previous, e->circle, e->f);
+  printf("Event %+2.3f %+2.3f %d    %p circle: %p face: %p\n", e->coordinates[0], e->coordinates[1], e->type, e, e->circle, e->f);
 }

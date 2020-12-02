@@ -20,8 +20,6 @@ enum TYPE_EVENT
 struct Event
 {
   float coordinates[2];
-  Event *next;
-  Event *previous;
   enum TYPE_EVENT type;
   Node *node;
 
@@ -29,6 +27,8 @@ struct Event
   Circle *circle;
   Face *f;
 };
+
+Event *initEmptyEvent();
 
 void freeEvent(Event *e);
 

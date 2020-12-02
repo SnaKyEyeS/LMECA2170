@@ -6,39 +6,34 @@
  * points: list of all sorted points to load (x,y) - size min 2n
  * n: number of points to load
  */
-Queue *LoadSortedEventQueue(float (*points)[2], int n, Face **f)
+Queue *LoadSortedEventQueue(coord *points, int a, int n, Face **f, Queue *root)
 {
-  Queue *Q = malloc(sizeof(Queue));
-
-  Q->First = NULL;
-  Event *last = NULL;
-
-  for (int i = 0; i < n; i++)
+  Queue *Q = initQueueNode();
+  if (n == 0)
   {
-    Event *E = malloc(sizeof(Event));
-    E->coordinates[0] = points[i][0];
-    E->coordinates[1] = points[i][1];
-    E->type = SITE;
-    E->isValid = true;
-    E->circle = NULL;
-    E->f = f[i];
-    E->node = NULL;
-
-    if (Q->First == NULL)
-    {
-      E->previous = NULL;
-      E->next = NULL;
-      Q->First = E;
-      last = E;
-    }
-    else
-    {
-      last->next = E;
-      E->previous = last;
-      E->next = NULL;
-    }
-    last = E;
+    return Q;
   }
+
+  int b = n - 1;
+  int bl = floor((a + 1 + b) / 2);
+  int ar = bl + 1;
+
+  Q->e = initEmptyEvent();
+  Q->e->f = f[a];
+  Q->e->coordinates[0] = points[a][0];
+  Q->e->coordinates[1] = points[a][1];
+  Q->Root = root;
+
+  if (bl >= a + 1)
+  {
+    Q->Left = LoadSortedEventQueue(points, a + 1, ar, f, Q);
+  }
+
+  if (b >= ar)
+  {
+    Q->Right = LoadSortedEventQueue(points, ar, n, f, Q);
+  }
+
   return Q;
 }
 
@@ -48,11 +43,12 @@ Queue *LoadSortedEventQueue(float (*points)[2], int n, Face **f)
  * points: list of all points to load (x,y) - size min 2n
  * n: number of points to load
  */
-Queue *LoadEventQueue(float (*points)[2], int n, Face **f)
+Queue *LoadEventQueue(coord *points, int n, Face **f)
 {
   qsort(points, n, sizeof(float) * 2, comparefloats);
-  return LoadSortedEventQueue(points, n, f);
+  return LoadSortedEventQueue(points, 0, n, f, NULL);
 }
+
 /*
  * Add a new point to the Queue
  * 
@@ -63,60 +59,62 @@ Queue *LoadEventQueue(float (*points)[2], int n, Face **f)
 
 Event *AddPoint(Queue *Q, float x, float y, enum TYPE_EVENT type, Face *f)
 {
-  Event *E = malloc(sizeof(Event));
-  E->coordinates[0] = x;
-  E->coordinates[1] = y;
-  E->type = type;
-  E->isValid = true;
-  E->circle = NULL;
-  E->node = NULL;
-  E->f = NULL;
 
-  Event *P = Q->First;
-
-  if (P == NULL)
+  if (Q->e == NULL)
   {
-    Q->First = E;
-    E->next = NULL;
-    E->previous = NULL;
-    return E;
+    Q->e = initEmptyEvent();
+    Q->e->coordinates[0] = x;
+    Q->e->coordinates[1] = y;
+    Q->e->f = f;
+    Q->e->type = type;
+    return Q->e;
   }
 
-  if (E->coordinates[1] < P->coordinates[1])
+  Queue *add = initQueueNode();
+  Event *e = initEmptyEvent();
+  add->e = e;
+  add->e->coordinates[0] = x;
+  add->e->coordinates[1] = y;
+  add->e->f = f;
+  add->e->type = type;
+
+  Queue *var = Q;
+
+  while (var->Left != NULL && var->Right != NULL)
   {
-    E->next = P;
-    E->previous = NULL;
-    E->next->previous = E;
-    Q->First = E;
-    return E;
+    var = var->Right;
+  }
+  if (var->Left == NULL)
+  {
+    var->Left = add;
+  }
+  else
+  {
+    var->Right = add;
   }
 
-  while (P != NULL)
+  add->Root = var;
+
+  int comp = comparefloats(add->e->coordinates, var->e->coordinates);
+
+  while (comp < 0)
   {
-    if (P->next == NULL)
+    Event *tmp = add->e;
+    add->e = var->e;
+    var->e = tmp;
+    add = var;
+    var = add->Root;
+    if (var == NULL)
     {
-      P->next = E;
-      E->next = NULL;
-      E->previous = P;
-      return E;
+      comp = 1;
     }
     else
     {
-
-      if (E->coordinates[1] < P->next->coordinates[1])
-      {
-        E->next = P->next;
-        E->previous = P;
-        E->next->previous = E;
-        P->next = E;
-        return E;
-      }
-      P = P->next;
+      comp = comparefloats(add->e->coordinates, var->e->coordinates);
     }
   }
-  freeEvent(E);
-  printf("Error with inserting elem in the Queue \n");
-  return NULL;
+
+  return e;
 }
 
 /*
@@ -124,32 +122,47 @@ Event *AddPoint(Queue *Q, float x, float y, enum TYPE_EVENT type, Face *f)
  */
 void deleteEvent(Queue *Q, Event *e)
 {
+
   if (e == NULL)
+
     return;
   if (Q == NULL)
   {
     freeEvent(e);
     return;
   }
-
-  if (Q->First == e)
+  if (Q->e == NULL)
   {
-    Q->First = e->next;
-    if (Q->First != NULL)
-    {
-      Q->First->previous = NULL;
-    }
     freeEvent(e);
     return;
   }
 
-  if (e->next != NULL)
+  Queue *var = Q;
+  int comp = comparefloats(e, var->e);
+  while (var->Left != NULL && var->Right != NULL)
   {
-    e->next->previous = e->previous;
+    if (comp < 0)
+    {
+      var = var->Left;
+    }
+    else if (comp == 0)
+    {
+      freeEvent(popQueue(var));
+    }
+    else
+    {
+      var = var->Right;
+    }
+    comp = comparefloats(e, var->e);
   }
 
-  e->previous->next = e->next;
-  freeEvent(e);
+  if (var->e != e)
+  {
+    printf("ERROR ON THE TREE EVENT NOT FOUND \n");
+    freeEvent(e);
+    return;
+  }
+  freeQueue(var);
 }
 
 /*
@@ -158,43 +171,161 @@ void deleteEvent(Queue *Q, Event *e)
  */
 Event *popQueue(Queue *Q)
 {
+  //_improve with memory of the depth
+  // NULL Queue
   if (Q == NULL)
   {
     return NULL;
   }
 
-  if (Q->First == NULL)
+  // Empty Queue
+  if (Q->e == NULL)
   {
     return NULL;
   }
 
-  Event *e = Q->First;
-  Q->First = e->next;
-  if (Q->First != NULL)
+  if (Q->Left == NULL && Q->Right == NULL)
   {
-    Q->First->previous = NULL;
+    Event *e = Q->e;
+    Q->e = NULL;
+    return e;
   }
+
+  Event *e = Q->e;
+  if (Q->Left == NULL)
+  {
+    Queue *toDel = Q->Right;
+    Q->e = Q->Right->e;
+    Q->Left = Q->Right->Left;
+    Q->Right = Q->Right->Right;
+
+    if (Q->Left != NULL)
+      Q->Left->Root = Q;
+    if (Q->Right != NULL)
+      Q->Right->Root = Q;
+    freeNodeQueue(toDel);
+    return e;
+  }
+  if (Q->Right == NULL)
+  {
+    Queue *toDel = Q->Left;
+    Q->e = Q->Left->e;
+    Q->Right = Q->Left->Right;
+    Q->Left = Q->Left->Left;
+    if (Q->Left != NULL)
+      Q->Left->Root = Q;
+    if (Q->Right != NULL)
+      Q->Right->Root = Q;
+    freeNodeQueue(toDel);
+    return e;
+  }
+  Queue *var = Q->Left;
+
+  while (var->Right != NULL || var->Left != NULL)
+  {
+    if (var->Right != NULL)
+      var = var->Right;
+    else
+      var = var->Left;
+  }
+  Q->e = var->e;
+
+  if (var->Root->Left == var)
+  {
+    var->Root->Left = NULL;
+  }
+  else
+  {
+    var->Root->Right = NULL;
+  }
+
+  var = Q;
+  while (true)
+  {
+    if (var->Left == NULL && var->Right == NULL)
+    {
+      return e;
+    }
+
+    if (var->Left == NULL)
+    {
+      int comb = comparefloats(var->e->coordinates, var->Right->e->coordinates);
+      if (comb < 0)
+      {
+        return e;
+      }
+      Event *tmp = var->e;
+      var->e = var->Right->e;
+      var->Right->e = tmp;
+      var = var->Right;
+    }
+    else if (var->Right == NULL)
+    {
+      int comb = comparefloats(var->e->coordinates, var->Left->e->coordinates);
+      if (comb < 0)
+      {
+        return e;
+      }
+      Event *tmp = var->e;
+      var->e = var->Left->e;
+      var->Left->e = tmp;
+      var = var->Left;
+    }
+    else
+    {
+      int subComp = comparefloats(var->Left->e, var->Right->e);
+      if (subComp < 0)
+      {
+        int comb = comparefloats(var->e->coordinates, var->Left->e->coordinates);
+        Event *tmp = var->e;
+        var->e = var->Left->e;
+        var->Left->e = tmp;
+        var = var->Left;
+      }
+      else
+      {
+        int comb = comparefloats(var->e->coordinates, var->Right->e->coordinates);
+        Event *tmp = var->e;
+        var->e = var->Right->e;
+        var->Right->e = tmp;
+        var = var->Right;
+      }
+    }
+  }
+
   return e;
 }
 
 /*
  * Get the elements of Q which are circle events into points and return the number of elemens
  */
-int getCircleEvent(Queue *Q, coord *points)
+int getCircleEvent(Queue *Q, coord *points, int start)
 {
-  int nCircle = 0;
-  Event *var = Q->First;
-  while (var != NULL)
+  if (Q == NULL)
   {
-    if (var->type == CIRCLE)
-    {
-      points[nCircle][0] = var->coordinates[0];
-      points[nCircle][1] = var->coordinates[1];
-      nCircle++;
-    }
-    var = var->next;
+    return start;
   }
-  return nCircle;
+  if (Q->e == NULL)
+  {
+    return start;
+  }
+
+  int a = getCircleEvent(Q->Left, points, start);
+  if (Q->e->type == CIRCLE)
+  {
+    points[a][0] = Q->e->coordinates[0];
+    points[a][1] = Q->e->coordinates[1];
+    a++;
+  }
+  return getCircleEvent(Q->Right, points, a);
+}
+
+/*
+ * Free just the node itSel
+ */
+void freeNodeQueue(Queue *Q)
+{
+  free(Q);
 }
 
 /*
@@ -202,22 +333,55 @@ int getCircleEvent(Queue *Q, coord *points)
  */
 void freeQueue(Queue *Q)
 {
+
   if (Q == NULL)
   {
     return;
   }
 
-  if (Q->First != NULL)
+  if (Q->Left != NULL)
   {
-    Event *e = Q->First;
-    while (e != NULL)
-    {
-      Event *tmp = e->next;
-      freeEvent(e);
-      e = tmp;
-    }
+    freeQueue(Q->Left);
   }
-  free(Q);
+
+  if (Q->Right != NULL)
+  {
+    freeQueue(Q->Right);
+  }
+
+  freeEvent(Q->e);
+  freeNodeQueue(Q);
+}
+
+/*
+ * print a node of the queue
+ */
+void printNodeQueue(Queue *Q, int i)
+{
+  if (Q != NULL && Q->e == NULL)
+  {
+    printf("Queue is empty\n");
+    return;
+  }
+
+  for (int a = 0; a < i; a++)
+  {
+    printf("  ");
+  }
+
+  if (Q == NULL)
+  {
+    printf("    | NULL (queue)\n");
+    return;
+  }
+
+  printf("%3d | End Node %+f %+f  | %p | %p | %p | %p | Event %p\n", i, Q->e->coordinates[0], Q->e->coordinates[1], Q->Root, Q, Q->Left, Q->Right, Q->e);
+
+  printNodeQueue(Q->Left, i + 1);
+
+  printNodeQueue(Q->Right, i + 1);
+
+  return;
 }
 
 /*
@@ -225,16 +389,17 @@ void freeQueue(Queue *Q)
  */
 void printQueue(Queue *Q)
 {
-  Event *E = Q->First;
-  int i = 0;
-  printf("QUEUE &FIRST\n");
-  printf("      %p \n", Q->First);
-  printf("EVENTS \n%*s X      Y      TYPE ISVALID &EVENT         &NEXT          &PREVIOUS     &NODE\n", 4, "id");
-  while (E != NULL)
-  {
-    printf("%*d %+2.3f %+2.3f %d    %d      %14p %14p %14p %p\n", 4, i, E->coordinates[0], E->coordinates[1], E->type, E->isValid, E, E->next, E->previous, E->node);
-    E = E->next;
-    i++;
-  }
-  printf("End of Queue \n");
+  printNodeQueue(Q, 0);
+}
+
+/*
+ * Create an empty Queue node
+ */
+Queue *initQueueNode()
+{
+  Queue *Q = malloc(sizeof(Queue));
+  Q->e = NULL;
+  Q->Left = NULL;
+  Q->Right = NULL;
+  return Q;
 }

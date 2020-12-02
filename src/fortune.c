@@ -11,8 +11,7 @@ FortuneStruct *initFortune(coord *points, int n)
   // Sort
   qsort(points, n, sizeof(float) * 2, comparefloats);
   initFaces(data->Voronoid, points, n);
-  data->Q = LoadSortedEventQueue(points, n, data->Voronoid->faces);
-
+  data->Q = LoadSortedEventQueue(points, 0, n, data->Voronoid->faces, NULL);
   data->beachLine = NULL;
 
   return data;
@@ -23,7 +22,7 @@ FortuneStruct *initFortune(coord *points, int n)
  */
 void fortuneAlgo(FortuneStruct *data, float yLine)
 {
-  while (data->Q->First != NULL && data->Q->First->coordinates[1] < yLine)
+  while (data->Q->e != NULL && data->Q->e->coordinates[1] < yLine)
   {
     //printf("New process \n");
     //printQueue(data->Q);
@@ -38,10 +37,9 @@ void ProcessEvent(FortuneStruct *data)
 {
   if (data->Q == NULL)
     return;
-  if (data->Q->First == NULL)
+  if (data->Q == NULL) // TODO update
     return;
   Event *e = popQueue(data->Q);
-
   if (e == NULL)
     return; // TODO should assert
   if (e->type == SITE)
@@ -145,7 +143,7 @@ void ProcessSite(FortuneStruct *data, Event *e)
     {
       if (Inner2->Left->ev->coordinates[1] > circle->center[1] + circle->radius)
       {
-        deleteEvent(data->Q, Inner2->Left->ev);
+        Inner2->Left->ev->isValid = false;
         Inner2->Left->ev = AddPoint(data->Q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
         Inner2->Left->ev->node = Inner2->Left;
         Inner2->Left->ev->circle = circle;
@@ -175,7 +173,7 @@ void ProcessSite(FortuneStruct *data, Event *e)
       // if we need to replace the circle
       if (Inner1->Right->ev->coordinates[1] > circle->center[1] + circle->radius)
       {
-        deleteEvent(data->Q, Inner1->Right->ev);
+        Inner1->Right->ev->isValid = false;
         Inner1->Right->ev = AddPoint(data->Q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
         Inner1->Right->ev->node = Inner1->Right;
         Inner1->Right->ev->circle = circle;
@@ -287,7 +285,7 @@ void ProcessCircle(FortuneStruct *data, Event *e)
     {
       if (!arc->ev->isValid || (arc->ev->coordinates[1] > circle->center[1] + circle->radius))
       {
-        deleteEvent(data->Q, arc->ev);
+        arc->ev->isValid = false;
         arc->ev = AddPoint(data->Q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
         arc->ev->node = arc;
         arc->ev->circle = circle;
@@ -325,7 +323,7 @@ void ProcessCircle(FortuneStruct *data, Event *e)
     {
       if (!arc->ev->isValid || (arc->ev->coordinates[1] > circle->center[1] + circle->radius))
       {
-        deleteEvent(data->Q, arc->ev);
+        arc->ev->isValid = false;
         arc->ev = AddPoint(data->Q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
         arc->ev->node = arc;
         arc->ev->circle = circle;
