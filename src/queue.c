@@ -333,7 +333,6 @@ void freeNodeQueue(Queue *Q)
  */
 void freeQueue(Queue *Q)
 {
-
   if (Q == NULL)
   {
     return;
@@ -348,8 +347,8 @@ void freeQueue(Queue *Q)
   {
     freeQueue(Q->Right);
   }
-
-  freeEvent(Q->e);
+  if (Q->e != NULL)
+    freeEvent(Q->e);
   freeNodeQueue(Q);
 }
 
