@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
 		return EXIT_SUCCESS;
 	}
 
-	int p = 5;
+	int p = 100;
 
 	/*float test_points[5][2] = {
 			{0, 0},
@@ -218,10 +218,11 @@ int main(int argc, char *argv[])
 			fortuneAlgo(data, sweeplineHeight);
 			nCircleEvent = getCircleEvent(data->Q, pointsCircleEvent, 0);
 			bov_points_update(circleEvent, pointsCircleEvent, nCircleEvent);
-			if (data->Q->e != NULL)
+
+			if (data->Q->size > 0)
 			{
-				nextEvent[0][0] = data->Q->e->coordinates[0];
-				nextEvent[0][1] = data->Q->e->coordinates[1];
+				nextEvent[0][0] = data->Q->es[0]->coordinates[0];
+				nextEvent[0][1] = data->Q->es[0]->coordinates[1];
 				bov_points_update(ptnextEvent, nextEvent, 1);
 			}
 			else
