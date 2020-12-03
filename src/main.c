@@ -38,9 +38,8 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	/*
-	int seed = (int)time(NULL);
-	srand(seed);*/
+		int seed = (int)time(NULL);
+	srand(seed);
 
 	if (benchmark)
 	{

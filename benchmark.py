@@ -3,7 +3,7 @@ import os,sys
 import subprocess
 import random
 
-version = "V0"
+version = "V1"
 dirs = os.listdir('./')
 
 if 'Data' not in dirs:
