@@ -16,6 +16,7 @@ PolygonMesh *InitEmptyPolygonMesh()
   pm->firstHedge = NULL;
   pm->lastHedge = NULL;
   //todo complete
+  return pm;
 }
 
 /*
@@ -93,6 +94,7 @@ HalfEdge *createHe()
   he->prev = NULL;
   he->Opposite = NULL;
   he->nextList = NULL;
+  return he;
 }
 
 /*
@@ -134,13 +136,13 @@ void linkHe(HalfEdge *a, HalfEdge *b)
 {
   if (a == NULL)
   {
-    printf("Error a is NULL\n");
+    printf("Error first HE is NULL\n");
     return;
   }
 
   if (b == NULL)
   {
-    printf("Error b is NULL \n");
+    printf("Error second is NULL \n");
     return;
   }
   a->next = b;

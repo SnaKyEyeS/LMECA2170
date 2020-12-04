@@ -18,7 +18,7 @@ add_executable(${EXEC}
                )
 
 target_include_directories(${EXEC} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
-target_compile_options(${EXEC} PRIVATE "")
+set(CMAKE_C_FLAGS "-O3")
 set_target_properties(${EXEC} PROPERTIES
                       C_STANDARD 99
                       RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")

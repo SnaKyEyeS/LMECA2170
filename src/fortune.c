@@ -7,13 +7,11 @@ FortuneStruct *initFortune(coord *points, int n)
 {
   FortuneStruct *data = malloc(sizeof(FortuneStruct));
   data->Voronoid = InitEmptyPolygonMesh();
-
   // Sort
   qsort(points, n, sizeof(float) * 2, comparefloats);
   initFaces(data->Voronoid, points, n);
   data->Q = LoadSortedEventQueue(points, n, data->Voronoid->faces);
   data->beachLine = NULL;
-
   return data;
 }
 

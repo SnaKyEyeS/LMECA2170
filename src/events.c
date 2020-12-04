@@ -12,6 +12,8 @@ Event *initEmptyEvent()
   e->isValid = true;
   e->circle = NULL;
   e->f = NULL;
+
+  return e;
 }
 
 /*
