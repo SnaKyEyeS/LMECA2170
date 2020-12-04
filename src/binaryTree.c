@@ -397,7 +397,7 @@ void boundingBoxBp(Node *root)
     return;
 
   // TODO improve
-  int yLine = 100000;
+  int yLine = 1000;
   float point[2];
   point[0] = getBpX(root, yLine);
   point[1] = parabola(root->leftSite[0], root->leftSite[1], yLine, point[0]);
