@@ -19,6 +19,7 @@
   * [ ] Better name for functions
   * [ ] Add comment to the code
 * [ ] Improve the speed 
+  * [x] Improve the heap
   * [ ] Improve processSite
   * [ ] Improve processCircle
   * [ ] Improve circle creation

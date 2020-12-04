@@ -38,7 +38,6 @@ void ProcessEvent(FortuneStruct *data)
     return;
   if (data->Q->size == 0) // TODO update
     return;
-
   Event *e = popQueue(data->Q);
 
   if (e == NULL)
@@ -91,12 +90,33 @@ void ProcessSite(FortuneStruct *data, Event *e)
   Node *Inner1 = malloc(sizeof(Node));
   Node *Inner2 = malloc(sizeof(Node));
 
+  Node *Left = NULL;
+  Node *Right = NULL;
+  Node *var = arc;
+
   Inner1->isLeaf = false;
   Inner2->isLeaf = false;
-
   //Update Root
   if (arc->Root != NULL)
   {
+    while ((Left == NULL || Right == NULL) && var->Root != NULL)
+    {
+      if (var->Root->Left == var)
+      {
+        if (Right == NULL)
+        {
+          Right = var->Root;
+        }
+      }
+      else
+      {
+        if (Left == NULL)
+        {
+          Left = var->Root;
+        }
+      }
+      var = var->Root;
+    }
 
     if (arc->Root->Left == arc)
     {
@@ -138,7 +158,11 @@ void ProcessSite(FortuneStruct *data, Event *e)
 
   //TODO: rebalance
 
-  Circle *circle = createRightCircle(newLeaf);
+  Circle *circle = NULL;
+  if (Left != NULL)
+  {
+    circle = createCircle(arc->arcPoint, newLeaf->arcPoint, Left->leftSite);
+  }
 
   if (circle != NULL && circle->center[1] + circle->radius > e->coordinates[1])
   {
@@ -169,7 +193,15 @@ void ProcessSite(FortuneStruct *data, Event *e)
     freeCircle(circle);
   }
 
-  circle = createLeftCircle(newLeaf);
+  if (Right != NULL)
+  {
+    circle = createCircle(newLeaf->arcPoint, arc->arcPoint, Right->rightSite);
+  }
+  else
+  {
+    circle = NULL;
+  }
+
   if (circle != NULL && circle->center[1] + circle->radius > e->coordinates[1])
   {
     if (Inner1->Right->ev != NULL)

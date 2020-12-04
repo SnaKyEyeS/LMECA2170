@@ -37,15 +37,15 @@ int main(int argc, char *argv[])
 			i += 1;
 		}
 	}
-
-		int seed = (int)time(NULL);
+	/*
+	int seed = (int)time(NULL);
 	srand(seed);
-
+*/
 	if (benchmark)
 	{
 		coord *points = malloc(sizeof(coord) * nPoints);
-		GLfloat min[2] = {-1, -1};
-		GLfloat max[2] = {1, 1};
+		GLfloat min[2] = {-10, -10};
+		GLfloat max[2] = {10, 10};
 		random_uniform_points(points, nPoints, min, max);
 		struct timeval stop, start;
 
@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
 		return EXIT_SUCCESS;
 	}
 
-	int p = 100;
+	int p = 200;
 
 	/*float test_points[5][2] = {
 			{0, 0},
