@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-filename = 'Data/V0-1'
-filename2 = 'Data/V1-1'
+filename = 'Data/V1-3'
+filename2 = 'Data/V1-4'
 x = []
 y = []
 

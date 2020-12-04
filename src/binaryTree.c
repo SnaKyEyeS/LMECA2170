@@ -11,22 +11,22 @@
 float getBpX(Node *node, float pointY)
 {
   double doublepointY = (double)pointY;
-  double doubleLx = (double)node->leftSite[0];
-  double doubleLy = (double)node->leftSite[1];
-  double doubleRx = (double)node->rightSite[0];
-  double doubleRy = (double)node->rightSite[1];
+  double doubleLx = (double)node->leftArc->arcPoint[0];
+  double doubleLy = (double)node->leftArc->arcPoint[1];
+  double doubleRx = (double)node->rightArc->arcPoint[0];
+  double doubleRy = (double)node->rightArc->arcPoint[1];
   // 2*(pjy-ly)
   double al = 2 * (doubleLy - doublepointY);
   double ar = 2 * (doubleRy - doublepointY);
 
   if (fabs(al) < EPSILON)
   {
-    return node->leftSite[0];
+    return node->leftArc->arcPoint[0];
   }
 
   if (fabs(ar) < EPSILON)
   {
-    return node->rightSite[0];
+    return node->rightArc->arcPoint[0];
   }
 
   double A = 1.0 / al - 1.0 / ar;
@@ -44,7 +44,7 @@ float getBpX(Node *node, float pointY)
   double x2 = (-B - sqrtDelta) / (2 * A);
 
   // intersection of parabola. The lower one will decide which point
-  if (node->leftSite[0] < x1 && x1 < node->rightSite[0])
+  if (node->leftArc->arcPoint[0] < x1 && x1 < node->rightArc->arcPoint[0])
   {
     return (float)x1;
   }
@@ -314,7 +314,7 @@ void printNode(Node *node)
     printf("Node is NULL\n");
   else
   {
-    printf("NODE - (%p) (Left: %p, Right: %p) (Root: %p) (IsLeaf %d) (leftSite %f, %f) (rightSite %f,%f) (arcPoint %f,%f) \n", node, node->Left, node->Right, node->Root, node->isLeaf, node->leftSite[0], node->leftSite[1], node->rightSite[0], node->rightSite[1], node->arcPoint[0], node->arcPoint[1]);
+    printf("NODE - (%p) (Left: %p, Right: %p) (Root: %p) (IsLeaf %d) (leftSite %f, %f) (rightSite %f,%f) (arcPoint %f,%f) \n", node, node->Left, node->Right, node->Root, node->isLeaf, node->leftArc->arcPoint[0], node->leftArc->arcPoint[1], node->rightArc->arcPoint[0], node->rightArc->arcPoint[1], node->arcPoint[0], node->arcPoint[1]);
   }
 }
 
@@ -376,8 +376,8 @@ void drawBeachLine(float y, Node *root, coord *points, int n)
     {
       if (points[i][0] > bpX)
       {
-        xArc = var->rightSite[0];
-        yArc = var->rightSite[1];
+        xArc = var->rightArc->arcPoint[0];
+        yArc = var->rightArc->arcPoint[1];
         var = getRightBpNode(var);
         if (var != NULL)
         {
@@ -400,7 +400,7 @@ void boundingBoxBp(Node *root)
   int yLine = 1000;
   float point[2];
   point[0] = getBpX(root, yLine);
-  point[1] = parabola(root->leftSite[0], root->leftSite[1], yLine, point[0]);
+  point[1] = parabola(root->leftArc->arcPoint[0], root->leftArc->arcPoint[1], yLine, point[0]);
   if (root->he != NULL)
   {
     Vertex *v = createVertex(point);
@@ -414,7 +414,7 @@ void boundingBoxBp(Node *root)
     }
     else
     {
-      printf("Error: a semi-infinite edge has a vertex ? \n");
+      //printf("Error: a semi-infinite edge has a vertex ? \n");
     }
   }
 
@@ -443,7 +443,7 @@ int printTree(Node *node, int depth, int id)
   }
   else
   {
-    printf("|- BREAKPOINT (%.3f, %.3f), (%.3f, %.3f) (%d) (Node: %p, Root: %p) (Left: %p, Right: %p) %p\n", node->leftSite[0], node->leftSite[1], node->rightSite[0], node->rightSite[1], id, node, node->Root, node->Left, node->Right, node->he);
+    printf("|- BREAKPOINT (%.3f, %.3f), (%.3f, %.3f) (%d) (Node: %p, Root: %p) (Left: %p, Right: %p) %p\n", node->leftArc->arcPoint[0], node->leftArc->arcPoint[1], node->rightArc->arcPoint[0], node->rightArc->arcPoint[1], id, node, node->Root, node->Left, node->Right, node->he);
   }
 
   return 1 + printTree(node->Left, depth + 1, id * 10) + printTree(node->Right, depth + 1, id * 10 + 1);

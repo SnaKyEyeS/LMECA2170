@@ -35,7 +35,7 @@ Circle *createCircle(float Af[2], float Bf[2], float Cf[2])
 
   double Delta = p2 * p2 + p3 * p3 - 4 * p1 * p4;
 
-  if (fabs(p1) < EPSILON)
+  if (p1 < EPSILON)
   {
     return NULL;
   }

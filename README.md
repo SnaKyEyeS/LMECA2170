@@ -20,8 +20,8 @@
   * [ ] Add comment to the code
 * [ ] Improve the speed 
   * [x] Improve the heap
-  * [ ] Improve processSite
-  * [ ] Improve processCircle
+  * [x] Improve processSite
+  * [x] Improve processCircle
   * [ ] Improve circle creation
   * [ ] Benchmark after the upgrade 
   * [ ] Tool to check function call and function duration (min, max, average, total) ?

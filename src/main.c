@@ -62,13 +62,14 @@ int main(int argc, char *argv[])
 	}
 
 	int p = 200;
-
-	/*float test_points[5][2] = {
+	/*
+	float test_points[5][2] = {
 			{0, 0},
 			{1, 1},
 			{-2, 2},
 			{1.5, 3},
-			{2, 4}};*/
+			{2, 4}};
+			*/
 	/*
 	float test_points[11][2] = {
 			{0.1, -0.6},

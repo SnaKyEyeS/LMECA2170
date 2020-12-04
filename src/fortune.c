@@ -72,6 +72,8 @@ void ProcessSite(FortuneStruct *data, Event *e)
 
   if (data->beachLine == NULL)
   {
+    newLeaf->leftBP = NULL;
+    newLeaf->rightBP = NULL;
     newLeaf->Root = NULL;
     data->beachLine = newLeaf;
     return;
@@ -138,30 +140,38 @@ void ProcessSite(FortuneStruct *data, Event *e)
   Inner2->Root = Inner1;
 
   // Update Left Right
+  Node *duplArc = duplicateLeaf(arc);
   Inner2->Left = arc;
   Inner2->Right = newLeaf;
   Inner1->Left = Inner2;
-  Inner1->Right = duplicateLeaf(arc);
-  Inner1->Right->Root = Inner1;
+  Inner1->Right = duplArc;
+  duplArc->Root = Inner1;
 
-  // Update site position
+  // Update Arc and BP
+  Node *LeftBP = arc->leftBP, *RightBp = arc->rightBP;
 
-  // TODO not working
-  Inner2->leftSite[0] = arc->arcPoint[0];
-  Inner2->leftSite[1] = arc->arcPoint[1];
-  Inner2->rightSite[0] = e->coordinates[0];
-  Inner2->rightSite[1] = e->coordinates[1];
-  Inner1->rightSite[0] = arc->arcPoint[0];
-  Inner1->rightSite[1] = arc->arcPoint[1];
-  Inner1->leftSite[0] = e->coordinates[0];
-  Inner1->leftSite[1] = e->coordinates[1];
+  arc->leftBP = LeftBP;
+  arc->rightBP = Inner2;
+  newLeaf->leftBP = Inner2;
+  newLeaf->rightBP = Inner1;
+  duplArc->leftBP = Inner1;
+  duplArc->rightBP = RightBp;
+
+  Inner2->leftArc = arc;
+  Inner2->rightArc = newLeaf;
+  Inner1->leftArc = newLeaf;
+  Inner1->rightArc = Inner1->Right;
+  if (LeftBP != NULL)
+    LeftBP->rightArc = arc;
+  if (RightBp != NULL)
+    RightBp->leftArc = duplArc;
 
   //TODO: rebalance
 
   Circle *circle = NULL;
   if (Left != NULL)
   {
-    circle = createCircle(arc->arcPoint, newLeaf->arcPoint, Left->leftSite);
+    circle = createCircle(arc->arcPoint, newLeaf->arcPoint, Left->leftArc->arcPoint);
   }
 
   if (circle != NULL && circle->center[1] + circle->radius > e->coordinates[1])
@@ -195,7 +205,7 @@ void ProcessSite(FortuneStruct *data, Event *e)
 
   if (Right != NULL)
   {
-    circle = createCircle(newLeaf->arcPoint, arc->arcPoint, Right->rightSite);
+    circle = createCircle(newLeaf->arcPoint, arc->arcPoint, Right->rightArc->arcPoint);
   }
   else
   {
@@ -261,45 +271,119 @@ void ProcessCircle(FortuneStruct *data, Event *e)
     return;
   }
 
-  Node *var = getLeftestArc(e->node);
-  if (var->ev != NULL)
+  // a, b, c, d are BP
+  //  - LeftLeftarc - c - Leftarc - a - arc to delete - b - Rightarc - d - RightRightarc
+  Node *a = NULL, *b = NULL, *c = NULL, *d = NULL;
+
+  Node *leftArc = NULL;
+  if (e->node->leftBP != NULL)
+    leftArc = e->node->leftBP->leftArc;
+  Node *rightArc = NULL;
+  if (e->node->rightBP != NULL)
+    rightArc = e->node->rightBP->rightArc;
+  Node *var = e->node;
+  bool is_right = true;
+  bool replaceB = true;
+
+  while ((a == NULL || b == NULL || c == NULL || d == NULL) && var->Root != NULL)
   {
-    //printEvent(var->ev);
-    var->ev->isValid = false;
-    var->ev = NULL;
+    if (var->Root->Left == var)
+    {
+      if (b == NULL)
+      {
+        replaceB = false;
+        b = var->Root;
+
+        if (!var->Root->Right->isLeaf)
+        {
+          Node *subvar = var->Root->Right;
+          while (!subvar->Left->isLeaf)
+          {
+            subvar = subvar->Left;
+          }
+          d = subvar;
+        }
+      }
+      else if (d == NULL)
+      {
+        d = var->Root;
+      }
+    }
+    else
+    {
+      if (a == NULL)
+      {
+        replaceB = true;
+        a = var->Root;
+
+        if (!var->Root->Left->isLeaf)
+        {
+          Node *subvar = var->Root->Left;
+          while (!subvar->Right->isLeaf)
+          {
+            subvar = subvar->Right;
+          }
+          c = subvar;
+        }
+      }
+      else if (c == NULL)
+      {
+        c = var->Root;
+      }
+    }
+    var = var->Root;
   }
-  var = getRightestArc(e->node);
-  if (var->ev != NULL)
+
+  // TODO improve data struct and fetch arc from BP instead of storing LeftSite and RightSite
+
+  if (leftArc != NULL)
   {
-    var->ev->isValid = false;
-    var->ev = NULL;
+    if (leftArc->ev != NULL)
+    {
+      leftArc->ev->isValid = false;
+      leftArc->ev = NULL;
+    }
   }
+
+  if (rightArc != NULL)
+  {
+    if (rightArc->ev != NULL)
+    {
+      rightArc->ev->isValid = false;
+      rightArc->ev = NULL;
+    }
+  }
+
   // Must do this before
-  HalfEdge *hea1 = getLeftBpNode(e->node)->he;
-  HalfEdge *heb1 = getRightBpNode(e->node)->he;
+  HalfEdge *hea1 = a->he;
+  HalfEdge *heb1 = b->he;
   Node *MainRoot = e->node->Root->Root;
   Node *replace = NULL;
   Node *arc = NULL;
-  bool is_right = true;
 
   Node *bpArc2; //the break point which is not replaced
-  if (e->node->Root->Left == e->node)
+
+  if (replaceB)
   {
-    bpArc2 = getLeftBpNode(e->node->Root);
-    replace = e->node->Root->Right;
-    bpArc2->rightSite[0] = e->node->Root->rightSite[0];
-    bpArc2->rightSite[1] = e->node->Root->rightSite[1];
-    arc = getLeftArc(e->node->Root->Right);
+    bpArc2 = a;
+    replace = b->Right;
+    a->rightArc = b->rightArc;
+    arc = a->leftArc;
   }
   else
   {
-    bpArc2 = getRightBpNode(e->node->Root);
-    replace = e->node->Root->Left;
-    bpArc2->leftSite[0] = e->node->Root->leftSite[0];
-    bpArc2->leftSite[1] = e->node->Root->leftSite[1];
+    bpArc2 = b;
+    replace = a->Left;
+    b->leftArc = a->rightArc;
     is_right = false;
-    arc = getRightArc(e->node->Root->Left);
+    arc = b->rightArc;
   }
+
+  bpArc2->leftArc = leftArc;
+  bpArc2->rightArc = rightArc;
+  leftArc->rightBP = bpArc2;
+  rightArc->leftBP = bpArc2;
+
   if (MainRoot->Left == e->node->Root)
   {
     MainRoot->Left = replace;
@@ -311,7 +395,18 @@ void ProcessCircle(FortuneStruct *data, Event *e)
 
   replace->Root = MainRoot;
 
-  Circle *circle = createMiddleCircle(arc);
+  //Circle *circle = createMiddleCircle(arc);
+
+  Circle *circle = NULL;
+  if (c != NULL)
+  {
+    arc = leftArc;
+    if (replaceB)
+      circle = createCircle(c->leftArc->arcPoint, c->rightArc->arcPoint, a->rightArc->arcPoint);
+    else
+      circle = createCircle(c->leftArc->arcPoint, c->rightArc->arcPoint, b->rightArc->arcPoint);
+  }
+
   //TODO improve this
   // should directly fetch the two arc
 
@@ -343,16 +438,19 @@ void ProcessCircle(FortuneStruct *data, Event *e)
     freeCircle(circle);
   }
 
-  if (is_right)
+  if (d != NULL)
   {
-    circle = createRightCircle(arc);
-    arc = getLeftestArc(arc);
+    arc = rightArc;
+    if (replaceB)
+      circle = createCircle(d->leftArc->arcPoint, d->rightArc->arcPoint, a->leftArc->arcPoint);
+    else
+      circle = createCircle(d->leftArc->arcPoint, d->rightArc->arcPoint, b->leftArc->arcPoint);
   }
   else
   {
-    circle = createLeftCircle(arc);
-    arc = getRightestArc(arc);
+    circle = NULL;
   }
+
   if (circle != NULL && circle->center[1] + circle->radius > e->coordinates[1])
   {
     if (arc->ev != NULL)
@@ -428,68 +526,6 @@ void ProcessCircle(FortuneStruct *data, Event *e)
 
   freeNode(e->node->Root);
   freeNode(e->node);
-}
-
-/*
- * Create the circle with the new arc at the left
- * 
- * Node: arc on the LEFT
- */
-Circle *createLeftCircle(Node *leaf)
-{
-  Node *rightrightBp = getRightBpNode(getRightBpNode(leaf));
-  if (rightrightBp != NULL)
-  {
-    return createCircle(leaf->arcPoint, rightrightBp->leftSite, rightrightBp->rightSite);
-  }
-}
-
-/*
- * Create the circle with the new arc at the right
- * 
- * Node: arc on the right
- */
-Circle *createRightCircle(Node *leaf)
-{
-  // TODO fix not working great also the next one (it does not verify if we have right bp)
-  Node *leftleftBp = getLeftBpNode(getLeftBpNode(leaf));
-  if (leftleftBp != NULL)
-  {
-    return createCircle(leftleftBp->leftSite, leftleftBp->rightSite, leaf->arcPoint);
-  }
-}
-
-/*
- * Create the circle with the new arc at the middle
- * 
- * Node: arc on the middle
- */
-Circle *createMiddleCircle(Node *leaf)
-{
-  Node *var = leaf;
-  Node *left = NULL;
-  Node *right = NULL;
-  while (var->Root != NULL)
-  {
-    if (var->Root->Right == var && right == NULL)
-    {
-      right = var->Root;
-    }
-
-    if (var->Root->Left == var && left == NULL)
-    {
-      left = var->Root;
-    }
-
-    if (left != NULL & right != NULL)
-    {
-      return createCircle(right->leftSite, leaf->arcPoint, left->rightSite);
-    }
-
-    var = var->Root;
-  }
-  // no 2 Right branch
-  return NULL;
 }
 
 void freeFortuneStruct(FortuneStruct *data)

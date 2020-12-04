@@ -18,17 +18,19 @@ typedef struct Node Node;
 // We are a leaf when Left = NULL and Right = NULL
 struct Node
 {
+  Node *Root;
+  bool isLeaf;
+
+  float arcPoint[2];
+  Event *ev;
+  Node *leftBP;
+  Node *rightBP;
+
+  Node *rightArc;
+  Node *leftArc;
+  HalfEdge *he;
   Node *Left;
   Node *Right;
-  Node *Root;
-  float arcPoint[2];
-
-  float leftSite[2];
-  float rightSite[2];
-  Event *ev;
-  HalfEdge *he;
-
-  bool isLeaf;
 };
 
 float getBpX(Node *node, float pointY);
