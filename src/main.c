@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-		int seed = (int)time(NULL);
+	int seed = (int)time(NULL);
 	srand(seed);
 
 	if (benchmark)
@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
 		return EXIT_SUCCESS;
 	}
 
-	int p = 100;
+	int p = 200;
 
 	/*float test_points[5][2] = {
 			{0, 0},
