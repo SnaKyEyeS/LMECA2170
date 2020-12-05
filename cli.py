@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 from utils import loguniform
 
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
 
 @click.group()
 def cli():
