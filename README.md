@@ -4,6 +4,14 @@
 
 ![V0 gif](Vid/V0.gif)
 
+## V1
+### Data
+* V1-1: change the Queue from a linked list to a binary tree
+* V1-2: change the Queue from a binary tree to a heap (array like)
+* V1-{3,4,5}: Optimisation of the algorithm
+* V1-8: Add rebalance of the 
+
+
 ## Todo
 ### V0 - It's done
 * [x] Have a working Algo -> I think it's ok

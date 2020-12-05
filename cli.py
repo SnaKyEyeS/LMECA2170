@@ -62,6 +62,7 @@ def plot(versions):
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1)
     for index, filename in enumerate(filenames):
+        print(filename)
         x = list()
         y = list()
         with open(filename) as f:
