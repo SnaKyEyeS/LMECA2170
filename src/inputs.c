@@ -19,6 +19,9 @@ void random_uniform_points(GLfloat coord[][2], GLsizei n,
 {
 	for (GLsizei i = 0; i < n; i++)
 	{
+		coord[i][0] = (max[0] - min[0]) * rand() / RAND_MAX + min[0];
+		coord[i][1] = (max[1] - min[1]) * rand() / RAND_MAX + min[1];
+		/*
 		double distance = EPSILON_POINTS + 1;
 		do
 		{
@@ -38,6 +41,7 @@ void random_uniform_points(GLfloat coord[][2], GLsizei n,
 				}
 			}
 		} while (distance < EPSILON_POINTS);
+		*/
 	}
 }
 
