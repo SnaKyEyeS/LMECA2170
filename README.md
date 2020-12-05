@@ -23,9 +23,9 @@
 
 ### V1
 * [ ] Clean the code
-  * [ ] Better use of functions
+  * [x] Better use of functions
   * [ ] Better name for functions
-  * [ ] Add comment to the code
+  * [x] Add comment to the code
 * [ ] Improve the speed 
   * [x] Improve the heap
   * [x] Improve processSite
@@ -44,7 +44,7 @@
   * [x] Speed of sweep line should be variable
   * [x] Sweep line should be able to stop
   * [x] manual increase for sweep line should be ok
-  * [ ] Should be able to adjuste resolution of lines (beachLine, cicle) (during ?)
+  * [x] Should be able to adjuste resolution of lines (beachLine, cicle) (during ?)
   * [x] should be able to switch between different animation type
 * [ ] Add nice visual
   * [ ] Sweepline
@@ -60,8 +60,8 @@
   * [ ] verify if when add points
 
 ### V2
-* [ ] Add -O3 to make
-  * [ ] Benchmark this 
+* [x] Add -O3 to make
+  * [x] Benchmark this 
   * [ ] Test othe flags and benchmark them
 * [ ] Add a realtime ploting execution time / data-size
   * [ ] Should be able to plot with different color different option and choose which one to plot. (Data should be the same).

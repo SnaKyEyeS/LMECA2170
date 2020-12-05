@@ -14,6 +14,7 @@ int main(int argc, char *argv[])
 	int nPoints = 0;
 	bool benchmark = false;
 	enum TYPE_ANIM typeAnim = SWEEP_ANIM;
+	int nBeachLine = 300;
 
 	// Handle flags
 	for (int i = 1; i < argc; i++)
@@ -66,6 +67,26 @@ int main(int argc, char *argv[])
 			}
 
 			typeAnim = anim;
+
+			i += 1;
+		}
+
+		else if (strcmp(argv[i], "-r") == 0 || strcmp(argv[i], "--resolution") == 0)
+		{
+
+			if (i + 1 >= argc)
+			{
+				printf("You should precise the numbers of points after -r or --resolution\n");
+				return EXIT_FAILURE;
+			}
+
+			// Return 0 if not a number
+			nBeachLine = atoi(argv[i + 1]);
+			if (nBeachLine <= 0)
+			{
+				printf("The number of point should be higher than 0\n");
+				return EXIT_FAILURE;
+			}
 
 			i += 1;
 		}
@@ -144,10 +165,9 @@ int main(int argc, char *argv[])
 			{xmax * 10, sweeplineHeight},
 	};
 
-	int nMaxBeachLine = 10000;
+	int nMaxBeachLine = nBeachLine * 10;
 
 	coord *points = linspace(xmin, xmax, nMaxBeachLine);
-	int nBeachLine = nMaxBeachLine / 10;
 	if (nBeachLine <= 0)
 	{
 		nBeachLine = 2;
@@ -433,7 +453,7 @@ int main(int argc, char *argv[])
 		pKey = impulse(pKey, glfwGetKey(window->self, GLFW_KEY_P));
 		if (pKey == 1)
 		{
-			nBeachLine = nBeachLine << 1;
+			nBeachLine = nBeachLine * 1.4;
 			if (nBeachLine > nMaxBeachLine)
 				nBeachLine = nMaxBeachLine;
 			linspaceRealloc(points, xmin, xmax, nBeachLine);
@@ -442,7 +462,7 @@ int main(int argc, char *argv[])
 		oKey = impulse(oKey, glfwGetKey(window->self, GLFW_KEY_O));
 		if (oKey == 1)
 		{
-			nBeachLine = nBeachLine >> 1;
+			nBeachLine = nBeachLine * 0.71;
 			if (nBeachLine <= 2)
 				nBeachLine = 2;
 			linspaceRealloc(points, xmin, xmax, nBeachLine);
@@ -484,7 +504,7 @@ int main(int argc, char *argv[])
 		bov_points_draw(window, ptsHard, 0, p);
 		bov_points_draw(window, ptnextEvent, 0, 2);
 		bov_line_strip_draw(window, ptsBeachline, 0, nBeachLine);
-		bov_fast_lines_draw(window, ptsHe, 0, nHe);
+		bov_lines_draw(window, ptsHe, 0, nHe);
 		bov_window_update(window);
 	}
 
