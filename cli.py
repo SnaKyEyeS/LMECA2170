@@ -22,7 +22,7 @@ def benchmark():
 
 @benchmark.command()
 @click.option("-v", "--version", default=1, help="Version", type=int)
-@click.option("-b", "--boundary", nargs=2, default=(2,6), type=int, help="Benchmark lower & upper boundary")
+@click.option("-b", "--boundary", nargs=2, default=(2, 6), type=int, help="Benchmark lower & upper boundary")
 @click.option("-n", "--number", default=100, type=int, help="Number of points")
 def run(version, boundary, number):
     """Run a benchmark"""
@@ -47,7 +47,7 @@ def run(version, boundary, number):
                 print(error)
             else:
                 exec_time = int(output.decode('UTF-8').split('\n')[0])
-                f.write(str(n) + " " + str(exec_time) + "\n")
+                f.write(f"{n} {exec_time}\n")
 
     click.secho("Benchmark done !", fg="green")
 
@@ -55,6 +55,8 @@ def run(version, boundary, number):
 @benchmark.command()
 @click.option("-v", "--versions", default=[5, 6], multiple=True, help="Versions to plot")
 def plot(versions):
+    """Plot the benchmark results"""
+
     filenames = ["Data/V0-1"]
     filenames.extend([f"Data/V1-{v}" for v in versions])
 
