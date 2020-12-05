@@ -2,8 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 filename = 'Data/V0-1'
-filename2 = 'Data/V1-4'
-filename3 = 'Data/V1-5'
+filename2 = 'Data/V1-5'
+filename3 = 'Data/V1-6'
+
 x = []
 y = []
 
