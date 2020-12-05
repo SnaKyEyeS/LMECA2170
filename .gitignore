@@ -55,6 +55,9 @@ dkms.conf
 # No build
 build/
 
-#vim 
+# vim 
 tags
 *.avi
+
+# Python
+__pycache__/
