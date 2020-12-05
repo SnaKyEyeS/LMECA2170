@@ -54,21 +54,26 @@ void ProcessEvent(FortuneStruct *data)
 /*
  * Process a site event
  * 
- * beachline: binaryTree representing the beachline
+ * data: data structure of the algorithm
  * e: event to process
- * Q: queue of events
  */
 void ProcessSite(FortuneStruct *data, Event *e)
 {
+  // Init of all variables
   Node *newLeaf = malloc(sizeof(Node));
   newLeaf->Left = NULL;
   newLeaf->Right = NULL;
   newLeaf->isLeaf = true;
   newLeaf->ev = NULL;
 
+  Node *Left = NULL;
+  Node *Right = NULL;
+
+  // the coordinates of the new arc
   newLeaf->arcPoint[0] = e->coordinates[0];
   newLeaf->arcPoint[1] = e->coordinates[1];
 
+  // if the beachLine is empty
   if (data->beachLine == NULL)
   {
     newLeaf->leftBP = NULL;
@@ -80,7 +85,7 @@ void ProcessSite(FortuneStruct *data, Event *e)
 
   Node *arc = getArc(data->beachLine, e->coordinates);
   //      old
-  //       | -> size can be left or right
+  //       | -> can be left or right
   //     Inner2
   //      /   \
   //   Inner1  arc
@@ -90,9 +95,6 @@ void ProcessSite(FortuneStruct *data, Event *e)
 
   Node *Inner1 = malloc(sizeof(Node));
   Node *Inner2 = malloc(sizeof(Node));
-
-  Node *Left = NULL;
-  Node *Right = NULL;
   Node *var = arc;
 
   Inner1->isLeaf = false;
@@ -133,11 +135,15 @@ void ProcessSite(FortuneStruct *data, Event *e)
     data->beachLine = Inner1;
   }
 
+  //TODO remove link Left & Right when using Leaf
+
+  //Line height init
   Inner1->leftHeight = 2;
   Inner1->rightHeight = 1;
   Inner2->leftHeight = 1;
   Inner2->rightHeight = 1;
 
+  // Link Node
   Inner1->Root = arc->Root;
   arc->Root = Inner2;
   newLeaf->Root = Inner2;
@@ -154,6 +160,7 @@ void ProcessSite(FortuneStruct *data, Event *e)
   // Update Arc and BP
   Node *LeftBP = arc->leftBP, *RightBp = arc->rightBP;
 
+  // Link the BP to the Arc
   arc->leftBP = LeftBP;
   arc->rightBP = Inner2;
   newLeaf->leftBP = Inner2;
@@ -161,6 +168,7 @@ void ProcessSite(FortuneStruct *data, Event *e)
   duplArc->leftBP = Inner1;
   duplArc->rightBP = RightBp;
 
+  // Link Arc to BP
   Inner2->leftArc = arc;
   Inner2->rightArc = newLeaf;
   Inner1->leftArc = newLeaf;
@@ -171,6 +179,7 @@ void ProcessSite(FortuneStruct *data, Event *e)
     RightBp->leftArc = duplArc;
 
   // update Height
+  // TODO: check the special case when the rotation gives a symmetry
   Node *var2 = Inner1;
   while (var2->Root != NULL)
   {
@@ -300,8 +309,7 @@ void ProcessSite(FortuneStruct *data, Event *e)
 
   // end of update Height
 
-  //TODO: rebalance
-
+  // Circle to the Left
   Circle *circle = NULL;
   if (Left != NULL)
   {
@@ -341,6 +349,7 @@ void ProcessSite(FortuneStruct *data, Event *e)
     freeCircle(circle);
   }
 
+  // Circle to the RIGHT
   if (Right != NULL)
   {
     circle = createCircle(newLeaf->arcPoint, arc->arcPoint, Right->rightArc->arcPoint);
@@ -379,6 +388,8 @@ void ProcessSite(FortuneStruct *data, Event *e)
     freeCircle(circle);
   }
 
+  // HE creation
+
   Inner2->he = createHe();
   Inner1->he = createHe();
   oppositeHe(Inner2->he, Inner1->he);
@@ -397,12 +408,12 @@ void ProcessSite(FortuneStruct *data, Event *e)
  * Process a circle event
  * 
  * beachline: binaryTree representing the beachline
+ * data: data structufe of the fortune
  * e: event to process
- * q: List of event
  */
 void ProcessCircle(FortuneStruct *data, Event *e)
 {
-  // Check if ok
+  // TODO rebalance when poping of the beachLine
   if (!e->isValid)
   {
     //printf("Invalid event \n");
@@ -412,6 +423,7 @@ void ProcessCircle(FortuneStruct *data, Event *e)
   //  - LeftLeftarc - c - Leftarc - a - arc to delete - b - Rightarc - d - RightRightarc
   Node *a = NULL, *b = NULL, *c = NULL, *d = NULL;
 
+  // the 4 BP next to the arc (better to fetch all of them at the same time)
   Node *leftArc = NULL;
   if (e->node->leftBP != NULL)
     leftArc = e->node->leftBP->leftArc;
@@ -471,8 +483,7 @@ void ProcessCircle(FortuneStruct *data, Event *e)
     var = var->Root;
   }
 
-  // TODO improve data struct and fetch arc from BP instead of storing LeftSite and RightSite
-
+  //invalid event
   if (leftArc != NULL)
   {
     if (leftArc->ev != NULL)
@@ -491,7 +502,6 @@ void ProcessCircle(FortuneStruct *data, Event *e)
     }
   }
 
-  // Must do this before
   HalfEdge *hea1 = a->he;
   HalfEdge *heb1 = b->he;
   Node *MainRoot = e->node->Root->Root;
@@ -500,6 +510,7 @@ void ProcessCircle(FortuneStruct *data, Event *e)
 
   Node *bpArc2; //the break point which is not replaced
 
+  // All replace and link
   if (replaceB)
   {
     bpArc2 = a;
@@ -521,6 +532,7 @@ void ProcessCircle(FortuneStruct *data, Event *e)
   leftArc->rightBP = bpArc2;
   rightArc->leftBP = bpArc2;
 
+  // reatch to the main root and update height
   if (MainRoot->Left == e->node->Root)
   {
     MainRoot->Left = replace;
@@ -548,6 +560,7 @@ void ProcessCircle(FortuneStruct *data, Event *e)
   }
 
   // Update Height
+  // Todo rebalance
   Node *var2 = MainRoot;
   while (var2->Root != NULL)
   {
@@ -571,7 +584,7 @@ void ProcessCircle(FortuneStruct *data, Event *e)
 
   replace->Root = MainRoot;
 
-  //Circle *circle = createMiddleCircle(arc);
+  //Circle creation
 
   Circle *circle = NULL;
   if (c != NULL)
@@ -582,9 +595,6 @@ void ProcessCircle(FortuneStruct *data, Event *e)
     else
       circle = createCircle(c->leftArc->arcPoint, c->rightArc->arcPoint, b->rightArc->arcPoint);
   }
-
-  //TODO improve this
-  // should directly fetch the two arc
 
   if (circle != NULL && circle->center[1] + circle->radius >= e->coordinates[1])
   {
