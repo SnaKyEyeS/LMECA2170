@@ -74,6 +74,25 @@ coord *linspace(float xmin, float xmax, int n)
 }
 
 /*
+ * update an array of minimum 2*n elements of equaly spaces elements between 0 and n
+ * points: the array to update
+ * xmin: lower value of the interval
+ * xman: higher value of the interval
+ * n: number of points
+ * 
+ */
+void linspaceRealloc(coord *points, float xmin, float xmax, int n)
+{
+  float step = (xmax - xmin) / (n - 1);
+  for (int i = 0; i < n; i++)
+  {
+    points[i][0] = xmin + i * step;
+    points[i][1] = 0;
+  }
+
+  points[n - 1][0] = xmax;
+}
+/*
  * Convert a continuous signal (key pressed down) to an impulse
  * 
  * old: previous value of the key

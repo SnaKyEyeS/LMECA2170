@@ -22,6 +22,7 @@ int comparefloats(const void *A, const void *B);
 float parabola(float xArc, float yArc, float yLine, float x);
 
 coord *linspace(float xmin, float xmax, int n);
+void linspaceRealloc(coord *points, float xmin, float xmax, int n);
 
 int impulse(int old, int ne);
 

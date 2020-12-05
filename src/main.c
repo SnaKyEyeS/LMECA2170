@@ -144,8 +144,15 @@ int main(int argc, char *argv[])
 			{xmax * 10, sweeplineHeight},
 	};
 
-	int nBeachLine = 10000;
-	coord *points = linspace(xmin, xmax, nBeachLine);
+	int nMaxBeachLine = 10000;
+
+	coord *points = linspace(xmin, xmax, nMaxBeachLine);
+	int nBeachLine = nMaxBeachLine / 10;
+	if (nBeachLine <= 0)
+	{
+		nBeachLine = 2;
+	}
+	linspaceRealloc(points, xmin, xmax, nBeachLine);
 
 	bov_window_t *window = bov_window_new(800, 800, "Fortune's Algorithm - Devillez & Poncelet");
 	bov_window_set_color(window, (GLfloat[])nord0);
@@ -174,18 +181,19 @@ int main(int argc, char *argv[])
 	bov_points_set_color(circleEvent, (float[4])nord5);
 	bov_points_set_color(ptsHe, (float[4])nord11);
 
-	int aKey = 0, sKey = 0, dKey = 0, fKey = 0, eKey = 0, wKey = 0, qKey = 0, oneKey = 0, twoKey = 0, threeKey = 0, fourKey = 0;
+	int aKey = 0, sKey = 0, dKey = 0, fKey = 0, eKey = 0, wKey = 0, qKey = 0, oKey = 0, pKey = 0, oneKey = 0, twoKey = 0, threeKey = 0, fourKey = 0;
 
 	float kStep = 1;
 	int kContinuous = 1;
 	int nNEvent = 2, nSweepLine = 2;
 
 	float stepSpeed = 7000;
-	float continuousSpeed = 0.006;
+	float continuousSpeed = 0.004;
 
 	bool updateDrawing = false;
 	bool shouldUpdateStep = false;
 	bool shouldUpdateContinuous = false;
+	bool shouldUpdateManual = false;
 
 	if (typeAnim == NO_ANIM)
 	{
@@ -256,8 +264,36 @@ int main(int argc, char *argv[])
 					{
 						sweeplineHeight = data->Q->es[0]->coordinates[1];
 					}
+
+					if (sweeplineHeight > 1.3)
+					{
+						// Process all event outside the box
+						fortuneAlgo(data, data->Q->es[data->Q->size - 1]->coordinates[1] + 1);
+					}
 				}
 			}
+
+			if (shouldUpdateManual)
+			{
+				fortuneAlgo(data, sweeplineHeight);
+				if (data->Q->size == 0)
+				{
+					boundingBoxBp(data->beachLine); // TODO improve bounding box maybe use intersection of box and lines
+
+					// Hide this if not needed
+					nSweepLine = 0;
+					nBeachLine = 0;
+					nNEvent = 0;
+				}
+				else if (sweeplineHeight > 1.3)
+				{
+					// Process all event outside the box
+					fortuneAlgo(data, data->Q->es[data->Q->size - 1]->coordinates[1] + 1);
+				}
+				updateDrawing = true;
+			}
+			shouldUpdateManual = false;
+
 			break;
 		case STEP_ANIM:
 
@@ -393,30 +429,46 @@ int main(int argc, char *argv[])
 			typeAnim = SWEEP_ANIM;
 		}
 
+		// BeachLine resolution
+		pKey = impulse(pKey, glfwGetKey(window->self, GLFW_KEY_P));
+		if (pKey == 1)
+		{
+			nBeachLine = nBeachLine << 1;
+			if (nBeachLine > nMaxBeachLine)
+				nBeachLine = nMaxBeachLine;
+			linspaceRealloc(points, xmin, xmax, nBeachLine);
+			updateDrawing = true;
+		}
+		oKey = impulse(oKey, glfwGetKey(window->self, GLFW_KEY_O));
+		if (oKey == 1)
+		{
+			nBeachLine = nBeachLine >> 1;
+			if (nBeachLine <= 2)
+				nBeachLine = 2;
+			linspaceRealloc(points, xmin, xmax, nBeachLine);
+			updateDrawing = true;
+		}
+
+		// Move event
 		aKey = impulse(aKey, glfwGetKey(window->self, GLFW_KEY_A));
 		if (aKey == 1)
 		{
-			sweeplineHeight += 0.1;
-			pointsSweepLine[0][1] = sweeplineHeight;
-			pointsSweepLine[1][1] = sweeplineHeight;
-			bov_points_update(ptsSweepline, pointsSweepLine, 2);
+			sweeplineHeight += 0.01;
+			shouldUpdateManual = true;
 		}
 		sKey = impulse(sKey, glfwGetKey(window->self, GLFW_KEY_S));
 		if (sKey == 1)
 		{
-			sweeplineHeight += 0.0001;
-			pointsSweepLine[0][1] = sweeplineHeight;
-			pointsSweepLine[1][1] = sweeplineHeight;
-			bov_points_update(ptsSweepline, pointsSweepLine, 2);
+			sweeplineHeight += 0.05;
+			shouldUpdateManual = true;
 		}
 		dKey = impulse(dKey, glfwGetKey(window->self, GLFW_KEY_D));
 		if (dKey == 1)
 		{
-			sweeplineHeight += 1;
-			pointsSweepLine[0][1] = sweeplineHeight;
-			pointsSweepLine[1][1] = sweeplineHeight;
-			bov_points_update(ptsSweepline, pointsSweepLine, 2);
+			sweeplineHeight += 0.25;
+			shouldUpdateManual = true;
 		}
+
 		fKey = impulse(fKey, glfwGetKey(window->self, GLFW_KEY_F));
 		if (fKey == 1)
 		{
