@@ -9,6 +9,7 @@ FortuneStruct *initFortune(coord *points, int n)
   data->Voronoid = InitEmptyPolygonMesh();
   // Sort
   qsort(points, n, sizeof(float) * 2, comparefloats);
+
   initFaces(data->Voronoid, points, n);
   data->Q = LoadSortedEventQueue(points, n, data->Voronoid->faces);
   data->beachLine = NULL;
@@ -132,6 +133,11 @@ void ProcessSite(FortuneStruct *data, Event *e)
     data->beachLine = Inner1;
   }
 
+  Inner1->leftHeight = 2;
+  Inner1->rightHeight = 1;
+  Inner2->leftHeight = 1;
+  Inner2->rightHeight = 1;
+
   Inner1->Root = arc->Root;
   arc->Root = Inner2;
   newLeaf->Root = Inner2;
@@ -164,6 +170,136 @@ void ProcessSite(FortuneStruct *data, Event *e)
   if (RightBp != NULL)
     RightBp->leftArc = duplArc;
 
+  // update Height
+  Node *var2 = Inner1;
+  while (var2->Root != NULL)
+  {
+    if (var2->Root->Left == var2)
+    {
+      int m = MAX(var2->leftHeight + 1, var2->rightHeight + 1);
+      if (m == var2->Root->leftHeight)
+        break;
+      var2->Root->leftHeight = m;
+      var2 = var2->Root;
+    }
+    else
+    {
+      int m = MAX(var2->leftHeight + 1, var2->rightHeight + 1);
+      if (m == var2->Root->rightHeight)
+        break;
+      var2->Root->rightHeight = m;
+      var2 = var2->Root;
+    }
+
+    int diff = var2->leftHeight - var2->rightHeight;
+
+    // Not opti when weird shape, to FIX
+    if (diff < -1)
+    {
+      Node *C = var2, *B = var2->Right, *oldRoot = var2->Root;
+      C->Right = B->Left;
+      if (C->Right != NULL)
+      {
+        C->Right->Root = C;
+
+        if (C->Right->isLeaf)
+          C->rightHeight = 1;
+        else
+          C->rightHeight = MAX(C->Right->leftHeight, C->Right->rightHeight) + 1;
+      }
+      else
+      {
+        C->rightHeight = 1;
+      }
+      if (C->Left->isLeaf)
+        C->leftHeight = 1;
+      else
+        C->leftHeight = MAX(C->Left->leftHeight, C->Left->rightHeight) + 1;
+
+      B->Left = C;
+      C->Root = B;
+
+      B->leftHeight = MAX(C->leftHeight, C->rightHeight) + 1;
+      if (B->Right->isLeaf)
+        B->rightHeight = 1;
+      else
+        B->rightHeight = MAX(B->Right->leftHeight, B->Right->rightHeight) + 1;
+
+      if (oldRoot == NULL)
+      {
+        data->beachLine = B;
+        B->Root = NULL;
+      }
+      else
+      {
+        if (oldRoot->Left == C)
+        {
+          oldRoot->Left = B;
+        }
+        else
+        {
+          oldRoot->Right = B;
+        }
+        B->Root = oldRoot;
+      }
+
+      var2 = B;
+    }
+    else if (diff > 1)
+    {
+      //Invert rotation
+      Node *C = var2, *B = var2->Left, *oldRoot = var2->Root;
+      C->Left = B->Right;
+      if (C->Right != NULL)
+      {
+        C->Left->Root = C;
+        if (C->Left->isLeaf)
+          C->leftHeight = 1;
+        else
+          C->leftHeight = MAX(C->Left->leftHeight, C->Left->rightHeight) + 1;
+      }
+      else
+      {
+        C->leftHeight = 1;
+      }
+      if (C->Right->isLeaf)
+        C->rightHeight = 1;
+      else
+        C->rightHeight = MAX(C->Right->leftHeight, C->Right->rightHeight) + 1;
+
+      B->Right = C;
+      C->Root = B;
+
+      B->rightHeight = MAX(C->leftHeight, C->rightHeight) + 1;
+      if (B->Left->isLeaf)
+        B->leftHeight = 1;
+      else
+        B->leftHeight = MAX(B->Left->leftHeight, B->Left->rightHeight) + 1;
+
+      if (oldRoot == NULL)
+      {
+        data->beachLine = B;
+        B->Root = NULL;
+      }
+      else
+      {
+        if (oldRoot->Left == C)
+        {
+          oldRoot->Left = B;
+        }
+        else
+        {
+          oldRoot->Right = B;
+        }
+        B->Root = oldRoot;
+      }
+
+      var2 = B;
+    }
+  }
+
+  // end of update Height
+
   //TODO: rebalance
 
   Circle *circle = NULL;
@@ -172,17 +308,21 @@ void ProcessSite(FortuneStruct *data, Event *e)
     circle = createCircle(arc->arcPoint, newLeaf->arcPoint, Left->leftArc->arcPoint);
   }
 
-  if (circle != NULL && circle->center[1] + circle->radius > e->coordinates[1])
+  /*
+   * TODO check if working with double is better (epsilon machine 4 float) 
+   * convert double -> float can lead to circle "valid" but y_c + r < e->y (for double but not for float)
+   */
+
+  if (circle != NULL && (circle->center[1] + circle->radius >= e->coordinates[1]))
   {
-    // TODO check if overwrite previous event
-    if (Inner2->Left->ev != NULL)
+    if (arc->ev != NULL)
     {
-      if (Inner2->Left->ev->coordinates[1] > circle->center[1] + circle->radius)
+      if (arc->ev->coordinates[1] > circle->center[1] + circle->radius)
       {
-        Inner2->Left->ev->isValid = false;
-        Inner2->Left->ev = AddPoint(data->Q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
-        Inner2->Left->ev->node = Inner2->Left;
-        Inner2->Left->ev->circle = circle;
+        arc->ev->isValid = false;
+        arc->ev = AddPoint(data->Q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
+        arc->ev->node = arc;
+        arc->ev->circle = circle;
       }
       else
       {
@@ -191,9 +331,9 @@ void ProcessSite(FortuneStruct *data, Event *e)
     }
     else
     {
-      Inner2->Left->ev = AddPoint(data->Q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
-      Inner2->Left->ev->node = Inner2->Left;
-      Inner2->Left->ev->circle = circle;
+      arc->ev = AddPoint(data->Q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
+      arc->ev->node = arc;
+      arc->ev->circle = circle;
     }
   }
   else
@@ -210,17 +350,17 @@ void ProcessSite(FortuneStruct *data, Event *e)
     circle = NULL;
   }
 
-  if (circle != NULL && circle->center[1] + circle->radius > e->coordinates[1])
+  if (circle != NULL && (circle->center[1] + circle->radius >= e->coordinates[1]))
   {
-    if (Inner1->Right->ev != NULL)
+    if (duplArc->ev != NULL)
     {
       // if we need to replace the circle
-      if (Inner1->Right->ev->coordinates[1] > circle->center[1] + circle->radius)
+      if (duplArc->ev->coordinates[1] > circle->center[1] + circle->radius)
       {
-        Inner1->Right->ev->isValid = false;
-        Inner1->Right->ev = AddPoint(data->Q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
-        Inner1->Right->ev->node = Inner1->Right;
-        Inner1->Right->ev->circle = circle;
+        duplArc->ev->isValid = false;
+        duplArc->ev = AddPoint(data->Q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
+        duplArc->ev->node = duplArc;
+        duplArc->ev->circle = circle;
       }
       else
       {
@@ -229,9 +369,9 @@ void ProcessSite(FortuneStruct *data, Event *e)
     }
     else
     {
-      Inner1->Right->ev = AddPoint(data->Q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
-      Inner1->Right->ev->node = Inner1->Right;
-      Inner1->Right->ev->circle = circle;
+      duplArc->ev = AddPoint(data->Q, circle->center[0], circle->center[1] + circle->radius, CIRCLE, (Face *)NULL);
+      duplArc->ev->node = duplArc;
+      duplArc->ev->circle = circle;
     }
   }
   else
@@ -268,7 +408,6 @@ void ProcessCircle(FortuneStruct *data, Event *e)
     //printf("Invalid event \n");
     return;
   }
-
   // a, b, c, d are BP
   //  - LeftLeftarc - c - Leftarc - a - arc to delete - b - Rightarc - d - RightRightarc
   Node *a = NULL, *b = NULL, *c = NULL, *d = NULL;
@@ -385,10 +524,49 @@ void ProcessCircle(FortuneStruct *data, Event *e)
   if (MainRoot->Left == e->node->Root)
   {
     MainRoot->Left = replace;
+    if (replace->isLeaf)
+    {
+      MainRoot->leftHeight = 1;
+    }
+    else
+    {
+      MainRoot->leftHeight = MAX(replace->leftHeight, replace->rightHeight);
+    }
   }
   else
   {
     MainRoot->Right = replace;
+
+    if (replace->isLeaf)
+    {
+      MainRoot->rightHeight = 1;
+    }
+    else
+    {
+      MainRoot->rightHeight = MAX(replace->leftHeight, replace->rightHeight);
+    }
+  }
+
+  // Update Height
+  Node *var2 = MainRoot;
+  while (var2->Root != NULL)
+  {
+    if (var2->Root->Left == var2)
+    {
+      int m = MAX(var2->leftHeight, var2->rightHeight) + 1;
+      if (m == var2->Root->leftHeight)
+        break;
+      var2->Root->leftHeight = m;
+      var2 = var2->Root;
+    }
+    else
+    {
+      int m = MAX(var2->leftHeight, var2->rightHeight) + 1;
+      if (m == var2->Root->rightHeight)
+        break;
+      var2->Root->rightHeight = m;
+      var2 = var2->Root;
+    }
   }
 
   replace->Root = MainRoot;
@@ -408,7 +586,7 @@ void ProcessCircle(FortuneStruct *data, Event *e)
   //TODO improve this
   // should directly fetch the two arc
 
-  if (circle != NULL && circle->center[1] + circle->radius > e->coordinates[1])
+  if (circle != NULL && circle->center[1] + circle->radius >= e->coordinates[1])
   {
     if (arc->ev != NULL)
     {
@@ -449,7 +627,7 @@ void ProcessCircle(FortuneStruct *data, Event *e)
     circle = NULL;
   }
 
-  if (circle != NULL && circle->center[1] + circle->radius > e->coordinates[1])
+  if (circle != NULL && circle->center[1] + circle->radius >= e->coordinates[1])
   {
     if (arc->ev != NULL)
     {

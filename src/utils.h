@@ -5,6 +5,9 @@
 #ifndef UTILS
 #define UTILS
 
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+
 typedef float coord[2];
 
 int comparefloats(const void *A, const void *B);

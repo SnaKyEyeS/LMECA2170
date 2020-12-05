@@ -9,6 +9,7 @@ Circle *createCircle(float Af[2], float Bf[2], float Cf[2])
   double A[2] = {Af[0], Af[1]};
   double B[2] = {Bf[0], Bf[1]};
   double C[2] = {Cf[0], Cf[1]};
+
   if (fabs(A[0] - B[0]) < EPSILON && fabs(A[1] - B[1]) < EPSILON)
   {
     return NULL;

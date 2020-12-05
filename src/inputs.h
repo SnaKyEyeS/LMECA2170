@@ -1,9 +1,12 @@
 #include "BOV.h"
 #include <math.h>
+#include "utils.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
+
+#define EPSILON_POINTS 1e-1
 
 /* fonction that outputs a random value, with a
  * probability following a gaussian curve */

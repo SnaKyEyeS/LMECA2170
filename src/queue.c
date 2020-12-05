@@ -226,7 +226,7 @@ void printQueue(Queue *Q)
   printf("Start of Queue  | %d\n", Q->size);
   for (int i = 0; i < Q->size; i++)
   {
-    printf("%3d | %f %f | %d | %p\n", i, Q->es[i]->coordinates[0], Q->es[i]->coordinates[1], Q->es[i]->type, Q->es[i]);
+    printf("%3d | %+f %+f | %d | %p | %d\n", i, Q->es[i]->coordinates[0], Q->es[i]->coordinates[1], Q->es[i]->type, Q->es[i], Q->es[i]->isValid);
   }
   printf("End of Queue \n \n");
 }

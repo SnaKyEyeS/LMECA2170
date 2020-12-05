@@ -314,7 +314,10 @@ void printNode(Node *node)
     printf("Node is NULL\n");
   else
   {
-    printf("NODE - (%p) (Left: %p, Right: %p) (Root: %p) (IsLeaf %d) (leftSite %f, %f) (rightSite %f,%f) (arcPoint %f,%f) \n", node, node->Left, node->Right, node->Root, node->isLeaf, node->leftArc->arcPoint[0], node->leftArc->arcPoint[1], node->rightArc->arcPoint[0], node->rightArc->arcPoint[1], node->arcPoint[0], node->arcPoint[1]);
+    if (node->isLeaf)
+      printf("LEAF - (%p) (Root: %p) (arcPoint %f,%f) \n", node, node->Root, node->arcPoint[0], node->arcPoint[1]);
+    else
+      printf("NODE - (%p) (Left: %p, Right: %p) (Root: %p) (IsLeaf %d) (leftSite %f, %f) (rightSite %f,%f)\n", node, node->Left, node->Right, node->Root, node->isLeaf, node->leftArc->arcPoint[0], node->leftArc->arcPoint[1], node->rightArc->arcPoint[0], node->rightArc->arcPoint[1]);
   }
 }
 
@@ -443,7 +446,7 @@ int printTree(Node *node, int depth, int id)
   }
   else
   {
-    printf("|- BREAKPOINT (%.3f, %.3f), (%.3f, %.3f) (%d) (Node: %p, Root: %p) (Left: %p, Right: %p) %p\n", node->leftArc->arcPoint[0], node->leftArc->arcPoint[1], node->rightArc->arcPoint[0], node->rightArc->arcPoint[1], id, node, node->Root, node->Left, node->Right, node->he);
+    printf("|- BREAKPOINT (%.3f, %.3f), (%.3f, %.3f) (%d) (Node: %p, Root: %p) (Left: %p, Right: %p) (lH:%d, rH:%d)\n", node->leftArc->arcPoint[0], node->leftArc->arcPoint[1], node->rightArc->arcPoint[0], node->rightArc->arcPoint[1], id, node, node->Root, node->Left, node->Right, node->leftHeight, node->rightHeight);
   }
 
   return 1 + printTree(node->Left, depth + 1, id * 10) + printTree(node->Right, depth + 1, id * 10 + 1);

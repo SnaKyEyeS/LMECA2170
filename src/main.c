@@ -38,14 +38,15 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	int seed = (int)time(NULL);
-	srand(seed);
+	//int seed = (int)time(NULL);
+	//srand(seed);
+	srand(216);
 
 	if (benchmark)
 	{
 		coord *points = malloc(sizeof(coord) * nPoints);
-		GLfloat min[2] = {-10, -10};
-		GLfloat max[2] = {10, 10};
+		GLfloat min[2] = {-100, -100};
+		GLfloat max[2] = {100, 100};
 		random_uniform_points(points, nPoints, min, max);
 		struct timeval stop, start;
 
@@ -61,15 +62,15 @@ int main(int argc, char *argv[])
 		return EXIT_SUCCESS;
 	}
 
-	int p = 200;
+	int p = 248;
 	/*
 	float test_points[5][2] = {
 			{0, 0},
 			{1, 1},
 			{-2, 2},
 			{1.5, 3},
-			{2, 4}};
-			*/
+			{2, 4}};*/
+
 	/*
 	float test_points[11][2] = {
 			{0.1, -0.6},
@@ -85,9 +86,11 @@ int main(int argc, char *argv[])
 			{0, 0.6}};
 */
 	coord *test_points = malloc(sizeof(coord) * p);
-	GLfloat min[2] = {-0.8, -0.8};
-	GLfloat max[2] = {0.8, 0.8};
+	GLfloat min[2] = {-10, -10};
+	GLfloat max[2] = {10, 10};
 	random_uniform_points(test_points, p, min, max);
+	qsort(test_points, p, sizeof(float) * 2, comparefloats);
+
 	FortuneStruct *data = initFortune(test_points, p);
 
 	int resPoints = 1000000;
@@ -101,7 +104,7 @@ int main(int argc, char *argv[])
 	coord *pointsHe = malloc(sizeof(coord) * maxHE);
 	int nHe = 0;
 
-	float sweeplineHeight = -1;
+	float sweeplineHeight = -6.95;
 	float xmin = -20;
 	float xmax = 20;
 
@@ -153,7 +156,7 @@ int main(int argc, char *argv[])
 		if (intTime > k * 3)
 		{
 			k += 1;
-			sweeplineHeight += 0.018;
+			//sweeplineHeight += 0.0018;
 			pointsSweepLine[0][1] = sweeplineHeight;
 			pointsSweepLine[1][1] = sweeplineHeight;
 			bov_points_update(ptsSweepline, pointsSweepLine, 2);
@@ -174,7 +177,7 @@ int main(int argc, char *argv[])
 		sKey = impulse(sKey, glfwGetKey(window->self, GLFW_KEY_S));
 		if (sKey == 1)
 		{
-			sweeplineHeight += 0.0000001;
+			sweeplineHeight += 0.0001;
 			pointsSweepLine[0][1] = sweeplineHeight;
 			pointsSweepLine[1][1] = sweeplineHeight;
 			bov_points_update(ptsSweepline, pointsSweepLine, 2);
@@ -240,7 +243,7 @@ int main(int argc, char *argv[])
 		bov_points_draw(window, ptsHard, 0, p);
 		bov_points_draw(window, ptnextEvent, 0, 2);
 		bov_line_strip_draw(window, ptsBeachline, 0, resPoints);
-		bov_lines_draw(window, ptsHe, 0, nHe);
+		bov_fast_lines_draw(window, ptsHe, 0, nHe);
 		bov_window_update(window);
 
 		oldSweepLine = sweeplineHeight;
