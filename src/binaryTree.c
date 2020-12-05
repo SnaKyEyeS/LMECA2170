@@ -170,13 +170,14 @@ void printAllTree(Node *root)
  * 
  * Considering the sweep line at height y
  */
-void drawBeachLine(float y, Node *root, coord *points, int n)
+void drawBeachLine(float y, Node *root, coord *points, int n, float minBox, float maxBox)
 {
+
   if (root == NULL)
   {
     for (int i = 0; i < n; i++)
     {
-      points[i][1] = 0;
+      points[i][1] = minBox;
     }
     return;
   }
@@ -188,37 +189,47 @@ void drawBeachLine(float y, Node *root, coord *points, int n)
   }
   float xArc = var->arcPoint[0];
   float yArc = var->arcPoint[1];
-
   float bpX = 0;
-  if (var != NULL)
+
+  if (var->rightBP != NULL)
   {
-    if (var->rightBP != NULL)
+    bpX = getBpX(var->rightBP, y);
+    var = var->rightBP->rightArc; // First BP can be null
+    for (int i = 0; i < n; i++)
     {
-      bpX = getBpX(var->rightBP, y);
-      var = var->Root; // First BP can be null
-    }
-    else
-    {
-      var = NULL;
+      if (var->rightBP != NULL)
+      {
+        while (points[i][0] > bpX)
+        {
+          xArc = var->arcPoint[0];
+          yArc = var->arcPoint[1];
+          if (var->rightBP != NULL)
+          {
+            bpX = getBpX(var->rightBP, y);
+          }
+          var = var->rightBP->rightArc;
+        }
+      }
+
+      points[i][1] = parabola(xArc, yArc, y, points[i][0]);
+
+      if (points[i][1] > maxBox)
+        points[i][1] = maxBox;
+      else if (points[i][1] < minBox)
+        points[i][1] = minBox;
     }
   }
 
-  for (int i = 0; i < n; i++)
+  else
   {
-    if (var->rightBP != NULL)
+    for (int i = 0; i < n; i++)
     {
-      if (points[i][0] > bpX)
-      {
-        xArc = var->arcPoint[0];
-        yArc = var->arcPoint[1];
-        var = var->rightBP->rightArc;
-        if (var->rightBP != NULL)
-        {
-          bpX = getBpX(var->rightBP, y);
-        }
-      }
+      points[i][1] = parabola(xArc, yArc, y, points[i][0]);
+      if (points[i][1] > maxBox)
+        points[i][1] = maxBox;
+      else if (points[i][1] < minBox)
+        points[i][1] = minBox;
     }
-    points[i][1] = parabola(xArc, yArc, y, points[i][0]);
   }
 }
 

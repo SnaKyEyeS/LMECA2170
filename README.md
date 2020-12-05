@@ -41,10 +41,11 @@
 * [ ] Add nice tool for visual
   * [ ] Each element shoulde be toggable
   * [ ] Help should with shortcut
-  * [ ] Speed of sweep line should be variable
-  * [ ] Sweep line should be able to stop
-  * [ ] manual increase for sweep line should be ok
+  * [x] Speed of sweep line should be variable
+  * [x] Sweep line should be able to stop
+  * [x] manual increase for sweep line should be ok
   * [ ] Should be able to adjuste resolution of lines (beachLine, cicle) (during ?)
+  * [x] should be able to switch between different animation type
 * [ ] Add nice visual
   * [ ] Sweepline
   * [ ] Beachline
@@ -56,7 +57,7 @@
   * [ ] Vertex in construction 
   * [ ] semi-finite vertex
 * [ ] Clean the data
-  * [ ] verify if we add points
+  * [ ] verify if when add points
 
 ### V2
 * [ ] Add -O3 to make

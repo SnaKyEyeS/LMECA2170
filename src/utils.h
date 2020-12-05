@@ -5,6 +5,14 @@
 #ifndef UTILS
 #define UTILS
 
+enum TYPE_ANIM
+{
+  NO_ANIM,
+  MANUAL,
+  STEP_ANIM,
+  SWEEP_ANIM,
+};
+
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 
