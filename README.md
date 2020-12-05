@@ -56,6 +56,7 @@
   * [ ] Finite vertex
   * [ ] Vertex in construction 
   * [ ] semi-finite vertex
+  * [ ] Bound everything to a box
 * [ ] Clean the data
   * [ ] verify if when add points
 

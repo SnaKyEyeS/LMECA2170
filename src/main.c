@@ -11,7 +11,7 @@
 
 int main(int argc, char *argv[])
 {
-	int nPoints = 0;
+	int nPoints = 20;
 	bool benchmark = false;
 	enum TYPE_ANIM typeAnim = SWEEP_ANIM;
 	int nBeachLine = 300;
@@ -90,6 +90,26 @@ int main(int argc, char *argv[])
 
 			i += 1;
 		}
+
+		else if (strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "--points") == 0)
+		{
+
+			if (i + 1 >= argc)
+			{
+				printf("You should precise the numbers of points after -b or --benchmark\n");
+				return EXIT_FAILURE;
+			}
+
+			// Return 0 if not a number
+			nPoints = atoi(argv[i + 1]);
+			if (nPoints <= 0)
+			{
+				printf("The number of point should be higher than 0\n");
+				return EXIT_FAILURE;
+			}
+
+			i += 1;
+		}
 	}
 
 	int seed = (int)time(NULL);
@@ -115,8 +135,6 @@ int main(int argc, char *argv[])
 		return EXIT_SUCCESS;
 	}
 
-	int p = 20;
-
 	/*float test_points[5][2] = {
 			{0, 0},
 			{0.1, 0.1},
@@ -138,13 +156,13 @@ int main(int argc, char *argv[])
 			{0.55, 0.425},
 			{0, 0.6}};
 */
-	coord *test_points = malloc(sizeof(coord) * p);
+	coord *test_points = malloc(sizeof(coord) * nPoints);
 	GLfloat min[2] = {-0.8, -0.8};
 	GLfloat max[2] = {0.8, 0.8};
-	random_uniform_points(test_points, p, min, max);
-	qsort(test_points, p, sizeof(float) * 2, comparefloats);
+	random_uniform_points(test_points, nPoints, min, max);
+	qsort(test_points, nPoints, sizeof(float) * 2, comparefloats);
 
-	FortuneStruct *data = initFortune(test_points, p);
+	FortuneStruct *data = initFortune(test_points, nPoints);
 
 	// Only for print
 	int maxCircleEvent = 10000;
@@ -154,6 +172,9 @@ int main(int argc, char *argv[])
 	int maxHE = 1000000 * 2;
 	coord *pointsHe = malloc(sizeof(coord) * maxHE);
 	int nHe = 0;
+
+	coord *pointsHeConstruct = malloc(sizeof(coord) * nPoints * 10 * 2);
+	int nHeConstruct = nPoints * 10 * 2;
 
 	float xmin = -0.9;
 	float xmax = 0.9;
@@ -180,19 +201,21 @@ int main(int argc, char *argv[])
 	float nextEvent[1][2] = {
 			{0, 0}};
 
-	bov_points_t *ptsHard = bov_points_new(test_points, p, GL_STATIC_DRAW);
+	bov_points_t *ptsHard = bov_points_new(test_points, nPoints, GL_STATIC_DRAW);
 	bov_points_t *ptsBeachline = bov_points_new(points, nBeachLine, GL_DYNAMIC_DRAW);
 	bov_points_t *ptsSweepline = bov_points_new(pointsSweepLine, 2, GL_DYNAMIC_DRAW);
 	bov_points_t *ptnextEvent = bov_points_new(nextEvent, 1, GL_DYNAMIC_DRAW);
 	bov_points_t *circleEvent = bov_points_new(pointsCircleEvent, nCircleEvent, GL_DYNAMIC_DRAW);
 	bov_points_t *ptsHe = bov_points_new(pointsHe, nHe, GL_STATIC_DRAW);
+	bov_points_t *ptsHeConstruct = bov_points_new(pointsHe, nHeConstruct, GL_STATIC_DRAW);
 
-	bov_points_draw(window, ptsHard, 0, p);
+	bov_points_draw(window, ptsHard, 0, nPoints);
 	bov_points_set_width(ptsHard, 0.02);
 	bov_points_set_width(circleEvent, 0.02);
 	bov_points_set_width(ptnextEvent, 0.01);
 	bov_points_set_width(ptsBeachline, 0.001);
 	bov_points_set_width(ptsHe, 0.008);
+	bov_points_set_width(ptsHeConstruct, 0.008);
 	bov_points_set_width(ptsSweepline, 0.008);
 
 	bov_points_set_color(ptnextEvent, (float[4])flash);
@@ -200,6 +223,9 @@ int main(int argc, char *argv[])
 	bov_points_set_color(ptsSweepline, (float[4])nord10);
 	bov_points_set_color(circleEvent, (float[4])nord5);
 	bov_points_set_color(ptsHe, (float[4])nord11);
+	bov_points_set_color(ptsHeConstruct, (float[4])nord12);
+
+	nHeConstruct = 0;
 
 	int aKey = 0, sKey = 0, dKey = 0, fKey = 0, eKey = 0, wKey = 0, qKey = 0, oKey = 0, pKey = 0, oneKey = 0, twoKey = 0, threeKey = 0, fourKey = 0;
 
@@ -214,6 +240,7 @@ int main(int argc, char *argv[])
 	bool shouldUpdateStep = false;
 	bool shouldUpdateContinuous = false;
 	bool shouldUpdateManual = false;
+	bool hideConstructElem = false;
 
 	if (typeAnim == NO_ANIM)
 	{
@@ -276,9 +303,7 @@ int main(int argc, char *argv[])
 						boundingBoxBp(data->beachLine); // TODO improve bounding box maybe use intersection of box and lines
 
 						// Hide this if not needed
-						nSweepLine = 0;
-						nBeachLine = 0;
-						nNEvent = 0;
+						hideConstructElem = true;
 					}
 					else
 					{
@@ -300,10 +325,7 @@ int main(int argc, char *argv[])
 				{
 					boundingBoxBp(data->beachLine); // TODO improve bounding box maybe use intersection of box and lines
 
-					// Hide this if not needed
-					nSweepLine = 0;
-					nBeachLine = 0;
-					nNEvent = 0;
+					hideConstructElem = true;
 				}
 				else if (sweeplineHeight > 1.3)
 				{
@@ -342,10 +364,7 @@ int main(int argc, char *argv[])
 					{
 						boundingBoxBp(data->beachLine); // TODO improve bounding box maybe use intersection of box and lines
 
-						// Hide this if not needed
-						nSweepLine = 0;
-						nBeachLine = 0;
-						nNEvent = 0;
+						hideConstructElem = true;
 					}
 					else
 					{
@@ -379,9 +398,7 @@ int main(int argc, char *argv[])
 					boundingBoxBp(data->beachLine); // TODO improve bounding box maybe use intersection of box and lines
 
 					// Hide this if not needed
-					nSweepLine = 0;
-					nBeachLine = 0;
-					nNEvent = 0;
+					hideConstructElem = true;
 				}
 				else if (sweeplineHeight > 1.3)
 				{
@@ -401,29 +418,46 @@ int main(int argc, char *argv[])
 			// Wait for next update
 			updateDrawing = false;
 
-			// Update of the sweep line
-			pointsSweepLine[0][1] = sweeplineHeight;
-			pointsSweepLine[1][1] = sweeplineHeight;
-			bov_points_update(ptsSweepline, pointsSweepLine, 2);
+			if (hideConstructElem)
+			{
+
+				bov_points_update(ptsSweepline, pointsSweepLine, 0);
+				bov_points_update(ptsBeachline, points, 0);
+				bov_points_update(ptsHeConstruct, pointsHeConstruct, 0);
+				bov_points_update(ptnextEvent, nextEvent, 0);
+			}
+			else
+			{
+				//update of next event
+				if (data->Q->size > 0)
+				{
+					nextEvent[0][0] = data->Q->es[0]->coordinates[0];
+					nextEvent[0][1] = data->Q->es[0]->coordinates[1];
+					bov_points_update(ptnextEvent, nextEvent, 1);
+				}
+
+				//Udpate Construction HE
+				nHeConstruct = drawConstructingHe(sweeplineHeight, data->beachLine, pointsHeConstruct);
+				// TODO should assert if go over max
+				bov_points_update(ptsHeConstruct, pointsHeConstruct, nHeConstruct);
+
+				// Update of the sweep line
+				pointsSweepLine[0][1] = sweeplineHeight;
+				pointsSweepLine[1][1] = sweeplineHeight;
+				bov_points_update(ptsSweepline, pointsSweepLine, nSweepLine);
+
+				//update of Beachline
+				drawBeachLine(sweeplineHeight, data->beachLine, points, nBeachLine, -0.9, 0.9); // TODO update
+				bov_points_update(ptsBeachline, points, nBeachLine);
+			}
 
 			// Update of circle events
 			nCircleEvent = getCircleEvent(data->Q, pointsCircleEvent, 0);
 			bov_points_update(circleEvent, pointsCircleEvent, nCircleEvent);
 
-			//update of next event
-			if (data->Q->size > 0)
-			{
-				nextEvent[0][0] = data->Q->es[0]->coordinates[0];
-				nextEvent[0][1] = data->Q->es[0]->coordinates[1];
-				bov_points_update(ptnextEvent, nextEvent, 1);
-			}
-
 			// update of Half-edges
 			nHe = getHePoints(data->Voronoid, pointsHe);
 			bov_points_update(ptsHe, pointsHe, nHe);
-			//update of Beachline
-			drawBeachLine(sweeplineHeight, data->beachLine, points, nBeachLine, -0.9, 0.9); // TODO update
-			bov_points_update(ptsBeachline, points, nBeachLine);
 		}
 
 		// General Key binding
@@ -500,11 +534,12 @@ int main(int argc, char *argv[])
 
 		//Update of the window
 		bov_points_draw(window, circleEvent, 0, nCircleEvent);
-		bov_line_strip_draw(window, ptsSweepline, 0, 2);
-		bov_points_draw(window, ptsHard, 0, p);
-		bov_points_draw(window, ptnextEvent, 0, 2);
+		bov_line_strip_draw(window, ptsSweepline, 0, nSweepLine);
+		bov_points_draw(window, ptsHard, 0, nPoints);
+		bov_points_draw(window, ptnextEvent, 0, nNEvent);
 		bov_line_strip_draw(window, ptsBeachline, 0, nBeachLine);
 		bov_lines_draw(window, ptsHe, 0, nHe);
+		bov_lines_draw(window, ptsHeConstruct, 0, nHeConstruct);
 		bov_window_update(window);
 	}
 
@@ -521,6 +556,7 @@ int main(int argc, char *argv[])
 
 	free(pointsCircleEvent);
 	free(pointsHe);
+	free(pointsHeConstruct);
 	free(points);
 
 	return EXIT_SUCCESS;

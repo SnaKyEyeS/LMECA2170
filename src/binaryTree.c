@@ -292,3 +292,72 @@ int printTree(Node *node, int depth, int id)
 
   return 1 + printTree(node->Left, depth + 1, id * 10) + printTree(node->Right, depth + 1, id * 10 + 1);
 }
+
+/* 
+ * Fetch the consturctiong He and store into points for drawing
+ */
+int drawConstructingHe(float y, Node *root, coord *points)
+{
+  if (root == NULL)
+  {
+    return 0;
+  }
+
+  if (root->isLeaf)
+  {
+    return 0;
+  }
+
+  Node *var = root;
+  while (!var->Left->isLeaf)
+  {
+    var = var->Left;
+  }
+
+  int n = 0;
+
+  while (var != NULL)
+  {
+    if (var->he->v != NULL || var->he->Opposite->v != NULL)
+    {
+      points[n][0] = getBpX(var, y);
+      points[n][1] = parabola(var->rightArc->arcPoint[0], var->rightArc->arcPoint[1], y, points[n][0]);
+      if (var->he->v != NULL)
+      {
+        points[n + 1][0] = var->he->v->coordinates[0];
+        points[n + 1][1] = var->he->v->coordinates[1];
+      }
+      else
+      {
+        points[n + 1][0] = var->he->Opposite->v->coordinates[0];
+        points[n + 1][1] = var->he->Opposite->v->coordinates[1];
+      }
+
+      n += 2;
+    }
+    else
+    {
+      Node *subVar = var;
+      while (subVar != NULL)
+      {
+        if (subVar->he == var->he->Opposite)
+        {
+          break;
+        }
+        subVar = subVar->rightArc->rightBP;
+      }
+      if (subVar != NULL)
+      {
+        points[n][0] = getBpX(var, y);
+        points[n][1] = parabola(var->rightArc->arcPoint[0], var->rightArc->arcPoint[1], y, points[n][0]);
+        points[n + 1][0] = getBpX(subVar, y);
+        points[n + 1][1] = parabola(subVar->rightArc->arcPoint[0], subVar->rightArc->arcPoint[1], y, points[n + 1][0]);
+        n += 2;
+      }
+    }
+
+    var = var->rightArc->rightBP;
+  }
+
+  return n;
+}
