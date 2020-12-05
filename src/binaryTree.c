@@ -81,180 +81,6 @@ Node *getArc(Node *node, float point[2])
 }
 
 /*
- * Retrieve the leftest arc from a Node
- *
- */
-Node *getLeftArc(Node *node)
-{
-  if (node->isLeaf)
-  {
-    return node;
-  }
-  return getLeftArc(node->Left);
-}
-
-/*
- * Retrieve the rightest arc from a Node
- *
- */
-Node *getRightArc(Node *node)
-{
-  if (node->isLeaf)
-  {
-    return node;
-  }
-  return getRightArc(node->Right);
-}
-
-/*
- * Return the next leaf representing the arc to the left of the actual leaf
- */
-Node *getLeftestArc(Node *leaf)
-{
-  if (leaf->Root == NULL)
-  {
-    return NULL;
-  }
-  Node *var = leaf;
-  while (var != NULL)
-  {
-    if (var->Root == NULL)
-    {
-      return NULL;
-    }
-    if (var->Root->Right == var)
-    {
-      return getRightArc(var->Root->Left);
-    }
-    var = var->Root;
-  }
-  return NULL;
-}
-
-/*
- * Return the next leaf representing the arc to the right of the actual leaf
- */
-Node *getRightestArc(Node *leaf)
-{
-  if (leaf->Root == NULL)
-  {
-    return NULL;
-  }
-  Node *var = leaf;
-  while (var != NULL)
-  {
-    if (var->Root->Left == var)
-    {
-      return getLeftArc(var->Root->Right);
-    }
-    var = var->Root;
-  }
-  return NULL;
-}
-
-/*
- * Fetch the Bp to the right to this node
- */
-Node *getRightBpNode(Node *node)
-{
-  if (node == NULL)
-  {
-    return NULL;
-  }
-
-  if (node->Right != NULL && !node->Right->isLeaf)
-  {
-    Node *var = getLeftestBpNode(node->Right);
-    if (var != NULL)
-    {
-      return var;
-    }
-  }
-
-  Node *var = node;
-  while (var->Root != NULL)
-  {
-    if (var->Root->Left == var)
-      return var->Root;
-
-    var = var->Root;
-  }
-  return NULL;
-}
-
-/*
- * Fetch the Bp to the Left to this node
- */
-Node *getLeftBpNode(Node *node)
-{
-  if (node == NULL)
-  {
-    return NULL;
-  }
-
-  if (node->Left != NULL && !node->Left->isLeaf)
-  {
-    Node *var = getRightestBpNode(node->Left);
-    if (var != NULL)
-    {
-      return var;
-    }
-  }
-
-  Node *var = node;
-  while (var->Root != NULL)
-  {
-    if (var->Root->Right == var)
-      return var->Root;
-
-    var = var->Root;
-  }
-  return NULL;
-}
-
-/*
- * Fetch the leftest bp Node included in node
- */
-Node *getLeftestBpNode(Node *node)
-{
-  if (node == NULL)
-    return NULL;
-  // It's a leave
-  if (node->Left == NULL)
-    return NULL;
-  if (node->Left->isLeaf)
-    return node;
-
-  Node *var = node->Left;
-  while (!var->Left->isLeaf)
-  {
-    var = var->Left;
-  }
-  return var;
-}
-
-/*
- * Fetch the rightest bp Node included in node
- */
-Node *getRightestBpNode(Node *node)
-{
-  if (node == NULL)
-    return NULL;
-  // It's a leave
-  if (node->Right == NULL)
-    return NULL;
-  if (node->Right->isLeaf)
-    return node;
-
-  Node *var = node->Right;
-  while (!var->Right->isLeaf)
-  {
-    var = var->Right;
-  }
-  return var;
-}
-
-/*
  * Duplicate the leaf
  */
 Node *duplicateLeaf(Node *leaf)
@@ -355,17 +181,21 @@ void drawBeachLine(float y, Node *root, coord *points, int n)
     return;
   }
 
-  Node *var = getLeftArc(root);
+  Node *var = root;
+  while (!var->isLeaf)
+  {
+    var = var->Left;
+  }
   float xArc = var->arcPoint[0];
   float yArc = var->arcPoint[1];
 
   float bpX = 0;
   if (var != NULL)
   {
-    if (var->Root != NULL)
+    if (var->rightBP != NULL)
     {
-      bpX = getBpX(var->Root, y);
-      var = var->Root; // First BP can be nulla
+      bpX = getBpX(var->rightBP, y);
+      var = var->Root; // First BP can be null
     }
     else
     {
@@ -375,16 +205,16 @@ void drawBeachLine(float y, Node *root, coord *points, int n)
 
   for (int i = 0; i < n; i++)
   {
-    if (var != NULL)
+    if (var->rightBP != NULL)
     {
       if (points[i][0] > bpX)
       {
-        xArc = var->rightArc->arcPoint[0];
-        yArc = var->rightArc->arcPoint[1];
-        var = getRightBpNode(var);
-        if (var != NULL)
+        xArc = var->arcPoint[0];
+        yArc = var->arcPoint[1];
+        var = var->rightBP->rightArc;
+        if (var->rightBP != NULL)
         {
-          bpX = getBpX(var, y);
+          bpX = getBpX(var->rightBP, y);
         }
       }
     }

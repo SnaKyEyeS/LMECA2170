@@ -40,17 +40,6 @@ struct Node
 
 float getBpX(Node *node, float pointY);
 Node *getArc(Node *node, float point[2]);
-Node *getLeftArc(Node *node);
-Node *getRightArc(Node *node);
-
-Node *getRightestArc(Node *leaf);
-Node *getLeftestArc(Node *leaf);
-
-Node *getRightBpNode(Node *node);
-Node *getLeftBpNode(Node *node);
-Node *getRightestBpNode(Node *node);
-Node *getLeftestBpNode(Node *node);
-
 Node *duplicateLeaf(Node *leaf);
 
 void boundingBoxBp(Node *root);

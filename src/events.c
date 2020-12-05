@@ -25,6 +25,9 @@ void freeEvent(Event *e)
   free(e);
 }
 
+/*
+ * Print an event
+ */
 void printEvent(Event *e)
 {
   if (e == NULL)

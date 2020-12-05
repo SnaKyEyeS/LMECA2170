@@ -112,6 +112,8 @@ Event *popQueue(Queue *Q)
       return e;
 
     // Left is smaller
+    // TODO replace the Q->es by y, should be faster
+    float y = Q->es[idx_off]->coordinates[1];
     if (Q->es[idx_off]->coordinates[1] > Q->es[val_off]->coordinates[1])
     {
       if (val < Q->size && Q->es[idx_off]->coordinates[1] > Q->es[val]->coordinates[1]) // Right is smaller
@@ -183,10 +185,6 @@ int getCircleEvent(Queue *Q, coord *points, int start)
 
   return a;
 }
-
-/*
- * Free just the node itSel
- */
 
 /*
  * Free everything inside the Queue and then the queue itself

@@ -17,6 +17,7 @@ int main(int argc, char *argv[])
 	// Handle flags
 	for (int i = 1; i < argc; i++)
 	{
+		// Benchmark -> No plot | see if everything is allright
 		if (strcmp(argv[i], "-b") == 0 || strcmp(argv[i], "--benchmark"))
 		{
 			benchmark = true;
