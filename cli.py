@@ -2,6 +2,7 @@ import os
 import click
 import subprocess
 
+import numpy as np
 import matplotlib.pyplot as plt
 
 from tqdm import tqdm
@@ -22,8 +23,8 @@ def benchmark():
 
 @benchmark.command()
 @click.option("-v", "--version", default=1, help="Version", type=int)
-@click.option("-b", "--boundary", nargs=2, default=(2,6), type=int, help="Benchmark lower & upper boundary")
-@click.option("-n", "--number", default=100, type=int, help="Number of points")
+@click.option("-b", "--boundary", nargs=2, default=(2, 6), type=int, help="Benchmark lower & upper boundary")
+@click.option("-n", "--number", default=200, type=int, help="Number of points")
 def run(version, boundary, number):
     """Run a benchmark"""
 
@@ -47,22 +48,23 @@ def run(version, boundary, number):
                 print(error)
             else:
                 exec_time = int(output.decode('UTF-8').split('\n')[0])
-                f.write(str(n) + " " + str(exec_time) + "\n")
+                f.write(f"{n} {exec_time}\n")
 
     click.secho("Benchmark done !", fg="green")
 
 
 @benchmark.command()
-@click.option("-v", "--versions", default=[5, 6], multiple=True, help="Versions to plot")
+@click.option("-v", "--versions", default=[6], multiple=True, help="Versions to plot")
 def plot(versions):
+    """Plot the benchmark results"""
+
     filenames = ["Data/V0-1"]
     filenames.extend([f"Data/V1-{v}" for v in versions])
 
-    colors = [".r", ".b", ".g"]
+    colors = [".r", ".g", ".b"]
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1)
     for index, filename in enumerate(filenames):
-        print(filename)
         x = list()
         y = list()
         with open(filename) as f:
@@ -70,6 +72,9 @@ def plot(versions):
                 x.append(int(line.split(" ")[0]))
                 y.append(int(line.split(" ")[1])/1000000)
                 ax.loglog(x, y, colors[index])
+    plt.plot([1e2, 1e6], np.power([1e-4, 1e0], 1)*.9, ls='--', color="#5e81ac")
+    plt.plot([1e2, 1e6], np.power([1e-2, 1e2], 2)*3., ls='--', color="#5e81ac")
+    plt.grid(True, which="both", ls="dotted")
     plt.show()
 
 
