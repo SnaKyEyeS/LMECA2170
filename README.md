@@ -39,21 +39,21 @@
   * [ ] Add relevant print
 * [ ] Check if memory is clean (valgrind)
 * [ ] Add nice tool for visual
-  * [ ] Each element shoulde be toggable
-  * [ ] Help should with shortcut
+  * [x] Each element shoulde be toggable
+  * [ ] Help should gives shortcut
   * [x] Speed of sweep line should be variable
   * [x] Sweep line should be able to stop
   * [x] manual increase for sweep line should be ok
   * [x] Should be able to adjuste resolution of lines (beachLine, cicle) (during ?)
   * [x] should be able to switch between different animation type
 * [ ] Add nice visual
-  * [ ] Sweepline
-  * [ ] Beachline
-  * [ ] Site event
-  * [ ] Circle Event
+  * [x] Sweepline
+  * [x] Beachline
+  * [x] Site event
+  * [ ] Circle Event (differentiate the valid one from the others) (and keep memory of those events)
   * [ ] Circle from circle event (dashed)
-  * [ ] Next Event should be highlighted
-  * [ ] Finite vertex
+  * [x] Next Event should be highlighted
+  * [x] Finite vertex
   * [ ] Vertex in construction 
   * [ ] semi-finite vertex
   * [ ] Bound everything to a box

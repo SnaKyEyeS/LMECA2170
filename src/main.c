@@ -229,6 +229,9 @@ int main(int argc, char *argv[])
 
 	int aKey = 0, sKey = 0, dKey = 0, fKey = 0, eKey = 0, wKey = 0, qKey = 0, oKey = 0, pKey = 0, oneKey = 0, twoKey = 0, threeKey = 0, fourKey = 0;
 
+	// Hide|Show elements
+	int gKey = 0, hKey = 0, jKey = 0, kKey = 0, vKey = 0, bKey = 0, nKey = 0, mKey = 0;
+
 	float kStep = 1;
 	int kContinuous = 1;
 	int nNEvent = 2, nSweepLine = 2;
@@ -240,7 +243,14 @@ int main(int argc, char *argv[])
 	bool shouldUpdateStep = false;
 	bool shouldUpdateContinuous = false;
 	bool shouldUpdateManual = false;
-	bool hideConstructElem = false;
+	bool showSweepLine = true;
+	bool showBeachLine = true;
+	bool showSiteEvents = true;
+	bool showCircleEvents = true;
+	bool showNextEvent = true;
+	bool showConstructingHe = true;
+	bool showHe = true;
+	bool showBox = true; // TODO
 
 	if (typeAnim == NO_ANIM)
 	{
@@ -249,6 +259,10 @@ int main(int argc, char *argv[])
 			fortuneAlgo(data, data->Q->es[data->Q->size - 1]->coordinates[1] + 1);
 			boundingBoxBp(data->beachLine); // TODO improve bounding box maybe use intersection of box and lines
 		}
+		showBeachLine = false;
+		showSweepLine = false;
+		showNextEvent = false;
+		showConstructingHe = false;
 	}
 	else if (typeAnim == MANUAL)
 	{
@@ -303,7 +317,10 @@ int main(int argc, char *argv[])
 						boundingBoxBp(data->beachLine); // TODO improve bounding box maybe use intersection of box and lines
 
 						// Hide this if not needed
-						hideConstructElem = true;
+						showBeachLine = false;
+						showSweepLine = false;
+						showNextEvent = false;
+						showConstructingHe = false;
 					}
 					else
 					{
@@ -325,7 +342,10 @@ int main(int argc, char *argv[])
 				{
 					boundingBoxBp(data->beachLine); // TODO improve bounding box maybe use intersection of box and lines
 
-					hideConstructElem = true;
+					showBeachLine = false;
+					showSweepLine = false;
+					showNextEvent = false;
+					showConstructingHe = false;
 				}
 				else if (sweeplineHeight > 1.3)
 				{
@@ -364,7 +384,10 @@ int main(int argc, char *argv[])
 					{
 						boundingBoxBp(data->beachLine); // TODO improve bounding box maybe use intersection of box and lines
 
-						hideConstructElem = true;
+						showBeachLine = false;
+						showSweepLine = false;
+						showNextEvent = false;
+						showConstructingHe = false;
 					}
 					else
 					{
@@ -398,7 +421,10 @@ int main(int argc, char *argv[])
 					boundingBoxBp(data->beachLine); // TODO improve bounding box maybe use intersection of box and lines
 
 					// Hide this if not needed
-					hideConstructElem = true;
+					showBeachLine = false;
+					showSweepLine = false;
+					showNextEvent = false;
+					showConstructingHe = false;
 				}
 				else if (sweeplineHeight > 1.3)
 				{
@@ -418,15 +444,30 @@ int main(int argc, char *argv[])
 			// Wait for next update
 			updateDrawing = false;
 
-			if (hideConstructElem)
+			if (showBeachLine)
+			{
+				drawBeachLine(sweeplineHeight, data->beachLine, points, nBeachLine, -0.9, 0.9); // TODO update
+				bov_points_update(ptsBeachline, points, nBeachLine);
+			}
+			else
+			{
+				bov_points_update(ptsBeachline, points, 0);
+			}
+
+			if (showSweepLine)
+			{
+				// Update of the sweep line
+				pointsSweepLine[0][1] = sweeplineHeight;
+				pointsSweepLine[1][1] = sweeplineHeight;
+				bov_points_update(ptsSweepline, pointsSweepLine, nSweepLine);
+			}
+			else
 			{
 
 				bov_points_update(ptsSweepline, pointsSweepLine, 0);
-				bov_points_update(ptsBeachline, points, 0);
-				bov_points_update(ptsHeConstruct, pointsHeConstruct, 0);
-				bov_points_update(ptnextEvent, nextEvent, 0);
 			}
-			else
+
+			if (showNextEvent)
 			{
 				//update of next event
 				if (data->Q->size > 0)
@@ -435,29 +476,52 @@ int main(int argc, char *argv[])
 					nextEvent[0][1] = data->Q->es[0]->coordinates[1];
 					bov_points_update(ptnextEvent, nextEvent, 1);
 				}
+			}
+			else
+			{
+				bov_points_update(ptnextEvent, nextEvent, 0);
+			}
 
-				//Udpate Construction HE
+			if (showConstructingHe)
+			{
 				nHeConstruct = drawConstructingHe(sweeplineHeight, data->beachLine, pointsHeConstruct);
 				// TODO should assert if go over max
 				bov_points_update(ptsHeConstruct, pointsHeConstruct, nHeConstruct);
-
-				// Update of the sweep line
-				pointsSweepLine[0][1] = sweeplineHeight;
-				pointsSweepLine[1][1] = sweeplineHeight;
-				bov_points_update(ptsSweepline, pointsSweepLine, nSweepLine);
-
-				//update of Beachline
-				drawBeachLine(sweeplineHeight, data->beachLine, points, nBeachLine, -0.9, 0.9); // TODO update
-				bov_points_update(ptsBeachline, points, nBeachLine);
+			}
+			else
+			{
+				bov_points_update(ptsHeConstruct, pointsHeConstruct, 0);
 			}
 
-			// Update of circle events
-			nCircleEvent = getCircleEvent(data->Q, pointsCircleEvent, 0);
-			bov_points_update(circleEvent, pointsCircleEvent, nCircleEvent);
+			if (showCircleEvents)
+			{
+				// Update of circle events
+				nCircleEvent = getCircleEvent(data->Q, pointsCircleEvent, 0);
+				bov_points_update(circleEvent, pointsCircleEvent, nCircleEvent);
+			}
+			else
+			{
+				bov_points_update(circleEvent, pointsCircleEvent, 0);
+			}
 
-			// update of Half-edges
-			nHe = getHePoints(data->Voronoid, pointsHe);
-			bov_points_update(ptsHe, pointsHe, nHe);
+			if (showHe)
+			{
+				nHe = getHePoints(data->Voronoid, pointsHe);
+				bov_points_update(ptsHe, pointsHe, nHe);
+			}
+			else
+			{
+				bov_points_update(ptsHe, pointsHe, 0);
+			}
+
+			if (showSiteEvents)
+			{
+				bov_points_update(ptsHard, test_points, nPoints);
+			}
+			else
+			{
+				bov_points_update(ptsHard, test_points, 0);
+			}
 		}
 
 		// General Key binding
@@ -530,6 +594,63 @@ int main(int argc, char *argv[])
 			pointsSweepLine[0][1] = sweeplineHeight;
 			pointsSweepLine[1][1] = sweeplineHeight;
 			bov_points_update(ptsSweepline, pointsSweepLine, 2);
+		}
+
+		// Hide or show elems
+		gKey = impulse(gKey, glfwGetKey(window->self, GLFW_KEY_G));
+		if (gKey == 1)
+		{
+			showBeachLine = !showBeachLine;
+			updateDrawing = true;
+		}
+
+		hKey = impulse(hKey, glfwGetKey(window->self, GLFW_KEY_H));
+		if (hKey == 1)
+		{
+			showSweepLine = !showSweepLine;
+			updateDrawing = true;
+		}
+
+		jKey = impulse(jKey, glfwGetKey(window->self, GLFW_KEY_J));
+		if (jKey == 1)
+		{
+			showNextEvent = !showNextEvent;
+			updateDrawing = true;
+		}
+
+		kKey = impulse(kKey, glfwGetKey(window->self, GLFW_KEY_K));
+		if (kKey == 1)
+		{
+			showConstructingHe = !showConstructingHe;
+			updateDrawing = true;
+		}
+
+		vKey = impulse(vKey, glfwGetKey(window->self, GLFW_KEY_V));
+		if (vKey == 1)
+		{
+			showSiteEvents = !showSiteEvents;
+			updateDrawing = true;
+		}
+
+		bKey = impulse(bKey, glfwGetKey(window->self, GLFW_KEY_B));
+		if (bKey == 1)
+		{
+			showHe = !showHe;
+			updateDrawing = true;
+		}
+
+		nKey = impulse(nKey, glfwGetKey(window->self, GLFW_KEY_N));
+		if (nKey == 1)
+		{
+			showCircleEvents = !showCircleEvents;
+			updateDrawing = true;
+		}
+
+		mKey = impulse(mKey, glfwGetKey(window->self, GLFW_KEY_M));
+		if (mKey == 1)
+		{
+			showBox = !showBox;
+			updateDrawing = true;
 		}
 
 		//Update of the window
