@@ -42,7 +42,7 @@ float getBpX(Node *node, float pointY);
 Node *getArc(Node *node, float point[2]);
 Node *duplicateLeaf(Node *leaf);
 
-void boundingBoxBp(Node *root);
+void boundingBoxBp(Node *root, float box[2][2]);
 
 void freeNode(Node *node);
 void freeTree(Node *node);
@@ -56,5 +56,5 @@ int printTree(Node *node, int depth, int id);
 // Draw
 
 void drawBeachLine(float y, Node *root, coord *points, int n, float minBox, float maxBox);
-int drawConstructingHe(float y, Node *root, coord *points);
+int drawConstructingHe(float y, Node *root, coord *points, float box[2][2]);
 #endif

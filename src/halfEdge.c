@@ -180,7 +180,7 @@ void oppositeHe(HalfEdge *a, HalfEdge *b)
  * Return the number of point to draw
  * points should be 2*Pm->nHe
  */
-int getHePoints(PolygonMesh *PM, coord *points)
+int getHePoints(PolygonMesh *PM, coord *points, float box[2][2])
 {
   if (PM == NULL)
   {
@@ -197,7 +197,109 @@ int getHePoints(PolygonMesh *PM, coord *points)
       points[n][1] = var->v->coordinates[1];
       points[n + 1][0] = var->next->v->coordinates[0];
       points[n + 1][1] = var->next->v->coordinates[1];
-      n += 2;
+
+      if (inBox(points[n][0], points[n][1], box) && inBox(points[n + 1][0], points[n + 1][1], box))
+        n += 2;
+      else if (inBox(points[n][0], points[n][1], box))
+      {
+        float refX = points[n][0];
+        float refY = points[n][1];
+        float x = points[n + 1][0];
+        float y = points[n + 1][1];
+        double angle = atan2(y - refY, x - refX);
+        float r;
+
+        if (angle > 0)
+        {
+          r = (box[1][1] - refY) / sin(angle);
+        }
+        else
+        {
+          r = (box[0][1] - refY) / sin(angle);
+        }
+
+        if (fabs(angle) < PI / 2)
+        {
+          float testr = (box[1][0] - refX) / cos(angle);
+          if (testr < r)
+            r = testr;
+        }
+        else
+        {
+          float testr = (box[0][0] - refX) / cos(angle);
+          if (testr < r)
+            r = testr;
+        }
+        points[n + 1][0] = refX + r * cos(angle);
+        points[n + 1][1] = refY + r * sin(angle);
+        n += 2;
+      }
+      else if (inBox(points[n + 1][0], points[n + 1][1], box))
+      {
+        float refX = points[n + 1][0];
+        float refY = points[n + 1][1];
+        float x = points[n][0];
+        float y = points[n][1];
+        double angle = atan2(y - refY, x - refX);
+        float r;
+
+        if (angle > 0)
+        {
+          r = (box[1][1] - refY) / sin(angle);
+        }
+        else
+        {
+          r = (box[0][1] - refY) / sin(angle);
+        }
+
+        if (fabs(angle) < PI / 2)
+        {
+          float testr = (box[1][0] - refX) / cos(angle);
+          if (testr < r)
+            r = testr;
+        }
+        else
+        {
+          float testr = (box[0][0] - refX) / cos(angle);
+          if (testr < r)
+            r = testr;
+        }
+        points[n][0] = refX + r * cos(angle);
+        points[n][1] = refY + r * sin(angle);
+        n += 2;
+      }
+      else
+      {
+        printf("Ponits %f %f %f %f \n", points[n][0], points[n][1], points[n + 1][0], points[n + 1][1]);
+        if (lineCrossBox(points[n], points[n + 1], box))
+        {
+          float refX = points[n][0];
+          float refY = points[n][1];
+          float x = points[n + 1][0];
+          float y = points[n + 1][1];
+          double angle = atan2(y - refY, x - refX);
+          float r1, r2, r3, r4;
+
+          // TODO change
+          r1 = (box[1][1] - refY) / sin(angle);
+
+          r2 = (box[0][1] - refY) / sin(angle);
+
+          r3 = (box[1][0] - refX) / cos(angle);
+
+          r4 = (box[0][0] - refX) / cos(angle);
+
+          float minr = MAX(MIN(r1, r2), MIN(r3, r4));
+          float maxr = MIN(MAX(r1, r2), MAX(r3, r4));
+
+          points[n][0] = refX + minr * cos(angle);
+          points[n][1] = refY + minr * sin(angle);
+          points[n + 1][0] = refX + maxr * cos(angle);
+          points[n + 1][1] = refY + maxr * sin(angle);
+
+          n += 2;
+        }
+      }
     }
     var = var->nextList;
   }

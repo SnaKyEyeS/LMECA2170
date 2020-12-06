@@ -135,31 +135,18 @@ int main(int argc, char *argv[])
 		return EXIT_SUCCESS;
 	}
 
-	/*float test_points[5][2] = {
+	float test_points[10][2] = {
 			{0, 0},
 			{0.1, 0.1},
 			{-0.2, 0.2},
 			{0.15, 0.3},
-			{0.2, 0.4}};*/
-
-	/*
-	float test_points[11][2] = {
-			{0.1, -0.6},
-			{-0.11, -0.55},
-			{0.5, -0.5},
-			{-0.2, -0.4},
-			{0.5, 0},
-			{0.3, 0.001},
-			{-0.5, 0.002},
-			{-0.4, 0.2},
-			{0.55, 0.375},
-			{0.55, 0.425},
-			{0, 0.6}};
-*/
-	coord *test_points = malloc(sizeof(coord) * nPoints);
+			{0.2, 0.4},
+			{0.85, 0.85}};
+	nPoints = 6;
+	//coord *test_points = malloc(sizeof(coord) * nPoints);
 	GLfloat min[2] = {-0.8, -0.8};
 	GLfloat max[2] = {0.8, 0.8};
-	random_uniform_points(test_points, nPoints, min, max);
+	//random_uniform_points(test_points, nPoints, min, max);
 	qsort(test_points, nPoints, sizeof(float) * 2, comparefloats);
 
 	FortuneStruct *data = initFortune(test_points, nPoints);
@@ -179,12 +166,23 @@ int main(int argc, char *argv[])
 	float xmin = -0.9;
 	float xmax = 0.9;
 
-	float sweeplineHeight = -1;
+	float sweeplineHeight = -0.9;
 
 	float pointsSweepLine[2][2] = {
-			{xmin * 10, sweeplineHeight},
-			{xmax * 10, sweeplineHeight},
+			{xmin, sweeplineHeight},
+			{xmax, sweeplineHeight},
 	};
+
+	float boxPoints[5][2] = {
+			{-0.9, -0.9},
+			{-0.9, 0.9},
+			{0.9, 0.9},
+			{0.9, -0.9},
+			{-0.9, -0.9}};
+
+	float box[2][2] = {
+			{-0.9, -0.9},
+			{0.9, 0.9}};
 
 	int nMaxBeachLine = nBeachLine * 10;
 
@@ -203,6 +201,7 @@ int main(int argc, char *argv[])
 			{0, 0}};
 
 	bov_points_t *ptsHard = bov_points_new(test_points, nPoints, GL_STATIC_DRAW);
+	bov_points_t *ptsBox = bov_points_new(boxPoints, 5, GL_STATIC_DRAW);
 	bov_points_t *ptsBeachline = bov_points_new(points, nBeachLine, GL_DYNAMIC_DRAW);
 	bov_points_t *ptsSweepline = bov_points_new(pointsSweepLine, 2, GL_DYNAMIC_DRAW);
 	bov_points_t *ptnextEvent = bov_points_new(nextEvent, 1, GL_DYNAMIC_DRAW);
@@ -227,14 +226,15 @@ int main(int argc, char *argv[])
 	bov_points_set_width(ptsHard, 0.02);
 	bov_points_set_width(circleEvent, 0.02);
 	bov_points_set_width(ptnextEvent, 0.01);
-	bov_points_set_width(ptsBeachline, 0.001);
+	bov_points_set_width(ptsBeachline, 0.004);
 	bov_points_set_width(ptsHe, 0.008);
-	bov_points_set_width(ptsHeConstruct, 0.008);
+	bov_points_set_width(ptsHeConstruct, 0.002);
 	bov_points_set_width(ptsSweepline, 0.008);
 
-	bov_points_set_color(ptnextEvent, (float[4])flash);
+	bov_points_set_color(ptnextEvent, (float[4])nord15);
 	bov_points_set_color(ptsHard, (float[4])nord14);
 	bov_points_set_color(ptsSweepline, (float[4])nord10);
+	bov_points_set_color(ptsBeachline, (float[4])nord13);
 	bov_points_set_color(circleEvent, (float[4])nord5);
 	bov_points_set_color(ptsHe, (float[4])nord11);
 	bov_points_set_color(ptsHeConstruct, (float[4])nord12);
@@ -246,7 +246,7 @@ int main(int argc, char *argv[])
 	// Hide|Show elements
 	int gKey = 0, hKey = 0, jKey = 0, kKey = 0, vKey = 0, bKey = 0, nKey = 0, mKey = 0, tKey;
 
-	float kStep = 1;
+	float kStep = 10000;
 	int kContinuous = 1;
 	int nNEvent = 2, nSweepLine = 2;
 
@@ -273,7 +273,7 @@ int main(int argc, char *argv[])
 		if (data->Q != NULL && data->Q->es != NULL)
 		{
 			fortuneAlgo(data, data->Q->es[data->Q->size - 1]->coordinates[1] + 1);
-			boundingBoxBp(data->beachLine); // TODO improve bounding box maybe use intersection of box and lines
+			boundingBoxBp(data->beachLine, box); // TODO improve bounding box maybe use intersection of box and lines
 		}
 		showBeachLine = false;
 		showSweepLine = false;
@@ -288,7 +288,7 @@ int main(int argc, char *argv[])
 	}
 	else if (typeAnim == STEP_ANIM)
 	{
-		sweeplineHeight = data->Q->es[0]->coordinates[1];
+		sweeplineHeight = box[0][1];
 	}
 
 	while (!bov_window_should_close(window))
@@ -330,7 +330,7 @@ int main(int argc, char *argv[])
 
 					if (data->Q->size == 0)
 					{
-						boundingBoxBp(data->beachLine); // TODO improve bounding box maybe use intersection of box and lines
+						boundingBoxBp(data->beachLine, box);
 
 						// Hide this if not needed
 						showBeachLine = false;
@@ -343,10 +343,17 @@ int main(int argc, char *argv[])
 						sweeplineHeight = data->Q->es[0]->coordinates[1];
 					}
 
-					if (sweeplineHeight > 1.3)
+					if (sweeplineHeight > box[1][1])
 					{
 						// Process all event outside the box
 						fortuneAlgo(data, data->Q->es[data->Q->size - 1]->coordinates[1] + 1);
+						boundingBoxBp(data->beachLine, box);
+
+						// Hide this if not needed
+						showBeachLine = false;
+						showSweepLine = false;
+						showNextEvent = false;
+						showConstructingHe = false;
 					}
 				}
 			}
@@ -356,17 +363,24 @@ int main(int argc, char *argv[])
 				fortuneAlgo(data, sweeplineHeight);
 				if (data->Q->size == 0)
 				{
-					boundingBoxBp(data->beachLine); // TODO improve bounding box maybe use intersection of box and lines
+					boundingBoxBp(data->beachLine, box);
 
 					showBeachLine = false;
 					showSweepLine = false;
 					showNextEvent = false;
 					showConstructingHe = false;
 				}
-				else if (sweeplineHeight > 1.3)
+				else if (sweeplineHeight > box[1][1])
 				{
 					// Process all event outside the box
 					fortuneAlgo(data, data->Q->es[data->Q->size - 1]->coordinates[1] + 1);
+
+					boundingBoxBp(data->beachLine, box);
+
+					showBeachLine = false;
+					showSweepLine = false;
+					showNextEvent = false;
+					showConstructingHe = false;
 				}
 				updateDrawing = true;
 			}
@@ -398,7 +412,7 @@ int main(int argc, char *argv[])
 					updateDrawing = true;
 					if (data->Q->size == 0)
 					{
-						boundingBoxBp(data->beachLine); // TODO improve bounding box maybe use intersection of box and lines
+						boundingBoxBp(data->beachLine, box); // TODO improve bounding box maybe use intersection of box and lines
 
 						showBeachLine = false;
 						showSweepLine = false;
@@ -432,9 +446,10 @@ int main(int argc, char *argv[])
 			if (shouldUpdateContinuous)
 			{
 				fortuneAlgo(data, sweeplineHeight);
+				printQueue(data->Q);
 				if (data->Q->size == 0)
 				{
-					boundingBoxBp(data->beachLine); // TODO improve bounding box maybe use intersection of box and lines
+					boundingBoxBp(data->beachLine, box); // TODO improve bounding box maybe use intersection of box and lines
 
 					// Hide this if not needed
 					showBeachLine = false;
@@ -442,7 +457,7 @@ int main(int argc, char *argv[])
 					showNextEvent = false;
 					showConstructingHe = false;
 				}
-				else if (sweeplineHeight > 1.3)
+				else if (sweeplineHeight > box[1][1])
 				{
 					// Process all event outside the box
 					fortuneAlgo(data, data->Q->es[data->Q->size - 1]->coordinates[1] + 1);
@@ -469,9 +484,11 @@ int main(int argc, char *argv[])
 				bov_text_update(textHelp, (GLubyte[]){""});
 			}
 
+			printf("Crashed %f \n", sweeplineHeight);
+
 			if (showBeachLine)
 			{
-				drawBeachLine(sweeplineHeight, data->beachLine, points, nBeachLine, -0.9, 0.9); // TODO update
+				drawBeachLine(sweeplineHeight, data->beachLine, points, nBeachLine, box[0][1], box[1][1]); // TODO update
 				bov_points_update(ptsBeachline, points, nBeachLine);
 			}
 			else
@@ -509,7 +526,7 @@ int main(int argc, char *argv[])
 
 			if (showConstructingHe)
 			{
-				nHeConstruct = drawConstructingHe(sweeplineHeight, data->beachLine, pointsHeConstruct);
+				nHeConstruct = drawConstructingHe(sweeplineHeight, data->beachLine, pointsHeConstruct, box);
 				// TODO should assert if go over max
 				bov_points_update(ptsHeConstruct, pointsHeConstruct, nHeConstruct);
 			}
@@ -531,7 +548,7 @@ int main(int argc, char *argv[])
 
 			if (showHe)
 			{
-				nHe = getHePoints(data->Voronoid, pointsHe);
+				nHe = getHePoints(data->Voronoid, pointsHe, box);
 				bov_points_update(ptsHe, pointsHe, nHe);
 			}
 			else
@@ -677,20 +694,20 @@ int main(int argc, char *argv[])
 		}
 
 		//Update of the window
-		bov_points_draw(window, circleEvent, 0, nCircleEvent);
+		bov_points_draw(window, circleEvent, 0, nCircleEvent); // TODO not print outside the box ? or directly process them
 		bov_line_strip_draw(window, ptsSweepline, 0, nSweepLine);
 		bov_points_draw(window, ptsHard, 0, nPoints);
 		bov_points_draw(window, ptnextEvent, 0, nNEvent);
 		bov_line_strip_draw(window, ptsBeachline, 0, nBeachLine);
 		bov_lines_draw(window, ptsHe, 0, nHe);
 		bov_lines_draw(window, ptsHeConstruct, 0, nHeConstruct);
+		bov_line_strip_draw(window, ptsBox, 0, 5);
 
 		bov_text_draw(window, textHelp);
 		bov_window_update(window);
 	}
 
-	bov_window_delete(window);
-
+	bov_points_delete(ptsBox);
 	bov_points_delete(ptsHard);
 	bov_points_delete(ptsBeachline);
 	bov_points_delete(ptsSweepline);
@@ -699,6 +716,8 @@ int main(int argc, char *argv[])
 	bov_points_delete(ptsHe);
 	bov_points_delete(ptsHeConstruct);
 	bov_text_delete(textHelp);
+
+	bov_window_delete(window);
 
 	freeFortuneStruct(data);
 

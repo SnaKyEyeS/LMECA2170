@@ -149,3 +149,48 @@ void key_callback_new(GLFWwindow *self, int key, int scancode, int action, int m
   if (key == GLFW_KEY_ESCAPE)
     glfwSetWindowShouldClose(self, GL_TRUE);
 }
+
+bool inBox(float x, float y, float box[2][2])
+{
+  return (x > box[0][0] || fabs(x - box[0][0]) < TEST_EPS) && (x < box[1][0] || fabs(x - box[1][0]) < TEST_EPS) && (y > box[0][1] || fabs(y - box[0][1]) < TEST_EPS) && (y < box[1][1] || fabs(y - box[1][1]) < TEST_EPS);
+}
+
+bool lineCrossBox(float pointA[2], float pointB[2], float box[2][2])
+{
+  printf("Chap %f %f | %f %f \n", pointA[0], pointA[1], pointB[0], pointB[1]);
+  double refAngle = atan2(-(pointB[1] - pointA[1]), -(pointB[0] - pointA[0]));
+  if (refAngle < 0)
+    refAngle = 2 * PI + refAngle;
+
+  double angleA = atan2(-(pointB[1] - box[0][1]), -(pointB[0] - box[1][0]));
+  double angleB = atan2(-(pointB[1] - box[1][1]), -(pointB[0] - box[1][0]));
+  double angleC = atan2(-(pointB[1] - box[1][1]), -(pointB[0] - box[0][0]));
+  double angleD = atan2(-(pointB[1] - box[0][1]), -(pointB[0] - box[0][0]));
+
+  if (angleA < 0)
+    angleA = 2 * PI + angleA;
+  if (angleB < 0)
+    angleB = 2 * PI + angleB;
+  if (angleC < 0)
+    angleC = 2 * PI + angleC;
+  if (angleD < 0)
+    angleD = 2 * PI + angleD;
+
+  double maxA = MAX(MAX(angleA, angleB), MAX(angleB, angleC));
+  double minA = MIN(MIN(angleA, angleB), MIN(angleC, angleD));
+
+  printf("Angle %f | %f %f %f %f | %f %f \n", refAngle, angleA, angleB, angleC, angleD, maxA, minA);
+
+  if (fabs(maxA - minA) > PI)
+  {
+    maxA = maxA - 2 * PI;
+    if (refAngle > PI)
+      refAngle = refAngle - 2 * PI;
+    printf("Angle 2 %f | %f %f %f %f | %f %f \n", refAngle, angleA, angleB, angleC, angleD, maxA, minA);
+    return refAngle < minA && refAngle > maxA; // rervers becausem in is max
+  }
+  else
+  {
+    return refAngle > minA && refAngle < maxA;
+  }
+}

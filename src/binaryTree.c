@@ -197,9 +197,12 @@ void drawBeachLine(float y, Node *root, coord *points, int n, float minBox, floa
     var = var->rightBP->rightArc; // First BP can be null
     for (int i = 0; i < n; i++)
     {
+      printf("%d\n", i);
+      printNode(var);
       if (var->rightBP != NULL)
       {
-        while (points[i][0] > bpX)
+        printf("points %f %f \n", points[i][0], bpX);
+        while (points[i][0] > bpX && var->rightBP != NULL)
         {
           xArc = var->arcPoint[0];
           yArc = var->arcPoint[1];
@@ -208,11 +211,12 @@ void drawBeachLine(float y, Node *root, coord *points, int n, float minBox, floa
             bpX = getBpX(var->rightBP, y);
           }
           var = var->rightBP->rightArc;
+          printf("Chech %d\n");
         }
       }
-
+      printf("%d\n", i);
       points[i][1] = parabola(xArc, yArc, y, points[i][0]);
-
+      printf("%d \n", i);
       if (points[i][1] > maxBox)
         points[i][1] = maxBox;
       else if (points[i][1] < minBox)
@@ -233,37 +237,100 @@ void drawBeachLine(float y, Node *root, coord *points, int n, float minBox, floa
   }
 }
 
-void boundingBoxBp(Node *root)
+void boundingBoxBp(Node *root, float box[2][2])
 {
   if (root == NULL)
     return;
   if (root->isLeaf)
     return;
 
-  // TODO improve
-  int yLine = 1000;
-  float point[2];
-  point[0] = getBpX(root, yLine);
-  point[1] = parabola(root->leftArc->arcPoint[0], root->leftArc->arcPoint[1], yLine, point[0]);
-  if (root->he != NULL)
+  Node *var = root;
+  while (!var->isLeaf)
   {
-    Vertex *v = createVertex(point);
-    if (root->he->v == NULL)
+    var = var->Left;
+  }
+
+  var = var->rightBP;
+  while (var != NULL)
+  {
+    float x = getBpX(var, box[1][1]);
+    float y = parabola(var->leftArc->arcPoint[0], var->leftArc->arcPoint[1], box[1][1], x);
+
+    if (var->he->v != NULL || var->he->Opposite->v != NULL)
     {
-      root->he->v = v;
-    }
-    else if (root->he->Opposite->v == NULL)
-    {
-      root->he->Opposite->v = v;
+      float refX = 0;
+      float refY = 0;
+      if (var->he->v != NULL)
+      {
+        refX = var->he->v->coordinates[0];
+        refY = var->he->v->coordinates[1];
+      }
+      else
+      {
+        refX = var->he->Opposite->v->coordinates[0];
+        refY = var->he->Opposite->v->coordinates[1];
+      }
+
+      if (inBox(refX, refY, box))
+      {
+        double angle = atan2(y - refY, x - refX);
+        float r;
+
+        if (angle > 0)
+        {
+          r = (box[1][1] - refY) / sin(angle);
+        }
+        else
+        {
+          r = (box[0][1] - refY) / sin(angle);
+        }
+
+        if (fabs(angle) < PI / 2)
+        {
+          float testr = (box[1][0] - refX) / cos(angle);
+          if (testr < r)
+            r = testr;
+        }
+        else
+        {
+          float testr = (box[0][0] - refX) / cos(angle);
+          if (testr < r)
+            r = testr;
+        }
+        float point[2];
+        point[0] = refX + r * cos(angle);
+        point[1] = refY + r * sin(angle);
+        Vertex *v = createVertex(point);
+
+        if (var->he->v == NULL)
+        {
+          var->he->v = v;
+        }
+        else if (var->he->Opposite->v == NULL)
+        {
+          var->he->Opposite->v = v;
+        }
+      }
     }
     else
     {
-      //printf("Error: a semi-infinite edge has a vertex ? \n");
+      Node *subVar = var;
+      while (subVar != NULL)
+      {
+        if (subVar->he == var->he->Opposite)
+        {
+          break;
+        }
+        subVar = subVar->rightArc->rightBP;
+      }
+      if (subVar != NULL)
+      {
+        // No vertex exist
+      }
     }
-  }
 
-  boundingBoxBp(root->Left);
-  boundingBoxBp(root->Right);
+    var = var->rightArc->rightBP;
+  }
 }
 
 /*
@@ -296,7 +363,7 @@ int printTree(Node *node, int depth, int id)
 /* 
  * Fetch the consturctiong He and store into points for drawing
  */
-int drawConstructingHe(float y, Node *root, coord *points)
+int drawConstructingHe(float y, Node *root, coord *points, float box[2][2])
 {
   if (root == NULL)
   {
@@ -333,7 +400,76 @@ int drawConstructingHe(float y, Node *root, coord *points)
         points[n + 1][1] = var->he->Opposite->v->coordinates[1];
       }
 
-      n += 2;
+      if (inBox(points[n][0], points[n][1], box) && inBox(points[n + 1][0], points[n + 1][1], box))
+        n += 2;
+      else if (inBox(points[n][0], points[n][1], box))
+      {
+        float refX = points[n][0];
+        float refY = points[n][1];
+        float x = points[n + 1][0];
+        float y = points[n + 1][1];
+        double angle = atan2(y - refY, x - refX);
+        float r;
+
+        if (angle > 0)
+        {
+          r = (box[1][1] - refY) / sin(angle);
+        }
+        else
+        {
+          r = (box[0][1] - refY) / sin(angle);
+        }
+
+        if (fabs(angle) < PI / 2)
+        {
+          float testr = (box[1][0] - refX) / cos(angle);
+          if (testr < r)
+            r = testr;
+        }
+        else
+        {
+          float testr = (box[0][0] - refX) / cos(angle);
+          if (testr < r)
+            r = testr;
+        }
+        points[n + 1][0] = refX + r * cos(angle);
+        points[n + 1][1] = refY + r * sin(angle);
+        n += 2;
+      }
+      else if (inBox(points[n + 1][0], points[n + 1][1], box))
+      {
+        float refX = points[n + 1][0];
+        float refY = points[n + 1][1];
+        float x = points[n][0];
+        float y = points[n][1];
+        double angle = atan2(y - refY, x - refX);
+        float r;
+
+        if (angle > 0)
+        {
+          r = (box[1][1] - refY) / sin(angle);
+        }
+        else
+        {
+          r = (box[0][1] - refY) / sin(angle);
+        }
+
+        if (fabs(angle) < PI / 2)
+        {
+          float testr = (box[1][0] - refX) / cos(angle);
+          if (testr < r)
+            r = testr;
+        }
+        else
+        {
+          float testr = (box[0][0] - refX) / cos(angle);
+          if (testr < r)
+            r = testr;
+        }
+        points[n][0] = refX + r * cos(angle);
+        points[n][1] = refY + r * sin(angle);
+        n += 2;
+      }
     }
     else
     {
@@ -350,9 +486,48 @@ int drawConstructingHe(float y, Node *root, coord *points)
       {
         points[n][0] = getBpX(var, y);
         points[n][1] = parabola(var->rightArc->arcPoint[0], var->rightArc->arcPoint[1], y, points[n][0]);
-        points[n + 1][0] = getBpX(subVar, y);
-        points[n + 1][1] = parabola(subVar->rightArc->arcPoint[0], subVar->rightArc->arcPoint[1], y, points[n + 1][0]);
-        n += 2;
+        if (inBox(points[n][0], points[n][1], box))
+        {
+          points[n + 1][0] = getBpX(subVar, y);
+          points[n + 1][1] = parabola(subVar->rightArc->arcPoint[0], subVar->rightArc->arcPoint[1], y, points[n + 1][0]);
+
+          if (!inBox(points[n + 1][0], points[n + 1][1], box))
+          {
+            float refX = points[n][0];
+            float refY = points[n][1];
+            float x = points[n + 1][0];
+            float y = points[n + 1][1];
+            double angle = atan2(y - refY, x - refX);
+            float r;
+
+            if (angle > 0)
+            {
+              r = (box[1][1] - refY) / sin(angle);
+            }
+            else
+            {
+              r = (box[0][1] - refY) / sin(angle);
+            }
+
+            if (fabs(angle) < PI / 2)
+            {
+              float testr = (box[1][0] - refX) / cos(angle);
+              if (testr < r)
+                r = testr;
+            }
+            else
+            {
+              float testr = (box[0][0] - refX) / cos(angle);
+              if (testr < r)
+                r = testr;
+            }
+            points[n + 1][0] = refX + r * cos(angle);
+            points[n + 1][1] = refY + r * sin(angle);
+            n += 2;
+          }
+
+          n += 2;
+        }
       }
     }
 

@@ -55,8 +55,9 @@
   * [x] Next Event should be highlighted
   * [x] Finite vertex
   * [x] Vertex in construction 
-  * [ ] semi-finite vertex
-  * [ ] Bound everything to a box
+  * [x] semi-finite vertex
+  * [x] Bound everything to a box
+  * [x] Vertex of the He
 * [ ] Clean the data
   * [ ] verify if when add points
 
