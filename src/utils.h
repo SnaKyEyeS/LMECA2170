@@ -26,4 +26,6 @@ void linspaceRealloc(coord *points, float xmin, float xmax, int n);
 
 int impulse(int old, int ne);
 
+void key_callback_new(GLFWwindow *self, int key, int scancode, int action, int mods);
+
 #endif

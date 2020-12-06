@@ -195,7 +195,8 @@ int main(int argc, char *argv[])
 	}
 	linspaceRealloc(points, xmin, xmax, nBeachLine);
 
-	bov_window_t *window = bov_window_new(800, 800, "Fortune's Algorithm - Devillez & Poncelet");
+	bov_window_t *window = bov_window_new(1500, 1000, "Fortune's Algorithm - Devillez & Poncelet");
+	glfwSetKeyCallback(window->self, key_callback_new);
 	bov_window_set_color(window, (GLfloat[])nord0);
 
 	float nextEvent[1][2] = {
@@ -208,6 +209,19 @@ int main(int argc, char *argv[])
 	bov_points_t *circleEvent = bov_points_new(pointsCircleEvent, nCircleEvent, GL_DYNAMIC_DRAW);
 	bov_points_t *ptsHe = bov_points_new(pointsHe, nHe, GL_STATIC_DRAW);
 	bov_points_t *ptsHeConstruct = bov_points_new(pointsHe, nHeConstruct, GL_STATIC_DRAW);
+
+	bov_text_param_t parameters = {
+			.outlineColor = nord3,
+			.fillColor = nord4, // completely transparent
+			.fontSize = 25,
+			.boldness = 1,
+			.spaceType = PIXEL_SPACE,
+			.pos = {10, 900},
+			.outlineWidth = 2};
+
+	GLubyte helperText[] = {"Shortcuts \n- 0 finish the animation\n- 1 switch to manual mode\n- 2 switch to step mode\n- 3 switch to sweep mode\n\n- E go to next Event (MANUAL)\n- A decelerate (STEP, SWEEP)\n- B accelerate (STEP, SWEEP)\n- O Reduce resolution of the beachline\n- P augment resolution of the beachLine\n\n- Q small step of the beachline\n- S medium step of the beachline\n- D big step of the beachline\n\n- G show/hide the beachline\n- H show/hide the sweepline\n- J show/hide the next Event\n- K show/hide the constructing half-edges\n- V show/hide the site points\n- B show/hide the half-edges\n- N show/hide the circle vents\n\n- T show/hide this help"};
+	bov_text_t *textHelp = bov_text_new(helperText, GL_STATIC_DRAW);
+	bov_text_set_param(textHelp, parameters);
 
 	bov_points_draw(window, ptsHard, 0, nPoints);
 	bov_points_set_width(ptsHard, 0.02);
@@ -230,7 +244,7 @@ int main(int argc, char *argv[])
 	int aKey = 0, sKey = 0, dKey = 0, fKey = 0, eKey = 0, wKey = 0, qKey = 0, oKey = 0, pKey = 0, oneKey = 0, twoKey = 0, threeKey = 0, fourKey = 0;
 
 	// Hide|Show elements
-	int gKey = 0, hKey = 0, jKey = 0, kKey = 0, vKey = 0, bKey = 0, nKey = 0, mKey = 0;
+	int gKey = 0, hKey = 0, jKey = 0, kKey = 0, vKey = 0, bKey = 0, nKey = 0, mKey = 0, tKey;
 
 	float kStep = 1;
 	int kContinuous = 1;
@@ -251,6 +265,8 @@ int main(int argc, char *argv[])
 	bool showConstructingHe = true;
 	bool showHe = true;
 	bool showBox = true; // TODO
+
+	bool showHelp = true;
 
 	if (typeAnim == NO_ANIM)
 	{
@@ -444,6 +460,15 @@ int main(int argc, char *argv[])
 			// Wait for next update
 			updateDrawing = false;
 
+			if (showHelp)
+			{
+				bov_text_update(textHelp, helperText);
+			}
+			else
+			{
+				bov_text_update(textHelp, (GLubyte[]){""});
+			}
+
 			if (showBeachLine)
 			{
 				drawBeachLine(sweeplineHeight, data->beachLine, points, nBeachLine, -0.9, 0.9); // TODO update
@@ -587,15 +612,6 @@ int main(int argc, char *argv[])
 			shouldUpdateManual = true;
 		}
 
-		fKey = impulse(fKey, glfwGetKey(window->self, GLFW_KEY_F));
-		if (fKey == 1)
-		{
-			sweeplineHeight += 50;
-			pointsSweepLine[0][1] = sweeplineHeight;
-			pointsSweepLine[1][1] = sweeplineHeight;
-			bov_points_update(ptsSweepline, pointsSweepLine, 2);
-		}
-
 		// Hide or show elems
 		gKey = impulse(gKey, glfwGetKey(window->self, GLFW_KEY_G));
 		if (gKey == 1)
@@ -653,6 +669,13 @@ int main(int argc, char *argv[])
 			updateDrawing = true;
 		}
 
+		tKey = impulse(tKey, glfwGetKey(window->self, GLFW_KEY_T));
+		if (tKey == 1)
+		{
+			showHelp = !showHelp;
+			updateDrawing = true;
+		}
+
 		//Update of the window
 		bov_points_draw(window, circleEvent, 0, nCircleEvent);
 		bov_line_strip_draw(window, ptsSweepline, 0, nSweepLine);
@@ -661,6 +684,8 @@ int main(int argc, char *argv[])
 		bov_line_strip_draw(window, ptsBeachline, 0, nBeachLine);
 		bov_lines_draw(window, ptsHe, 0, nHe);
 		bov_lines_draw(window, ptsHeConstruct, 0, nHeConstruct);
+
+		bov_text_draw(window, textHelp);
 		bov_window_update(window);
 	}
 
@@ -672,6 +697,8 @@ int main(int argc, char *argv[])
 	bov_points_delete(ptnextEvent);
 	bov_points_delete(circleEvent);
 	bov_points_delete(ptsHe);
+	bov_points_delete(ptsHeConstruct);
+	bov_text_delete(textHelp);
 
 	freeFortuneStruct(data);
 

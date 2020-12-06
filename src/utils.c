@@ -114,3 +114,38 @@ int impulse(int old, int ne)
   }
   return 0;
 }
+
+void key_callback_new(GLFWwindow *self, int key, int scancode, int action, int mods)
+{
+  static unsigned screenshot_nbr = 0;
+  char screenshot_name[64] = "screenshot";
+  bov_window_t *window = (bov_window_t *)glfwGetWindowUserPointer(self);
+  if (action == GLFW_PRESS || action == GLFW_REPEAT)
+  {
+    switch (key)
+    {
+    case GLFW_KEY_ESCAPE:
+      glfwSetWindowShouldClose(self, GL_TRUE);
+      break;
+    case GLFW_KEY_SPACE:
+      if (window->running == 0)
+      {
+        window->running = 1;
+      }
+      else
+      {
+        window->running = 0;
+      }
+      break;
+      break;
+    case GLFW_KEY_UP:
+      window->counter++;
+      break;
+    case GLFW_KEY_DOWN:
+      window->counter--;
+      break;
+    }
+  }
+  if (key == GLFW_KEY_ESCAPE)
+    glfwSetWindowShouldClose(self, GL_TRUE);
+}

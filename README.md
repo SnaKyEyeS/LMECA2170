@@ -40,7 +40,7 @@
 * [ ] Check if memory is clean (valgrind)
 * [ ] Add nice tool for visual
   * [x] Each element shoulde be toggable
-  * [ ] Help should gives shortcut
+  * [x] Help should gives shortcut
   * [x] Speed of sweep line should be variable
   * [x] Sweep line should be able to stop
   * [x] manual increase for sweep line should be ok
@@ -54,7 +54,7 @@
   * [ ] Circle from circle event (dashed)
   * [x] Next Event should be highlighted
   * [x] Finite vertex
-  * [ ] Vertex in construction 
+  * [x] Vertex in construction 
   * [ ] semi-finite vertex
   * [ ] Bound everything to a box
 * [ ] Clean the data
