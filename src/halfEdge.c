@@ -270,7 +270,6 @@ int getHePoints(PolygonMesh *PM, coord *points, float box[2][2])
       }
       else
       {
-        printf("Ponits %f %f %f %f \n", points[n][0], points[n][1], points[n + 1][0], points[n + 1][1]);
         if (lineCrossBox(points[n], points[n + 1], box))
         {
           float refX = points[n][0];
@@ -292,12 +291,17 @@ int getHePoints(PolygonMesh *PM, coord *points, float box[2][2])
           float minr = MAX(MIN(r1, r2), MIN(r3, r4));
           float maxr = MIN(MAX(r1, r2), MAX(r3, r4));
 
-          points[n][0] = refX + minr * cos(angle);
-          points[n][1] = refY + minr * sin(angle);
-          points[n + 1][0] = refX + maxr * cos(angle);
-          points[n + 1][1] = refY + maxr * sin(angle);
+          float rTest = sqrt((x - refX) * (x - refX) + (y - refY) * (y - refY));
 
-          n += 2;
+          if (minr > 0 && maxr > 0 && maxr < rTest)
+          {
+            points[n][0] = refX + minr * cos(angle);
+            points[n][1] = refY + minr * sin(angle);
+            points[n + 1][0] = refX + maxr * cos(angle);
+            points[n + 1][1] = refY + maxr * sin(angle);
+
+            n += 2;
+          }
         }
       }
     }

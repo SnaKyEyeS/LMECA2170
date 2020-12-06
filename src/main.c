@@ -134,19 +134,19 @@ int main(int argc, char *argv[])
 		free(points);
 		return EXIT_SUCCESS;
 	}
-
+	/*
 	float test_points[10][2] = {
 			{0, 0},
 			{0.1, 0.1},
 			{-0.2, 0.2},
 			{0.15, 0.3},
 			{0.2, 0.4},
-			{0.85, 0.85}};
-	nPoints = 6;
-	//coord *test_points = malloc(sizeof(coord) * nPoints);
+			{0.85, 0.85}};*/
+
+	coord *test_points = malloc(sizeof(coord) * nPoints);
 	GLfloat min[2] = {-0.8, -0.8};
 	GLfloat max[2] = {0.8, 0.8};
-	//random_uniform_points(test_points, nPoints, min, max);
+	random_uniform_points(test_points, nPoints, min, max);
 	qsort(test_points, nPoints, sizeof(float) * 2, comparefloats);
 
 	FortuneStruct *data = initFortune(test_points, nPoints);
@@ -265,6 +265,7 @@ int main(int argc, char *argv[])
 	bool showConstructingHe = true;
 	bool showHe = true;
 	bool showBox = true; // TODO
+	bool shouldComputeBB = true;
 
 	bool showHelp = true;
 
@@ -273,7 +274,8 @@ int main(int argc, char *argv[])
 		if (data->Q != NULL && data->Q->es != NULL)
 		{
 			fortuneAlgo(data, data->Q->es[data->Q->size - 1]->coordinates[1] + 1);
-			boundingBoxBp(data->beachLine, box); // TODO improve bounding box maybe use intersection of box and lines
+			boundingBoxBp(data->beachLine, box);
+			shouldUpdateContinuous = false;
 		}
 		showBeachLine = false;
 		showSweepLine = false;
@@ -330,7 +332,11 @@ int main(int argc, char *argv[])
 
 					if (data->Q->size == 0)
 					{
-						boundingBoxBp(data->beachLine, box);
+						if (shouldComputeBB)
+						{
+							boundingBoxBp(data->beachLine, box);
+							shouldComputeBB = false;
+						}
 
 						// Hide this if not needed
 						showBeachLine = false;
@@ -347,7 +353,11 @@ int main(int argc, char *argv[])
 					{
 						// Process all event outside the box
 						fortuneAlgo(data, data->Q->es[data->Q->size - 1]->coordinates[1] + 1);
-						boundingBoxBp(data->beachLine, box);
+						if (shouldComputeBB)
+						{
+							boundingBoxBp(data->beachLine, box);
+							shouldComputeBB = false;
+						}
 
 						// Hide this if not needed
 						showBeachLine = false;
@@ -363,7 +373,11 @@ int main(int argc, char *argv[])
 				fortuneAlgo(data, sweeplineHeight);
 				if (data->Q->size == 0)
 				{
-					boundingBoxBp(data->beachLine, box);
+					if (shouldComputeBB)
+					{
+						boundingBoxBp(data->beachLine, box);
+						shouldComputeBB = false;
+					}
 
 					showBeachLine = false;
 					showSweepLine = false;
@@ -374,8 +388,11 @@ int main(int argc, char *argv[])
 				{
 					// Process all event outside the box
 					fortuneAlgo(data, data->Q->es[data->Q->size - 1]->coordinates[1] + 1);
-
-					boundingBoxBp(data->beachLine, box);
+					if (shouldComputeBB)
+					{
+						boundingBoxBp(data->beachLine, box);
+						shouldComputeBB = false;
+					}
 
 					showBeachLine = false;
 					showSweepLine = false;
@@ -412,7 +429,25 @@ int main(int argc, char *argv[])
 					updateDrawing = true;
 					if (data->Q->size == 0)
 					{
-						boundingBoxBp(data->beachLine, box); // TODO improve bounding box maybe use intersection of box and lines
+						if (shouldComputeBB)
+						{
+							boundingBoxBp(data->beachLine, box);
+							shouldComputeBB = false;
+						}
+						showBeachLine = false;
+						showSweepLine = false;
+						showNextEvent = false;
+						showConstructingHe = false;
+					}
+					else if (sweeplineHeight > box[1][1])
+					{
+						// Process all event outside the box
+						fortuneAlgo(data, data->Q->es[data->Q->size - 1]->coordinates[1] + 1);
+						if (shouldComputeBB)
+						{
+							boundingBoxBp(data->beachLine, box);
+							shouldComputeBB = false;
+						}
 
 						showBeachLine = false;
 						showSweepLine = false;
@@ -446,11 +481,13 @@ int main(int argc, char *argv[])
 			if (shouldUpdateContinuous)
 			{
 				fortuneAlgo(data, sweeplineHeight);
-				printQueue(data->Q);
 				if (data->Q->size == 0)
 				{
-					boundingBoxBp(data->beachLine, box); // TODO improve bounding box maybe use intersection of box and lines
-
+					if (shouldComputeBB)
+					{
+						boundingBoxBp(data->beachLine, box);
+						shouldComputeBB = false;
+					}
 					// Hide this if not needed
 					showBeachLine = false;
 					showSweepLine = false;
@@ -461,6 +498,17 @@ int main(int argc, char *argv[])
 				{
 					// Process all event outside the box
 					fortuneAlgo(data, data->Q->es[data->Q->size - 1]->coordinates[1] + 1);
+
+					if (shouldComputeBB)
+					{
+						boundingBoxBp(data->beachLine, box);
+						shouldComputeBB = false;
+					}
+					// Hide this if not needed
+					showBeachLine = false;
+					showSweepLine = false;
+					showNextEvent = false;
+					showConstructingHe = false;
 				}
 
 				updateDrawing = true;
@@ -483,8 +531,6 @@ int main(int argc, char *argv[])
 			{
 				bov_text_update(textHelp, (GLubyte[]){""});
 			}
-
-			printf("Crashed %f \n", sweeplineHeight);
 
 			if (showBeachLine)
 			{

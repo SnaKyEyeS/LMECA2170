@@ -197,11 +197,8 @@ void drawBeachLine(float y, Node *root, coord *points, int n, float minBox, floa
     var = var->rightBP->rightArc; // First BP can be null
     for (int i = 0; i < n; i++)
     {
-      printf("%d\n", i);
-      printNode(var);
       if (var->rightBP != NULL)
       {
-        printf("points %f %f \n", points[i][0], bpX);
         while (points[i][0] > bpX && var->rightBP != NULL)
         {
           xArc = var->arcPoint[0];
@@ -211,12 +208,9 @@ void drawBeachLine(float y, Node *root, coord *points, int n, float minBox, floa
             bpX = getBpX(var->rightBP, y);
           }
           var = var->rightBP->rightArc;
-          printf("Chech %d\n");
         }
       }
-      printf("%d\n", i);
       points[i][1] = parabola(xArc, yArc, y, points[i][0]);
-      printf("%d \n", i);
       if (points[i][1] > maxBox)
         points[i][1] = maxBox;
       else if (points[i][1] < minBox)
@@ -253,8 +247,8 @@ void boundingBoxBp(Node *root, float box[2][2])
   var = var->rightBP;
   while (var != NULL)
   {
-    float x = getBpX(var, box[1][1]);
-    float y = parabola(var->leftArc->arcPoint[0], var->leftArc->arcPoint[1], box[1][1], x);
+    float x = getBpX(var, 10 * box[1][1]);
+    float y = parabola(var->leftArc->arcPoint[0], var->leftArc->arcPoint[1], 10 * box[1][1], x);
 
     if (var->he->v != NULL || var->he->Opposite->v != NULL)
     {
@@ -270,9 +264,26 @@ void boundingBoxBp(Node *root, float box[2][2])
         refX = var->he->Opposite->v->coordinates[0];
         refY = var->he->Opposite->v->coordinates[1];
       }
+      float point[2];
+      point[0] = x;
+      point[1] = y;
+      Vertex *v = createVertex(point);
 
+      if (var->he->v == NULL)
+      {
+        var->he->v = v;
+        v->he = var->he;
+      }
+      else
+      {
+        var->he->Opposite->v = v;
+        var->he->Opposite->v->he = var->he->Opposite;
+      }
+
+      /*
       if (inBox(refX, refY, box))
       {
+
         double angle = atan2(y - refY, x - refX);
         float r;
 
@@ -288,15 +299,16 @@ void boundingBoxBp(Node *root, float box[2][2])
         if (fabs(angle) < PI / 2)
         {
           float testr = (box[1][0] - refX) / cos(angle);
-          if (testr < r)
+          if (testr < r && testr > 0)
             r = testr;
         }
         else
         {
           float testr = (box[0][0] - refX) / cos(angle);
-          if (testr < r)
+          if (testr < r && testr > 0)
             r = testr;
         }
+
         float point[2];
         point[0] = refX + r * cos(angle);
         point[1] = refY + r * sin(angle);
@@ -305,12 +317,14 @@ void boundingBoxBp(Node *root, float box[2][2])
         if (var->he->v == NULL)
         {
           var->he->v = v;
+          v->he = var->he;
         }
         else if (var->he->Opposite->v == NULL)
         {
           var->he->Opposite->v = v;
+          var->he->Opposite->v->he = var->he->Opposite;
         }
-      }
+      }*/
     }
     else
     {
@@ -325,7 +339,21 @@ void boundingBoxBp(Node *root, float box[2][2])
       }
       if (subVar != NULL)
       {
-        // No vertex exist
+        float points[2][2];
+        points[0][0] = x;
+        points[0][1] = y;
+        points[1][0] = getBpX(subVar, 10 * box[1][1]);
+        points[1][1] = parabola(subVar->rightArc->arcPoint[0], subVar->rightArc->arcPoint[1], y, 10 * box[1][1]);
+
+        Vertex *v1 = createVertex(points[0]);
+        Vertex *v2 = createVertex(points[1]);
+        var->he->v = v1;
+        v1->he = var->he;
+        subVar->he->v = v2;
+        v2->he = subVar->he;
+      }
+      else
+      {
       }
     }
 
@@ -486,48 +514,85 @@ int drawConstructingHe(float y, Node *root, coord *points, float box[2][2])
       {
         points[n][0] = getBpX(var, y);
         points[n][1] = parabola(var->rightArc->arcPoint[0], var->rightArc->arcPoint[1], y, points[n][0]);
-        if (inBox(points[n][0], points[n][1], box))
+        points[n + 1][0] = getBpX(subVar, y);
+        points[n + 1][1] = parabola(subVar->rightArc->arcPoint[0], subVar->rightArc->arcPoint[1], y, points[n + 1][0]);
+
+        if (inBox(points[n][0], points[n][1], box) && inBox(points[n + 1][0], points[n + 1][1], box))
         {
-          points[n + 1][0] = getBpX(subVar, y);
-          points[n + 1][1] = parabola(subVar->rightArc->arcPoint[0], subVar->rightArc->arcPoint[1], y, points[n + 1][0]);
-
-          if (!inBox(points[n + 1][0], points[n + 1][1], box))
-          {
-            float refX = points[n][0];
-            float refY = points[n][1];
-            float x = points[n + 1][0];
-            float y = points[n + 1][1];
-            double angle = atan2(y - refY, x - refX);
-            float r;
-
-            if (angle > 0)
-            {
-              r = (box[1][1] - refY) / sin(angle);
-            }
-            else
-            {
-              r = (box[0][1] - refY) / sin(angle);
-            }
-
-            if (fabs(angle) < PI / 2)
-            {
-              float testr = (box[1][0] - refX) / cos(angle);
-              if (testr < r)
-                r = testr;
-            }
-            else
-            {
-              float testr = (box[0][0] - refX) / cos(angle);
-              if (testr < r)
-                r = testr;
-            }
-            points[n + 1][0] = refX + r * cos(angle);
-            points[n + 1][1] = refY + r * sin(angle);
-            n += 2;
-          }
 
           n += 2;
         }
+        else if (inBox(points[n][0], points[n][1], box))
+        {
+          float refX = points[n][0];
+          float refY = points[n][1];
+          float x = points[n + 1][0];
+          float y = points[n + 1][1];
+          double angle = atan2(y - refY, x - refX);
+          float r;
+
+          if (angle > 0)
+          {
+            r = (box[1][1] - refY) / sin(angle);
+          }
+          else
+          {
+            r = (box[0][1] - refY) / sin(angle);
+          }
+
+          if (fabs(angle) < PI / 2)
+          {
+            float testr = (box[1][0] - refX) / cos(angle);
+            if (testr < r)
+              r = testr;
+          }
+          else
+          {
+            float testr = (box[0][0] - refX) / cos(angle);
+            if (testr < r)
+              r = testr;
+          }
+          points[n + 1][0] = refX + r * cos(angle);
+          points[n + 1][1] = refY + r * sin(angle);
+          n += 2;
+        }
+        else if (inBox(points[n + 1][0], points[n + 1][1], box))
+        {
+          float refX = points[n + 1][0];
+          float refY = points[n + 1][1];
+          float x = points[n][0];
+          float y = points[n][1];
+          double angle = atan2(y - refY, x - refX);
+          float r;
+
+          if (angle > 0)
+          {
+            r = (box[1][1] - refY) / sin(angle);
+          }
+          else
+          {
+            r = (box[0][1] - refY) / sin(angle);
+          }
+
+          if (fabs(angle) < PI / 2)
+          {
+            float testr = (box[1][0] - refX) / cos(angle);
+            if (testr < r)
+              r = testr;
+          }
+          else
+          {
+            float testr = (box[0][0] - refX) / cos(angle);
+            if (testr < r)
+              r = testr;
+          }
+          points[n][0] = refX + r * cos(angle);
+          points[n][1] = refY + r * sin(angle);
+          n += 2;
+        }
+      }
+      else
+      {
       }
     }
 

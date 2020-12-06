@@ -157,7 +157,6 @@ bool inBox(float x, float y, float box[2][2])
 
 bool lineCrossBox(float pointA[2], float pointB[2], float box[2][2])
 {
-  printf("Chap %f %f | %f %f \n", pointA[0], pointA[1], pointB[0], pointB[1]);
   double refAngle = atan2(-(pointB[1] - pointA[1]), -(pointB[0] - pointA[0]));
   if (refAngle < 0)
     refAngle = 2 * PI + refAngle;
@@ -179,14 +178,12 @@ bool lineCrossBox(float pointA[2], float pointB[2], float box[2][2])
   double maxA = MAX(MAX(angleA, angleB), MAX(angleB, angleC));
   double minA = MIN(MIN(angleA, angleB), MIN(angleC, angleD));
 
-  printf("Angle %f | %f %f %f %f | %f %f \n", refAngle, angleA, angleB, angleC, angleD, maxA, minA);
-
+  // TODO infinite line can cross box but not with the value of the 2 points
   if (fabs(maxA - minA) > PI)
   {
     maxA = maxA - 2 * PI;
     if (refAngle > PI)
       refAngle = refAngle - 2 * PI;
-    printf("Angle 2 %f | %f %f %f %f | %f %f \n", refAngle, angleA, angleB, angleC, angleD, maxA, minA);
     return refAngle < minA && refAngle > maxA; // rervers becausem in is max
   }
   else

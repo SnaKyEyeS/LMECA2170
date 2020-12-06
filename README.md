@@ -60,6 +60,8 @@
   * [x] Vertex of the He
 * [ ] Clean the data
   * [ ] verify if when add points
+* [ ] Flags
+  * [ ] Add a flag to save the animations 
 
 ### V2
 * [x] Add -O3 to make
