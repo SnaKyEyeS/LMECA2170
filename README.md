@@ -33,7 +33,7 @@
   * [ ] Improve circle creation
   * [ ] Benchmark after the upgrade 
   * [ ] Tool to check function call and function duration (min, max, average, total) ?
-  * [ ] Rebalance tree (maybe variable with depth ?) and benchmark -> Would be very nice to do :3
+  * [x] Rebalance tree (maybe variable with depth ?) and benchmark -> Would be very nice to do :3 -> partially done
 * [ ] Add a verbose environnement
   * [ ] Add general option for verbose
   * [ ] Add relevant print
@@ -58,10 +58,12 @@
   * [x] semi-finite vertex
   * [x] Bound everything to a box
   * [x] Vertex of the He
+  * [ ] Finish animation when all bpx are outside the box
 * [ ] Clean the data
   * [ ] verify if when add points
-* [ ] Flags
-  * [ ] Add a flag to save the animations 
+* [x] Flags
+  * [x] Add a flag to save the animations 
+  * [x] Flag for listing the help
 
 ### V2
 * [x] Add -O3 to make

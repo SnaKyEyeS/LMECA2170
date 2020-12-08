@@ -1,6 +1,7 @@
 #include <sys/time.h>
 #include <time.h>
 #include <stdbool.h>
+#include <sys/stat.h>
 
 #include "inputs.h"
 #include "halfEdge.h"
@@ -13,12 +14,44 @@ int main(int argc, char *argv[])
 {
 	int nPoints = 20;
 	bool benchmark = false;
+	bool shouldSaveVid = false;
+	float fps = 10;
 	enum TYPE_ANIM typeAnim = SWEEP_ANIM;
 	int nBeachLine = 300;
+
+	bool showSweepLine = true;
+	bool showBeachLine = true;
+	bool showSiteEvents = true;
+	bool showCircleEvents = true;
+	bool showNextEvent = true;
+	bool showConstructingHe = true;
+	bool showHe = true;
+	bool showBox = true;
+	bool showHelp = true;
+
+	struct stat st = {0};
 
 	// Handle flags
 	for (int i = 1; i < argc; i++)
 	{
+		if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0)
+		{
+			printf("Fortune's algorithm and visualisation by Devillez & Poncelet \n \n");
+			printf("Flags: \n");
+			printf("-b, --benchmark [n]: output the time taken to apply the algorithm on the [n] points\n");
+			printf("-a, --animation [mode]: specify the level of animation\n");
+			printf(" * 0: No animation \n");
+			printf(" * 1: Manual mode \n");
+			printf(" * 2: Step mode \n");
+			printf(" * 3: Sweep mode \n");
+			printf("-r, --resolution [n]: specify the max number of points [n] to draw the beachline\n");
+			printf("-p, --points [n]: specify the number of points [n] to use (default: 20) \n");
+			printf("-s, --save: specify to save the animation\n");
+			printf("-f, --fps [n]: specify the number of fps to save (default: 10)\n");
+			printf("\n\n");
+			return 0;
+		}
+
 		// Benchmark -> No plot | see if everything is allright
 		if (strcmp(argv[i], "-b") == 0 || strcmp(argv[i], "--benchmark") == 0)
 		{
@@ -96,7 +129,7 @@ int main(int argc, char *argv[])
 
 			if (i + 1 >= argc)
 			{
-				printf("You should precise the numbers of points after -b or --benchmark\n");
+				printf("You should precise the numbers of points after -p or --points\n");
 				return EXIT_FAILURE;
 			}
 
@@ -105,6 +138,32 @@ int main(int argc, char *argv[])
 			if (nPoints <= 0)
 			{
 				printf("The number of point should be higher than 0\n");
+				return EXIT_FAILURE;
+			}
+
+			i += 1;
+		}
+
+		else if (strcmp(argv[i], "-s") == 0 || strcmp(argv[i], "--save") == 0)
+		{
+			showHelp = false;
+			shouldSaveVid = true;
+		}
+
+		else if (strcmp(argv[i], "-f") == 0 || strcmp(argv[i], "--fps") == 0)
+		{
+
+			if (i + 1 >= argc)
+			{
+				printf("You should precise the numbers of fps after -f or --fps\n");
+				return EXIT_FAILURE;
+			}
+
+			// Return 0 if not a number
+			fps = atof(argv[i + 1]);
+			if (fps <= 0)
+			{
+				printf("The number of fps should be higher than 0\n");
 				return EXIT_FAILURE;
 			}
 
@@ -239,7 +298,25 @@ int main(int argc, char *argv[])
 	bov_points_set_color(ptsHe, (float[4])nord11);
 	bov_points_set_color(ptsHeConstruct, (float[4])nord12);
 
-	nHeConstruct = 0;
+	char screenshot_dir[64] = "";
+
+	if (shouldSaveVid)
+	{
+		if (stat("Video", &st) == -1)
+		{
+			mkdir("Video", 0700);
+		}
+
+		time_t t = time(NULL);
+		struct tm tm = *localtime(&t);
+		sprintf(screenshot_dir, "Video/SCR_%d-%02d-%02dT%02d:%02d:%02d/", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+		if (stat(screenshot_dir, &st) == -1)
+		{
+			mkdir(screenshot_dir, 0700);
+		}
+	}
+
+	int nImage = 0;
 
 	int aKey = 0, sKey = 0, dKey = 0, fKey = 0, eKey = 0, wKey = 0, qKey = 0, oKey = 0, pKey = 0, oneKey = 0, twoKey = 0, threeKey = 0, fourKey = 0;
 
@@ -257,17 +334,7 @@ int main(int argc, char *argv[])
 	bool shouldUpdateStep = false;
 	bool shouldUpdateContinuous = false;
 	bool shouldUpdateManual = false;
-	bool showSweepLine = true;
-	bool showBeachLine = true;
-	bool showSiteEvents = true;
-	bool showCircleEvents = true;
-	bool showNextEvent = true;
-	bool showConstructingHe = true;
-	bool showHe = true;
-	bool showBox = true; // TODO
 	bool shouldComputeBB = true;
-
-	bool showHelp = true;
 
 	if (typeAnim == NO_ANIM)
 	{
@@ -305,6 +372,8 @@ int main(int argc, char *argv[])
 				shouldUpdateStep = true;
 			}
 		}
+
+		//Speed of sweep line
 		if (intTime > kContinuous * 30)
 		{
 			kContinuous += 1;
@@ -610,6 +679,15 @@ int main(int argc, char *argv[])
 			{
 				bov_points_update(ptsHard, test_points, 0);
 			}
+
+			if (showBox)
+			{
+				bov_points_update(ptsBox, boxPoints, 5);
+			}
+			else
+			{
+				bov_points_update(ptsBox, boxPoints, 0);
+			}
 		}
 
 		// General Key binding
@@ -751,6 +829,21 @@ int main(int argc, char *argv[])
 
 		bov_text_draw(window, textHelp);
 		bov_window_update(window);
+
+		if (shouldSaveVid)
+		{
+			int t = (nImage * 10000 / fps);
+			if (intTime > t)
+			{
+				nImage += 1;
+				char scr[64] = "";
+				char ext[10] = "";
+				strcpy(scr, screenshot_dir);
+				sprintf(ext, "%05d.ppm", nImage);
+				strcat(scr, ext);
+				bov_window_screenshot(window, scr);
+			}
+		}
 	}
 
 	bov_points_delete(ptsBox);

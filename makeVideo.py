@@ -3,13 +3,17 @@ import glob
 import imageio
 import os, sys
 
-img1 = cv2.imread('build/vid/V0-image-       2.ppm')
+dir = os.listdir('./build/Video')
+
+dir.sort()
+
+img1 = cv2.imread('build/Video/' + dir[-1] +'/00001.ppm')
 height, width, layers = img1.shape
 
 # Set FOURCC code to '24BG' - '24BG' is used for creating uncompressed raw video
-video1 = cv2.VideoWriter('V0.avi', cv2.VideoWriter_fourcc(*'XVID'), 60, (width, height))
+video1 = cv2.VideoWriter('V1.avi', cv2.VideoWriter_fourcc(*'XVID'), 30, (width, height))
 
-filenames = glob.glob('build/vid/*.ppm')
+filenames = glob.glob('build/Video/' + dir[-1] + '/*.ppm')
 filenames.sort()
 
 
@@ -31,7 +35,7 @@ cv2.destroyAllWindows()
 video1.release()
 
 def convertFile(inputpath, targetFormat):
-    """Reference: http://imageio.readthedocs.io/en/latest/examples.html#convert-a-movie"""
+    #Reference: http://imageio.readthedocs.io/en/latest/examples.html#convert-a-movie
     outputpath = os.path.splitext(inputpath)[0] + targetFormat
     print("converting\r\n\t{0}\r\nto\r\n\t{1}".format(inputpath, outputpath))
 
@@ -47,4 +51,4 @@ def convertFile(inputpath, targetFormat):
     writer.close()
     print("Done.")
 
-convertFile('V0.avi', '.gif')
+convertFile('V1.avi', '.gif')

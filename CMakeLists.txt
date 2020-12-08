@@ -26,5 +26,7 @@ set_target_properties(${EXEC} PROPERTIES
 add_subdirectory(deps/BOV)
 target_link_libraries(${EXEC} bov)
 
+file(MAKE_DIRECTORY "video")
+
 # set ${EXEC} as the startup project in visual studio
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${EXEC})
