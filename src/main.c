@@ -277,7 +277,7 @@ int main(int argc, char *argv[])
 			.pos = {10, 900},
 			.outlineWidth = 2};
 
-	GLubyte helperText[] = {"Shortcuts \n- 0 finish the animation\n- 1 switch to manual mode\n- 2 switch to step mode\n- 3 switch to sweep mode\n\n- E go to next Event (MANUAL)\n- A decelerate (STEP, SWEEP)\n- B accelerate (STEP, SWEEP)\n- O Reduce resolution of the beachline\n- P augment resolution of the beachLine\n\n- Q small step of the beachline\n- S medium step of the beachline\n- D big step of the beachline\n\n- G show/hide the beachline\n- H show/hide the sweepline\n- J show/hide the next Event\n- K show/hide the constructing half-edges\n- V show/hide the site points\n- B show/hide the half-edges\n- N show/hide the circle vents\n\n- T show/hide this help"};
+	GLubyte helperText[] = {"Shortcuts \n- 1 finish the animation\n- 2 switch to manual mode\n- 3 switch to step mode\n- 4 switch to sweep mode\n\n- E go to next Event (MANUAL)\n- A decelerate (STEP, SWEEP)\n- B accelerate (STEP, SWEEP)\n- O Reduce resolution of the beachline\n- P augment resolution of the beachLine\n\n- Q small step of the beachline\n- S medium step of the beachline\n- D big step of the beachline\n\n- G show/hide the beachline\n- H show/hide the sweepline\n- J show/hide the next Event\n- K show/hide the constructing half-edges\n- V show/hide the site points\n- B show/hide the half-edges\n- N show/hide the circle vents\n\n- T show/hide this help"};
 	bov_text_t *textHelp = bov_text_new(helperText, GL_STATIC_DRAW);
 	bov_text_set_param(textHelp, parameters);
 
@@ -330,11 +330,12 @@ int main(int argc, char *argv[])
 	float stepSpeed = 7000;
 	float continuousSpeed = 0.004;
 
-	bool updateDrawing = false;
+	bool updateDrawing = true;
 	bool shouldUpdateStep = false;
 	bool shouldUpdateContinuous = false;
 	bool shouldUpdateManual = false;
-	bool shouldComputeBB = true;
+	bool shouldComputeBB = false;
+	bool BBiscomputed = false;
 
 	if (typeAnim == NO_ANIM)
 	{
@@ -353,11 +354,13 @@ int main(int argc, char *argv[])
 	{
 		updateDrawing = true;
 
-		sweeplineHeight = data->Q->es[0]->coordinates[1];
+		sweeplineHeight = box[0][1];
+		drawBeachLine(sweeplineHeight, data->beachLine, points, nBeachLine, box[0][1], box[1][1]);
 	}
 	else if (typeAnim == STEP_ANIM)
 	{
 		sweeplineHeight = box[0][1];
+		drawBeachLine(sweeplineHeight, data->beachLine, points, nBeachLine, box[0][1], box[1][1]);
 	}
 
 	while (!bov_window_should_close(window))
@@ -563,7 +566,7 @@ int main(int argc, char *argv[])
 					showNextEvent = false;
 					showConstructingHe = false;
 				}
-				else if (sweeplineHeight > box[1][1])
+				else if (shouldComputeBB)
 				{
 					// Process all event outside the box
 					fortuneAlgo(data, data->Q->es[data->Q->size - 1]->coordinates[1] + 1);
@@ -578,6 +581,10 @@ int main(int argc, char *argv[])
 					showSweepLine = false;
 					showNextEvent = false;
 					showConstructingHe = false;
+				}
+				else if (sweeplineHeight > box[1][1])
+				{
+					showSweepLine = false;
 				}
 
 				updateDrawing = true;
@@ -603,7 +610,7 @@ int main(int argc, char *argv[])
 
 			if (showBeachLine)
 			{
-				drawBeachLine(sweeplineHeight, data->beachLine, points, nBeachLine, box[0][1], box[1][1]); // TODO update
+				shouldComputeBB = drawBeachLine(sweeplineHeight, data->beachLine, points, nBeachLine, box[0][1], box[1][1]); // TODO update
 				bov_points_update(ptsBeachline, points, nBeachLine);
 			}
 			else
@@ -631,7 +638,10 @@ int main(int argc, char *argv[])
 				{
 					nextEvent[0][0] = data->Q->es[0]->coordinates[0];
 					nextEvent[0][1] = data->Q->es[0]->coordinates[1];
-					bov_points_update(ptnextEvent, nextEvent, 1);
+					if (inBox(nextEvent[0][0], nextEvent[0][1], box))
+						bov_points_update(ptnextEvent, nextEvent, 1);
+					else
+						bov_points_update(ptnextEvent, nextEvent, 0);
 				}
 			}
 			else
@@ -653,7 +663,7 @@ int main(int argc, char *argv[])
 			if (showCircleEvents)
 			{
 				// Update of circle events
-				nCircleEvent = getCircleEvent(data->Q, pointsCircleEvent, 0);
+				nCircleEvent = getCircleEvent(data->Q, pointsCircleEvent, 0, box);
 				bov_points_update(circleEvent, pointsCircleEvent, nCircleEvent);
 			}
 			else
@@ -696,6 +706,24 @@ int main(int argc, char *argv[])
 		oneKey = impulse(oneKey, glfwGetKey(window->self, GLFW_KEY_1));
 		if (oneKey == 1)
 		{
+			typeAnim = NO_ANIM;
+			if (data->Q != NULL && data->Q->es != NULL)
+			{
+				while (data->Q->size > 0)
+				{
+					fortuneAlgo(data, data->Q->es[data->Q->size - 1]->coordinates[1] + 1);
+				}
+				if (!BBiscomputed)
+				{
+					boundingBoxBp(data->beachLine, box);
+					BBiscomputed = true;
+				}
+			}
+			showBeachLine = false;
+			showSweepLine = false;
+			showNextEvent = false;
+			showConstructingHe = false;
+			updateDrawing = true;
 		}
 		twoKey = impulse(twoKey, glfwGetKey(window->self, GLFW_KEY_2));
 		if (twoKey == 1)

@@ -26,7 +26,7 @@ Queue *LoadEventQueue(coord *points, int n, Face **faces);
 Event *AddPoint(Queue *Q, float x, float y, enum TYPE_EVENT type, Face *f);
 Event *popQueue(Queue *Q);
 
-int getCircleEvent(Queue *Q, coord *points, int start);
+int getCircleEvent(Queue *Q, coord *points, int start, float box[2][2]);
 
 void freeQueue(Queue *Q);
 void freeNodeQueue(Queue *Q);

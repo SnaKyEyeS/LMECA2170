@@ -165,7 +165,7 @@ Event *popQueue(Queue *Q)
 /*
  * Get the elements of Q which are circle events into points and return the number of elemens
  */
-int getCircleEvent(Queue *Q, coord *points, int start)
+int getCircleEvent(Queue *Q, coord *points, int start, float box[2][2])
 {
   if (Q == NULL)
   {
@@ -179,7 +179,8 @@ int getCircleEvent(Queue *Q, coord *points, int start)
     {
       points[a][0] = Q->es[i]->coordinates[0];
       points[a][1] = Q->es[i]->coordinates[1];
-      a++;
+      if (inBox(points[a][0], points[a][1], box))
+        a++;
     }
   }
 

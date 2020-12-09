@@ -55,6 +55,6 @@ int printTree(Node *node, int depth, int id);
 
 // Draw
 
-void drawBeachLine(float y, Node *root, coord *points, int n, float minBox, float maxBox);
+bool drawBeachLine(float y, Node *root, coord *points, int n, float minBox, float maxBox);
 int drawConstructingHe(float y, Node *root, coord *points, float box[2][2]);
 #endif

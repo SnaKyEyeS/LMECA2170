@@ -170,7 +170,7 @@ void printAllTree(Node *root)
  * 
  * Considering the sweep line at height y
  */
-void drawBeachLine(float y, Node *root, coord *points, int n, float minBox, float maxBox)
+bool drawBeachLine(float y, Node *root, coord *points, int n, float minBox, float maxBox)
 {
 
   if (root == NULL)
@@ -179,10 +179,11 @@ void drawBeachLine(float y, Node *root, coord *points, int n, float minBox, floa
     {
       points[i][1] = minBox;
     }
-    return;
+    return false;
   }
 
   Node *var = root;
+  bool beachlineBehindBox = true;
   while (!var->isLeaf)
   {
     var = var->Left;
@@ -211,9 +212,13 @@ void drawBeachLine(float y, Node *root, coord *points, int n, float minBox, floa
         }
       }
       points[i][1] = parabola(xArc, yArc, y, points[i][0]);
+
       if (points[i][1] > maxBox)
         points[i][1] = maxBox;
-      else if (points[i][1] < minBox)
+      else
+        beachlineBehindBox = false;
+
+      if (points[i][1] < minBox)
         points[i][1] = minBox;
     }
   }
@@ -225,10 +230,14 @@ void drawBeachLine(float y, Node *root, coord *points, int n, float minBox, floa
       points[i][1] = parabola(xArc, yArc, y, points[i][0]);
       if (points[i][1] > maxBox)
         points[i][1] = maxBox;
-      else if (points[i][1] < minBox)
+      else
+        beachlineBehindBox = false;
+
+      if (points[i][1] < minBox)
         points[i][1] = minBox;
     }
   }
+  return beachlineBehindBox;
 }
 
 void boundingBoxBp(Node *root, float box[2][2])

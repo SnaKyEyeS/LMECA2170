@@ -5,11 +5,8 @@
 ![V0 gif](Vid/V0.gif)
 
 ## V1
-### Data
-* V1-1: change the Queue from a linked list to a binary tree
-* V1-2: change the Queue from a binary tree to a heap (array like)
-* V1-{3,4,5}: Optimisation of the algorithm
-* V1-8: Add rebalance of the 
+
+![V1 gif](Vid/V1.gif)
 
 
 ## Todo
@@ -37,8 +34,8 @@
 * [ ] Add a verbose environnement
   * [ ] Add general option for verbose
   * [ ] Add relevant print
-* [ ] Check if memory is clean (valgrind)
-* [ ] Add nice tool for visual
+* [x] Check if memory is clean (valgrind)
+* [x] Add nice tool for visual
   * [x] Each element shoulde be toggable
   * [x] Help should gives shortcut
   * [x] Speed of sweep line should be variable
@@ -58,7 +55,7 @@
   * [x] semi-finite vertex
   * [x] Bound everything to a box
   * [x] Vertex of the He
-  * [ ] Finish animation when all bpx are outside the box
+  * [ ] Finish animation when all bpx are outside the box (add flag ?)
 * [ ] Clean the data
   * [ ] verify if when add points
 * [x] Flags
