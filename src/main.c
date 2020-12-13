@@ -930,16 +930,17 @@ int main(int argc, char *argv[])
 		}
 
 		//Update of the window
-		bov_points_draw(window, circleEvent, 0, nCircleEvent); // TODO not print outside the box ? or directly process them
+
 		bov_line_strip_draw(window, ptsSweepline, 0, nSweepLine);
-		bov_points_draw(window, ptnextEvent, 0, nNEvent);
 		bov_line_strip_draw(window, ptsBeachline, 0, nBeachLine);
 		bov_lines_draw(window, ptsTriang, 0, nTriang);
 		bov_lines_draw(window, ptsHe, 0, nHe);
 		bov_lines_draw(window, ptsHeConstruct, 0, nHeConstruct);
 		bov_line_strip_draw(window, ptsBox, 0, 5);
 
+		bov_points_draw(window, circleEvent, 0, nCircleEvent);
 		bov_points_draw(window, ptsHard, 0, nPoints);
+		bov_points_draw(window, ptnextEvent, 0, nNEvent);
 		bov_text_draw(window, textHelp);
 		bov_window_update(window);
 
