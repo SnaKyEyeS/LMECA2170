@@ -12,7 +12,7 @@
 
 int main(int argc, char *argv[])
 {
-	int nPoints = 20;
+	int nPoints = 40;
 	bool benchmark = false;
 	bool shouldSaveVid = false;
 	float fps = 10;
@@ -283,19 +283,29 @@ int main(int argc, char *argv[])
 			.pos = {10, 900},
 			.outlineWidth = 2};
 
-	GLubyte helperText[] = {"Shortcuts \n- 1 finish the animation\n- 2 switch to manual mode\n- 3 switch to step mode\n- 4 switch to sweep mode\n\n- E go to next Event (MANUAL)\n- A decelerate (STEP, SWEEP)\n- B accelerate (STEP, SWEEP)\n- O Reduce resolution of the beachline\n- P augment resolution of the beachLine\n\n- Q small step of the beachline\n- S medium step of the beachline\n- D big step of the beachline\n\n- G show/hide the beachline\n- H show/hide the sweepline\n- J show/hide the next Event\n- K show/hide the constructing half-edges\n- V show/hide the site points\n- B show/hide the half-edges\n- N show/hide the circle vents\n\n- T show/hide this help"};
+	GLubyte helperText[] = {"Shortcuts \n- 1 finish the animation\n- 2 switch to manual mode\n- 3 switch to step mode\n- 4 switch to sweep mode\n\n- E go to next Event (MANUAL)\n- A decelerate (STEP, SWEEP)\n- B accelerate (STEP, SWEEP)\n- O Reduce resolution of the beachline\n- P augment resolution of the beachLine\n\n- Q small step of the beachline\n- S medium step of the beachline\n- D big step of the beachline\n\n- G show/hide the beachline\n- H show/hide the sweepline\n- J show/hide the next Event\n- K show/hide the constructing half-edges\n- L show/hide the triangulation\n- V show/hide the site points\n- B show/hide the half-edges\n- N show/hide the circle vents\n\n- U decrease width of elements\n- I increase width of elements\n\n- T show/hide this help"};
 	bov_text_t *textHelp = bov_text_new(helperText, GL_STATIC_DRAW);
 	bov_text_set_param(textHelp, parameters);
 
-	bov_points_draw(window, ptsHard, 0, nPoints);
-	bov_points_set_width(ptsHard, 0.02);
-	bov_points_set_width(circleEvent, 0.02);
-	bov_points_set_width(ptnextEvent, 0.01);
-	bov_points_set_width(ptsBeachline, 0.004);
-	bov_points_set_width(ptsHe, 0.008);
-	bov_points_set_width(ptsHeConstruct, 0.002);
-	bov_points_set_width(ptsSweepline, 0.008);
-	bov_points_set_width(ptsTriang, 0.006);
+	float wHard = 0.02;
+	float wCEvent = 0.02;
+	float wNEvent = 0.01;
+	float wBeachLine = 0.004;
+	float wHe = 0.008;
+	float wHeConstruct = 0.002;
+	float wSweepline = 0.008;
+	float wTriang = 0.002;
+
+	float wFactor = 1;
+
+	bov_points_set_width(ptsHard, wHard * wFactor);
+	bov_points_set_width(circleEvent, wCEvent * wFactor);
+	bov_points_set_width(ptnextEvent, wNEvent * wFactor);
+	bov_points_set_width(ptsBeachline, wBeachLine * wFactor);
+	bov_points_set_width(ptsHe, wHe * wFactor);
+	bov_points_set_width(ptsHeConstruct, wHeConstruct * wFactor);
+	bov_points_set_width(ptsSweepline, wSweepline * wFactor);
+	bov_points_set_width(ptsTriang, wTriang * wFactor);
 
 	bov_points_set_color(ptnextEvent, (float[4])nord15);
 	bov_points_set_color(ptsHard, (float[4])nord14);
@@ -330,6 +340,8 @@ int main(int argc, char *argv[])
 
 	// Hide|Show elements
 	int gKey = 0, hKey = 0, jKey = 0, kKey = 0, vKey = 0, bKey = 0, nKey = 0, mKey = 0, tKey, lKey = 0;
+
+	int iKey = 0, uKey = 0;
 
 	float kStep = 10000;
 	int kContinuous = 1;
@@ -886,14 +898,45 @@ int main(int argc, char *argv[])
 			updateDrawing = true;
 		}
 
+		// Change width
+		uKey = impulse(uKey, glfwGetKey(window->self, GLFW_KEY_U));
+		if (uKey == 1)
+		{
+			wFactor -= 0.1;
+			bov_points_set_width(ptsHard, wHard * wFactor);
+			bov_points_set_width(circleEvent, wCEvent * wFactor);
+			bov_points_set_width(ptnextEvent, wNEvent * wFactor);
+			bov_points_set_width(ptsBeachline, wBeachLine * wFactor);
+			bov_points_set_width(ptsHe, wHe * wFactor);
+			bov_points_set_width(ptsHeConstruct, wHeConstruct * wFactor);
+			bov_points_set_width(ptsSweepline, wSweepline * wFactor);
+			bov_points_set_width(ptsTriang, wTriang * wFactor);
+			updateDrawing = true;
+		}
+
+		iKey = impulse(iKey, glfwGetKey(window->self, GLFW_KEY_I));
+		if (iKey == 1)
+		{
+			wFactor += 0.1;
+			bov_points_set_width(ptsHard, wHard * wFactor);
+			bov_points_set_width(circleEvent, wCEvent * wFactor);
+			bov_points_set_width(ptnextEvent, wNEvent * wFactor);
+			bov_points_set_width(ptsBeachline, wBeachLine * wFactor);
+			bov_points_set_width(ptsHe, wHe * wFactor);
+			bov_points_set_width(ptsHeConstruct, wHeConstruct * wFactor);
+			bov_points_set_width(ptsSweepline, wSweepline * wFactor);
+			bov_points_set_width(ptsTriang, wTriang * wFactor);
+			updateDrawing = true;
+		}
+
 		//Update of the window
 		bov_points_draw(window, circleEvent, 0, nCircleEvent); // TODO not print outside the box ? or directly process them
 		bov_line_strip_draw(window, ptsSweepline, 0, nSweepLine);
 		bov_points_draw(window, ptnextEvent, 0, nNEvent);
 		bov_line_strip_draw(window, ptsBeachline, 0, nBeachLine);
+		bov_lines_draw(window, ptsTriang, 0, nTriang);
 		bov_lines_draw(window, ptsHe, 0, nHe);
 		bov_lines_draw(window, ptsHeConstruct, 0, nHeConstruct);
-		bov_lines_draw(window, ptsTriang, 0, nTriang);
 		bov_line_strip_draw(window, ptsBox, 0, 5);
 
 		bov_points_draw(window, ptsHard, 0, nPoints);
