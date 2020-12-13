@@ -468,3 +468,30 @@ void freeHe(HalfEdge *he)
     tmp = tmp2;
   }
 }
+
+int getTriangPoints(PolygonMesh *PM, coord *points)
+{
+  if (PM == NULL)
+  {
+    return 0;
+  }
+  HalfEdge *var = PM->firstHedge;
+  int n = 0;
+  while (var != NULL)
+  {
+    if (var->v != NULL && var->Opposite != NULL && var->Opposite->v != NULL)
+    {
+      points[n][0] = var->f->point[0];
+      points[n][1] = var->f->point[1];
+      points[n + 1][0] = var->Opposite->f->point[0];
+      points[n + 1][1] = var->Opposite->f->point[1];
+    }
+    n += 2;
+
+    if (var->Opposite != var->nextList)
+      var = var->nextList;
+    else
+      var = var->nextList->nextList;
+  }
+  return n;
+}

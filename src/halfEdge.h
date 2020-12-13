@@ -70,6 +70,8 @@ PolygonMesh *LoadPolygonMesh(float *Vertices, int nVertices, int *hEdges, int nE
 // For draw
 int getHePoints(PolygonMesh *PM, coord *points, float box[2][2]);
 
+int getTriangPoints(PolygonMesh *PM, coord *points);
+
 // For print in terminal
 void printVertices(PolygonMesh *PM);
 void printHEdges(PolygonMesh *PM);

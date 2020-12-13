@@ -42,7 +42,6 @@ float getBpX(Node *node, float pointY)
   double sqrtDelta = sqrt(Delta);
   double x1 = (-B + sqrtDelta) / (2 * A);
   double x2 = (-B - sqrtDelta) / (2 * A);
-
   // intersection of parabola. The lower one will decide which point
   if (node->leftArc->arcPoint[0] < x1 && x1 < node->rightArc->arcPoint[0])
   {
@@ -211,15 +210,25 @@ bool drawBeachLine(float y, Node *root, coord *points, int n, float minBox, floa
           var = var->rightBP->rightArc;
         }
       }
+      else if (points[i][0] > bpX)
+      {
+        xArc = var->arcPoint[0];
+        yArc = var->arcPoint[1];
+      }
+
       points[i][1] = parabola(xArc, yArc, y, points[i][0]);
 
       if (points[i][1] > maxBox)
+      {
         points[i][1] = maxBox;
+      }
       else
         beachlineBehindBox = false;
 
       if (points[i][1] < minBox)
+      {
         points[i][1] = minBox;
+      }
     }
   }
 

@@ -28,6 +28,7 @@ int main(int argc, char *argv[])
 	bool showHe = true;
 	bool showBox = true;
 	bool showHelp = true;
+	bool showTriang = true;
 
 	struct stat st = {0};
 
@@ -219,6 +220,10 @@ int main(int argc, char *argv[])
 	coord *pointsHe = malloc(sizeof(coord) * maxHE);
 	int nHe = 0;
 
+	int maxTriang = maxHE;
+	coord *pointsTriang = malloc(sizeof(coord) * maxTriang);
+	int nTriang = 0;
+
 	coord *pointsHeConstruct = malloc(sizeof(coord) * nPoints * 10 * 2);
 	int nHeConstruct = nPoints * 10 * 2;
 
@@ -266,6 +271,7 @@ int main(int argc, char *argv[])
 	bov_points_t *ptnextEvent = bov_points_new(nextEvent, 1, GL_DYNAMIC_DRAW);
 	bov_points_t *circleEvent = bov_points_new(pointsCircleEvent, nCircleEvent, GL_DYNAMIC_DRAW);
 	bov_points_t *ptsHe = bov_points_new(pointsHe, nHe, GL_STATIC_DRAW);
+	bov_points_t *ptsTriang = bov_points_new(pointsTriang, nTriang, GL_STATIC_DRAW);
 	bov_points_t *ptsHeConstruct = bov_points_new(pointsHe, nHeConstruct, GL_STATIC_DRAW);
 
 	bov_text_param_t parameters = {
@@ -289,6 +295,7 @@ int main(int argc, char *argv[])
 	bov_points_set_width(ptsHe, 0.008);
 	bov_points_set_width(ptsHeConstruct, 0.002);
 	bov_points_set_width(ptsSweepline, 0.008);
+	bov_points_set_width(ptsTriang, 0.006);
 
 	bov_points_set_color(ptnextEvent, (float[4])nord15);
 	bov_points_set_color(ptsHard, (float[4])nord14);
@@ -296,6 +303,7 @@ int main(int argc, char *argv[])
 	bov_points_set_color(ptsBeachline, (float[4])nord13);
 	bov_points_set_color(circleEvent, (float[4])nord5);
 	bov_points_set_color(ptsHe, (float[4])nord11);
+	bov_points_set_color(ptsTriang, (float[4])nord7);
 	bov_points_set_color(ptsHeConstruct, (float[4])nord12);
 
 	char screenshot_dir[64] = "";
@@ -321,7 +329,7 @@ int main(int argc, char *argv[])
 	int aKey = 0, sKey = 0, dKey = 0, fKey = 0, eKey = 0, wKey = 0, qKey = 0, oKey = 0, pKey = 0, oneKey = 0, twoKey = 0, threeKey = 0, fourKey = 0;
 
 	// Hide|Show elements
-	int gKey = 0, hKey = 0, jKey = 0, kKey = 0, vKey = 0, bKey = 0, nKey = 0, mKey = 0, tKey;
+	int gKey = 0, hKey = 0, jKey = 0, kKey = 0, vKey = 0, bKey = 0, nKey = 0, mKey = 0, tKey, lKey = 0;
 
 	float kStep = 10000;
 	int kContinuous = 1;
@@ -343,6 +351,7 @@ int main(int argc, char *argv[])
 		{
 			fortuneAlgo(data, data->Q->es[data->Q->size - 1]->coordinates[1] + 1);
 			boundingBoxBp(data->beachLine, box);
+
 			shouldUpdateContinuous = false;
 		}
 		showBeachLine = false;
@@ -421,21 +430,25 @@ int main(int argc, char *argv[])
 						sweeplineHeight = data->Q->es[0]->coordinates[1];
 					}
 
-					if (sweeplineHeight > box[1][1])
+					if (shouldComputeBB)
 					{
 						// Process all event outside the box
-						fortuneAlgo(data, data->Q->es[data->Q->size - 1]->coordinates[1] + 1);
-						if (shouldComputeBB)
-						{
-							boundingBoxBp(data->beachLine, box);
-							shouldComputeBB = false;
-						}
+						while (data->Q->size != 0)
+							fortuneAlgo(data, data->Q->es[data->Q->size - 1]->coordinates[1] + 1);
+
+						boundingBoxBp(data->beachLine, box);
+						shouldComputeBB = false;
 
 						// Hide this if not needed
 						showBeachLine = false;
 						showSweepLine = false;
 						showNextEvent = false;
 						showConstructingHe = false;
+					}
+
+					if (sweeplineHeight > box[1][1])
+					{
+						showSweepLine = false;
 					}
 				}
 			}
@@ -456,20 +469,23 @@ int main(int argc, char *argv[])
 					showNextEvent = false;
 					showConstructingHe = false;
 				}
-				else if (sweeplineHeight > box[1][1])
+				else if (shouldComputeBB)
 				{
 					// Process all event outside the box
-					fortuneAlgo(data, data->Q->es[data->Q->size - 1]->coordinates[1] + 1);
-					if (shouldComputeBB)
-					{
-						boundingBoxBp(data->beachLine, box);
-						shouldComputeBB = false;
-					}
+					while (data->Q->size != 0)
+						fortuneAlgo(data, data->Q->es[data->Q->size - 1]->coordinates[1] + 1);
+
+					boundingBoxBp(data->beachLine, box);
+					shouldComputeBB = false;
 
 					showBeachLine = false;
 					showSweepLine = false;
 					showNextEvent = false;
 					showConstructingHe = false;
+				}
+				else if (sweeplineHeight > box[1][1])
+				{
+					showSweepLine = false;
 				}
 				updateDrawing = true;
 			}
@@ -498,6 +514,9 @@ int main(int argc, char *argv[])
 				if (data->Q != NULL && data->Q->es != NULL && data->Q->size > 0)
 				{
 					ProcessEvent(data);
+					printAllTree(data->beachLine);
+					drawBeachLine(sweeplineHeight, data->beachLine, points, nBeachLine, box[0][1], box[1][1]);
+
 					updateDrawing = true;
 					if (data->Q->size == 0)
 					{
@@ -511,15 +530,14 @@ int main(int argc, char *argv[])
 						showNextEvent = false;
 						showConstructingHe = false;
 					}
-					else if (sweeplineHeight > box[1][1])
+					else if (shouldComputeBB)
 					{
 						// Process all event outside the box
-						fortuneAlgo(data, data->Q->es[data->Q->size - 1]->coordinates[1] + 1);
-						if (shouldComputeBB)
-						{
-							boundingBoxBp(data->beachLine, box);
-							shouldComputeBB = false;
-						}
+						while (data->Q->size != 0)
+							fortuneAlgo(data, data->Q->es[data->Q->size - 1]->coordinates[1] + 1);
+
+						boundingBoxBp(data->beachLine, box);
+						shouldComputeBB = false;
 
 						showBeachLine = false;
 						showSweepLine = false;
@@ -529,6 +547,11 @@ int main(int argc, char *argv[])
 					else
 					{
 						sweeplineHeight = data->Q->es[0]->coordinates[1];
+					}
+
+					if (sweeplineHeight > box[1][1])
+					{
+						showSweepLine = false;
 					}
 				}
 			}
@@ -569,7 +592,8 @@ int main(int argc, char *argv[])
 				else if (shouldComputeBB)
 				{
 					// Process all event outside the box
-					fortuneAlgo(data, data->Q->es[data->Q->size - 1]->coordinates[1] + 1);
+					while (data->Q->size != 0)
+						fortuneAlgo(data, data->Q->es[data->Q->size - 1]->coordinates[1] + 1);
 
 					if (shouldComputeBB)
 					{
@@ -606,6 +630,16 @@ int main(int argc, char *argv[])
 			else
 			{
 				bov_text_update(textHelp, (GLubyte[]){""});
+			}
+
+			if (showTriang)
+			{
+				nTriang = getTriangPoints(data->Voronoid, pointsTriang);
+				bov_points_update(ptsTriang, pointsTriang, nTriang);
+			}
+			else
+			{
+				bov_points_update(ptsTriang, pointsTriang, 0);
 			}
 
 			if (showBeachLine)
@@ -845,16 +879,24 @@ int main(int argc, char *argv[])
 			updateDrawing = true;
 		}
 
+		lKey = impulse(lKey, glfwGetKey(window->self, GLFW_KEY_L));
+		if (lKey == 1)
+		{
+			showTriang = !showTriang;
+			updateDrawing = true;
+		}
+
 		//Update of the window
 		bov_points_draw(window, circleEvent, 0, nCircleEvent); // TODO not print outside the box ? or directly process them
 		bov_line_strip_draw(window, ptsSweepline, 0, nSweepLine);
-		bov_points_draw(window, ptsHard, 0, nPoints);
 		bov_points_draw(window, ptnextEvent, 0, nNEvent);
 		bov_line_strip_draw(window, ptsBeachline, 0, nBeachLine);
 		bov_lines_draw(window, ptsHe, 0, nHe);
 		bov_lines_draw(window, ptsHeConstruct, 0, nHeConstruct);
+		bov_lines_draw(window, ptsTriang, 0, nTriang);
 		bov_line_strip_draw(window, ptsBox, 0, 5);
 
+		bov_points_draw(window, ptsHard, 0, nPoints);
 		bov_text_draw(window, textHelp);
 		bov_window_update(window);
 
@@ -881,6 +923,7 @@ int main(int argc, char *argv[])
 	bov_points_delete(ptnextEvent);
 	bov_points_delete(circleEvent);
 	bov_points_delete(ptsHe);
+	bov_points_delete(ptsTriang);
 	bov_points_delete(ptsHeConstruct);
 	bov_text_delete(textHelp);
 
