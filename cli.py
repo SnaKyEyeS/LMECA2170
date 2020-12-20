@@ -58,7 +58,7 @@ def run(version, boundary, number):
 def plot(versions):
     """Plot the benchmark results"""
 
-    filenames = ["Data/V0-1"]
+    filenames = []
     filenames.extend([f"Data/V1-{v}" for v in versions])
 
     colors = [".r", ".g", ".b"]
