@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.9)
 project(NGP C)
 
-set(EXEC myexec) # put whatever name you want for the executable 
+set(EXEC Devillez_Poncelet_Fortune) # put whatever name you want for the executable 
 
 file(GLOB_RECURSE sources "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c")
 add_executable(${EXEC}

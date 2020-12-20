@@ -45,10 +45,12 @@ int main(int argc, char *argv[])
 			printf(" * 1: Manual mode \n");
 			printf(" * 2: Step mode \n");
 			printf(" * 3: Sweep mode \n");
+			printf("-h, --help: Print this help\n");
 			printf("-r, --resolution [n]: specify the max number of points [n] to draw the beachline\n");
 			printf("-p, --points [n]: specify the number of points [n] to use (default: 20) \n");
 			printf("-s, --save: specify to save the animation\n");
 			printf("-f, --fps [n]: specify the number of fps to save (default: 10)\n");
+			printf("-v, --version: Print the version number\n");
 			printf("\n\n");
 			return 0;
 		}
@@ -170,6 +172,11 @@ int main(int argc, char *argv[])
 
 			i += 1;
 		}
+
+		else if (strcmp(argv[i], "v") == 0 || strcmp(argv[i], "--version") == 0)
+		{
+			printf("Version 2.1\n");
+		}
 	}
 
 	int seed = (int)time(NULL);
@@ -283,7 +290,7 @@ int main(int argc, char *argv[])
 			.pos = {10, 900},
 			.outlineWidth = 2};
 
-	GLubyte helperText[] = {"Shortcuts \n- 1 finish the animation\n- 2 switch to manual mode\n- 3 switch to step mode\n- 4 switch to sweep mode\n\n- E go to next Event (MANUAL)\n- A decelerate (STEP, SWEEP)\n- B accelerate (STEP, SWEEP)\n- O Reduce resolution of the beachline\n- P augment resolution of the beachLine\n\n- Q small step of the beachline\n- S medium step of the beachline\n- D big step of the beachline\n\n- G show/hide the beachline\n- H show/hide the sweepline\n- J show/hide the next Event\n- K show/hide the constructing half-edges\n- L show/hide the triangulation\n- V show/hide the site points\n- B show/hide the half-edges\n- N show/hide the circle vents\n\n- U decrease width of elements\n- I increase width of elements\n\n- T show/hide this help"};
+	GLubyte helperText[] = {"Shortcuts \n- 1 finish the animation\n- 2 switch to manual mode\n- 3 switch to step mode\n- 4 switch to sweep mode\n\n- E go to next Event (MANUAL)\n- A decelerate (STEP, SWEEP)\n- B accelerate (STEP, SWEEP)\n- O Reduce resolution of the beachline\n- P augment resolution of the beachLine\n\n- Q small step of the beachline\n- S medium step of the beachline\n- D big step of the beachline\n\n- G show/hide the beachline\n- H show/hide the sweepline\n- J show/hide the next event\n- K show/hide the constructing half-edges\n- L show/hide the triangulation\n- V show/hide the site points\n- B show/hide the half-edges\n- N show/hide the circle events\n- , show/hide the box\n\n- U decrease width of elements\n- I increase width of elements\n\n- T show/hide this help"};
 	bov_text_t *textHelp = bov_text_new(helperText, GL_STATIC_DRAW);
 	bov_text_set_param(textHelp, parameters);
 
@@ -526,7 +533,6 @@ int main(int argc, char *argv[])
 				if (data->Q != NULL && data->Q->es != NULL && data->Q->size > 0)
 				{
 					ProcessEvent(data);
-					printAllTree(data->beachLine);
 					drawBeachLine(sweeplineHeight, data->beachLine, points, nBeachLine, box[0][1], box[1][1]);
 
 					updateDrawing = true;
@@ -801,8 +807,8 @@ int main(int argc, char *argv[])
 		if (oKey == 1)
 		{
 			nBeachLine = nBeachLine * 0.71;
-			if (nBeachLine <= 2)
-				nBeachLine = 2;
+			if (nBeachLine <= 4)
+				nBeachLine = 4;
 			linspaceRealloc(points, xmin, xmax, nBeachLine);
 			updateDrawing = true;
 		}
