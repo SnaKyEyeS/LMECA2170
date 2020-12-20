@@ -313,6 +313,7 @@ int main(int argc, char *argv[])
 	bov_points_set_width(ptsHeConstruct, wHeConstruct * wFactor);
 	bov_points_set_width(ptsSweepline, wSweepline * wFactor);
 	bov_points_set_width(ptsTriang, wTriang * wFactor);
+	bov_points_set_width(ptsBox, 0.01f);
 
 	bov_points_set_color(ptnextEvent, (float[4])nord15);
 	bov_points_set_color(ptsHard, (float[4])nord14);
@@ -320,7 +321,7 @@ int main(int argc, char *argv[])
 	bov_points_set_color(ptsBeachline, (float[4])nord13);
 	bov_points_set_color(circleEvent, (float[4])nord5);
 	bov_points_set_color(ptsHe, (float[4])nord11);
-	bov_points_set_color(ptsTriang, (float[4])nord7);
+	bov_points_set_color(ptsTriang, (float[4])nord8);
 	bov_points_set_color(ptsHeConstruct, (float[4])nord12);
 
 	char screenshot_dir[64] = "";
