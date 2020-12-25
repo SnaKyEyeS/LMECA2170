@@ -2,35 +2,25 @@
 
 /*
  * Compare the float representation of a point (x,y)
- * 
+ *
  * A: first point
  * B: second point
  */
-int comparefloats(const void *A, const void *B)
-{
-  // TODO replace comparefloat by direct comparision to go faster
-  float a = ((float *)A)[1];
-  float b = ((float *)B)[1];
+ int comparefloats(const void *A, const void *B) {
+   float a = ((float *)A)[1];
+   float b = ((float *)B)[1];
 
-  if (a > b)
-  {
-    return 1;
-  }
-  else if (b > a)
-  {
-    return -1;
-  }
-  return 0;
-}
+   return (a > b) - (a < b);
+ }
 
 /*
  * Get the y value of the parabola represented by xArc, yArc
- * 
+ *
  * xArc: x coordinate of the site point
  * yArc: y coordinate of the site point
- * yLine: Height of the line 
+ * yLine: Height of the line
  * x: to where compute the y
- * 
+ *
  */
 float parabola(float xArc, float yArc, float yLine, float x)
 {
@@ -55,7 +45,7 @@ float parabola(float xArc, float yArc, float yLine, float x)
  * xmin: lower value of the interval
  * xman: higher value of the interval
  * n: number of points
- * 
+ *
  */
 coord *linspace(float xmin, float xmax, int n)
 {
@@ -79,7 +69,7 @@ coord *linspace(float xmin, float xmax, int n)
  * xmin: lower value of the interval
  * xman: higher value of the interval
  * n: number of points
- * 
+ *
  */
 void linspaceRealloc(coord *points, float xmin, float xmax, int n)
 {
@@ -94,7 +84,7 @@ void linspaceRealloc(coord *points, float xmin, float xmax, int n)
 }
 /*
  * Convert a continuous signal (key pressed down) to an impulse
- * 
+ *
  * old: previous value of the key
  * new: new value fetched by the key
  */
